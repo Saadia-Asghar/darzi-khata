@@ -11,7 +11,7 @@ Built with React + Vite. 100% runs in the browser — no server, no database, no
 
 | Item | Detail |
 |------|--------|
-| **Demo URL** | _(publish on Replit to get link)_ |
+| **Demo URL** | [github.com/Saadia-Asghar/darzi-khata](https://github.com/Saadia-Asghar/darzi-khata) |
 | **Demo PIN** | `1234` _(set via Settings → PIN Lock)_ |
 | **Demo Data** | 10 pre-loaded orders (DK-001 → DK-010), 3 karigars |
 | **Demo Shop** | Al-Madina Tailors / المدینہ ٹیلرز |
@@ -220,7 +220,7 @@ When you first open the app (fresh browser / cleared localStorage):
 
 ## 📸 Screenshots
 
-_(Add screenshots here after publishing)_
+**GitHub Repo:** https://github.com/Saadia-Asghar/darzi-khata
 
 ---
 
