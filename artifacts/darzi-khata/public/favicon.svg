@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <rect width="100" height="100" rx="20" fill="#047857"/>
+  <!-- Scissors icon -->
+  <g transform="translate(50,50) rotate(45)" fill="none" stroke="white" stroke-width="5" stroke-linecap="round">
+    <circle cx="-12" cy="-12" r="8" fill="none"/>
+    <circle cx="12" cy="12" r="8" fill="none"/>
+    <line x1="-5" y1="-5" x2="5" y2="5"/>
+    <line x1="-18" y1="18" x2="-5" y2="5"/>
+    <line x1="18" y1="-18" x2="5" y2="-5"/>
+  </g>
+  <!-- DK letters -->
+  <text x="50" y="72" font-family="Arial,sans-serif" font-size="18" font-weight="bold" fill="#d97706" text-anchor="middle">DK</text>
+</svg>
