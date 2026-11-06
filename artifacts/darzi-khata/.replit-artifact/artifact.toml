@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Darzi Khata"
+description = "Existing offline-first bilingual Urdu/English tailor shop management application imported from Saadia-Asghar/darzi-khata on GitHub."
+version = "1.0.0"
+id = "artifacts/darzi-khata"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 24310
+
+[services.development]
+run = "pnpm --filter @workspace/darzi-khata run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/darzi-khata", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/darzi-khata/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24310"
+BASE_PATH = "/"
