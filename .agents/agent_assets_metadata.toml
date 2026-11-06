@@ -84,3 +84,17 @@ mtime_ms = 1793972936448
 storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:00e5e9e4-bf06-459e-935c-fb2d11805f64/9dbb8f7c-9a43-4336-a2fd-0477e295dc8d/58bca194-3f2e-4609-9923-a200a1ba1e86"
 storage_version_token = "1793973616698793"
 content_type = "application/pdf"
+
+[[outputs]]
+id = "A41pHoCmsBgZzRRojBTU2"
+uri = "file://generated-artifacts/launch/verification-report.html"
+type = "html"
+title = "Darzi Khata — screenshots and verification proof"
+description = "Self-contained report with English/Urdu screenshots, actual WhatsApp and RTL checks, full command logs, mobile Lighthouse results, build version and explicit limitations."
+logical_id = "7042de7c-55f8-4b4a-af23-a04f7e13f282"
+content_hash = "sha256:ee93cd4cf65b0021dacfbf1fb9594aab478b93b9700546e641f1e5bbc9f2a1bc"
+size = 819360
+mtime_ms = 1793986163354
+storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:00e5e9e4-bf06-459e-935c-fb2d11805f64/7042de7c-55f8-4b4a-af23-a04f7e13f282/a4b5b952-4bf1-4b3c-84c0-7511d79cb18a"
+storage_version_token = "1793986196496679"
+content_type = "text/html"
