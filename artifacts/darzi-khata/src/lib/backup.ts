@@ -7,6 +7,20 @@ import { validateCustomers, validateOrders } from './order-validation';
 import { SCHEMA_VERSION, migrateRegister, highestSerial } from './migrations';
 import { readJSON } from './storage';
 import { writeStorageBatch } from './local-store';
+import { registerSnapshot } from './backup-reminder';
+export interface PendingBackupSave { snapshot: string; exportedAt: string }
+/** A download request is not proof of a saved file. Return a confirmation token only. */
+export async function requestBackupDownload(
+  scope: string, build: () => Promise<unknown>, isCurrent: () => boolean,
+  download: (payload: unknown) => void,
+): Promise<PendingBackupSave | null> {
+  const snapshot = registerSnapshot(scope);
+  const exportedAt = new Date().toISOString();
+  const payload = await build();
+  if (!isCurrent()) return null;
+  download(payload);
+  return { snapshot, exportedAt };
+}
 export interface ParsedBackup {
   orders: Order[];
   customers?: Customer[];

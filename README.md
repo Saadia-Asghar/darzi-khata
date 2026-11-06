@@ -109,6 +109,24 @@ not customers or verified financial transactions. Do not send messages to demo n
 
 ## Offline and data safety
 
+### Optional local backup reminders
+
+Turn on **Settings → Data backup → Remind me to back up** to see an
+English/Urdu reminder in the selected language when the register has changed.
+It is off by default. Dismissing it hides it until the next register change;
+turning the setting off disables reminders entirely.
+
+After either plain or encrypted export, check that the file exists and choose
+**I saved the file**. Browsers cannot reliably confirm that a download was saved,
+so starting a download alone never updates the last confirmed backup date.
+Choose **Not saved / cancelled** if it did not finish. Failed or interrupted
+exports do not count. Changes made during an export still need a fresh backup.
+
+Reminder preferences and the last confirmed export date stay on this device,
+separately for each shop and the financial demo. No passphrase, exported register
+snapshot, backup file, cloud upload, or external notification is stored/sent by
+the reminder. Clearing browser data removes this reminder history too.
+
 ### Optional passphrase-protected backups
 
 In **Settings → Data backup**, **Export backup** still downloads the original

@@ -39,6 +39,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Search, FlaskConical, Zap, ListChecks, HardDrive, BarChart2, ChevronRight } from 'lucide-react';
 import { LanguageSwitch } from '../components/language-switch';
+import { BackupReminder } from '../components/backup-reminder';
 
 type FilterTab = 'all' | 'overdue' | 'soon' | 'ready' | 'delivered' | 'urgent' | 'pending' | 'stitching';
 export type Section = NavTab | MoreTool | 'customer';
@@ -184,6 +185,7 @@ export default function Dashboard({ section = 'orders', phone }: { section?: Sec
 
       {section === 'orders' && (
         <main className="p-4 max-w-2xl mx-auto dk-rise">
+          <div className="mb-3"><BackupReminder onBackup={() => navigate('/settings#backup')} /></div>
           <DailySummary orders={orders} onOpenDue={() => navigate('/due')} />
           <StatsBar orders={orders} onDueTodayClick={() => navigate('/due')} />
 

@@ -19,7 +19,11 @@ import { useCustomers } from '../hooks/use-customers';
 import { usePreferences } from '../hooks/use-preferences';
 import { PinSettings } from './app-lock';
 import { exportPhotos, type PhotoBackup } from '../lib/photos';
-import { validateBackup, restoreBackup, stripSecrets, type ParsedBackup } from '../lib/backup';
+import { validateBackup, restoreBackup, stripSecrets, requestBackupDownload, type PendingBackupSave, type ParsedBackup } from '../lib/backup';
+import { backupReminderKey, confirmedBackupState } from '../lib/backup-reminder';
+import { writeStorage } from '../lib/local-store';
+import { useBackupReminder } from '../hooks/use-backup-reminder';
+import { shortDate } from '../lib/i18n';
 import { SCHEMA_VERSION } from '../lib/migrations';
 import { usePhotoScope } from './fabric-photo';
 import { Languages, Type } from 'lucide-react';
@@ -46,8 +50,10 @@ export function SettingsModal({ open, onOpenChange, orders }: SettingsModalProps
   const { demoMode, setDemoMode, clearDemoData } = useDemoMode();
   const [clearOpen, setClearOpen] = useState(false);
   const { customers } = useCustomers();
-  const { label, urduFirst, fontSize, setLanguage, setFontSize, paperSize, setPaperSize } = usePreferences();
+  const { label, lang, urduFirst, fontSize, setLanguage, setFontSize, paperSize, setPaperSize } = usePreferences();
   const photoScope = usePhotoScope();
+  const reminder = useBackupReminder();
+  const [pendingSave, setPendingSave] = useState<PendingBackupSave | null>(null);
   const [pendingRestore, setPendingRestore] = useState<ParsedBackup | null>(null);
   const [busy, setBusy] = useState(false);
   const [protection, setProtection] = useState<'export' | EncryptedBackup | null>(null);
@@ -58,6 +64,7 @@ export function SettingsModal({ open, onOpenChange, orders }: SettingsModalProps
     setBusy(false);
   };
   useEffect(() => {
+    setPendingSave(null);
     setProtection(null);
     setPendingRestore(null);
     setBusy(false);
@@ -70,6 +77,10 @@ export function SettingsModal({ open, onOpenChange, orders }: SettingsModalProps
   useEffect(() => {
     if (open) setFormData(settingsRef.current);
   }, [open, demoMode]);
+  useEffect(() => {
+    if (open && window.location.hash === '#backup')
+      document.getElementById('backup-settings')?.scrollIntoView({ block: 'start' });
+  }, [open]);
 
   const handleChange = (field: keyof ShopSettings, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -90,15 +101,18 @@ export function SettingsModal({ open, onOpenChange, orders }: SettingsModalProps
 
   const handleExport = async (passphrase?: string) => {
     const token = ++operation.current;
+    setPendingSave(null);
     setBusy(true);
     try {
+      const completed = await requestBackupDownload(photoScope, async () => {
       let photos: PhotoBackup[];
       try { photos = await exportPhotos(orders.map((o) => o.fabricPhotoId).filter(Boolean) as string[]); }
       catch { throw new Error(label('backup_stopped_fabric_photo_unavailable')); }
       const backup = stripSecrets({ schemaVersion: SCHEMA_VERSION, orders, customers, photos, templates, karigars,
         settings: {...formData,language:settings.language,fontSize:settings.fontSize,paperSize:settings.paperSize}, exportedAt: new Date().toISOString() });
       const payload = passphrase === undefined ? backup : await encryptBackup(backup, passphrase);
-      if (token !== operation.current) return;
+      return payload;
+      }, () => token === operation.current, (payload) => {
       const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
       if (blob.size > 100 * 1024 * 1024) throw new Error(label('backup_must_be_under_100_mb'));
       const url = URL.createObjectURL(blob);
@@ -109,8 +123,10 @@ export function SettingsModal({ open, onOpenChange, orders }: SettingsModalProps
         document.body.appendChild(a);
         a.click();
       } finally { a.remove(); URL.revokeObjectURL(url); }
+      });
+      if (!completed) return;
       setProtection(null);
-      toast({ title: label('backup_downloaded') });
+      setPendingSave(completed);
     } finally { if (token === operation.current) setBusy(false); }
   };
 
@@ -119,6 +135,7 @@ export function SettingsModal({ open, onOpenChange, orders }: SettingsModalProps
     e.target.value = '';
     if (!file) return;
     const token = ++operation.current;
+    setPendingSave(null);
     setProtection(null);
     setPendingRestore(null);
     if(file.size>100*1024*1024) { toast({title:label('backup_must_be_under_100_mb'),variant:'destructive'});return; }
@@ -374,8 +391,19 @@ export function SettingsModal({ open, onOpenChange, orders }: SettingsModalProps
             </section>
 
             {/* Backup */}
-            <section className="bg-card p-4 rounded-lg border border-card-border">
+            <section id="backup-settings" className="bg-card p-4 rounded-lg border border-card-border">
               <h3 className="font-bold text-foreground border-b border-border pb-2 text-sm   mb-3">{label('data_backup')}</h3>
+              <div className="flex items-center justify-between gap-3 mb-3">
+                <label htmlFor="backup-reminders" className="text-sm font-semibold">{label('backup_reminder_option')}</label>
+                <Switch id="backup-reminders" checked={reminder.state.enabled} onCheckedChange={(enabled) => {
+                  try { reminder.setEnabled(enabled); }
+                  catch { toast({ title: label('settings_not_saved'), variant: 'destructive' }); }
+                }} data-testid="switch-backup-reminders" />
+              </div>
+              <p className="text-sm text-muted-foreground mb-3">{label('backup_reminder_local')}</p>
+              <p className="text-sm mb-3" data-testid="last-successful-backup">{reminder.state.lastSuccessfulBackupAt
+                ? label('backup_last_saved', { date: shortDate(reminder.state.lastSuccessfulBackupAt, lang) })
+                : label('backup_never_saved')}</p>
               <p className="text-sm text-muted-foreground mb-3">{label('backup_plain_help')}</p>
               <div className="flex gap-3">
                 <button onClick={() => { setProtection(null); void handleExport().catch(err => toast({ title: label('backup_export_failed'), description: err instanceof Error ? err.message : undefined, variant: 'destructive' })); }} disabled={busy} className="disabled:opacity-60 flex-1 flex flex-col items-center gap-1.5 py-3 bg-primary-soft  text-primary  hover:bg-primary-soft rounded-lg border border-border  transition-colors" data-testid="btn-export">
@@ -393,6 +421,19 @@ export function SettingsModal({ open, onOpenChange, orders }: SettingsModalProps
               </button>
               {protection && <BackupPassphrase key={protection === 'export' ? 'export' : protection.iv} exporting={protection === 'export'} busy={busy}
                 onSubmit={protection === 'export' ? handleExport : unlockBackup} onCancel={cancelProtection} />}
+              {pendingSave && <div className="mt-3 rounded-lg border border-border p-3 space-y-2" role="status" data-testid="backup-save-confirmation">
+                <p className="text-sm">{label('backup_confirm_saved_help')}</p>
+                <div className="flex flex-wrap gap-2">
+                  <button type="button" className="min-h-[44px] px-3 rounded-md bg-primary text-primary-foreground text-sm font-semibold" data-testid="btn-confirm-backup-saved" onClick={() => {
+                    try {
+                      writeStorage(backupReminderKey(photoScope), confirmedBackupState(photoScope, pendingSave.snapshot, pendingSave.exportedAt));
+                      setPendingSave(null);
+                      toast({ title: label('backup_downloaded') });
+                    } catch { toast({ title: label('settings_not_saved'), variant: 'destructive' }); }
+                  }}>{label('backup_confirm_saved')}</button>
+                  <button type="button" className="min-h-[44px] px-3 rounded-md border border-border text-sm" onClick={() => setPendingSave(null)} data-testid="btn-backup-not-saved">{label('backup_not_saved')}</button>
+                </div>
+              </div>}
             </section>
 
           </div>

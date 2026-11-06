@@ -4,6 +4,17 @@
  * Sentences end with a full stop, never an em-dash.
  */
 export const DICT = {
+  backup_reminder_title: { en: 'Save a fresh backup', ur: 'نیا بیک اپ محفوظ کریں' },
+  backup_reminder_changed: { en: 'Your register has changes not saved in a confirmed backup.', ur: 'آپ کے رجسٹر کی نئی تبدیلیاں تصدیق شدہ بیک اپ میں محفوظ نہیں ہیں۔' },
+  backup_reminder_dismiss: { en: 'Dismiss until the next register change', ur: 'رجسٹر میں اگلی تبدیلی تک یاد دہانی بند کریں' },
+  backup_reminder_option: { en: 'Remind me to back up', ur: 'بیک اپ کی یاد دہانی کریں' },
+  backup_reminder_local: { en: 'Optional, on this phone only. No cloud uploads or external notifications.', ur: 'اختیاری، صرف اس فون پر۔ نہ کلاؤڈ پر اپ لوڈ، نہ بیرونی اطلاعات۔' },
+  backup_last_saved: { en: 'Last confirmed backup: {date}', ur: 'آخری تصدیق شدہ بیک اپ: {date}' },
+  backup_never_saved: { en: 'No backup confirmed on this phone yet.', ur: 'اس فون پر ابھی کسی بیک اپ کی تصدیق نہیں ہوئی۔' },
+  backup_confirm_saved_help: { en: 'Download requested. Check your files, then confirm only if the backup was saved. A cancelled download does not count.', ur: 'ڈاؤن لوڈ کی درخواست ہوگئی۔ اپنی فائلیں دیکھیں اور صرف بیک اپ محفوظ ہونے پر تصدیق کریں۔ منسوخ ڈاؤن لوڈ شمار نہیں ہوگا۔' },
+  backup_confirm_saved: { en: 'I saved the file', ur: 'میں نے فائل محفوظ کرلی' },
+  backup_not_saved: { en: 'Not saved / cancelled', ur: 'محفوظ نہیں ہوئی / منسوخ' },
+  settings_not_saved: { en: 'Could not save this preference. Please try again.', ur: 'یہ ترجیح محفوظ نہیں ہوسکی۔ دوبارہ کوشش کریں۔' },
   language_en: { en: 'English', ur: 'English' },
   language_ur: { en: 'اردو', ur: 'اردو' },
   app_name: { en: 'Darzi Khata', ur: 'درزی کھاتہ' },

@@ -1,5 +1,29 @@
 # Darzi Khata verification
 
+## Local backup reminders, 6 November 2026
+
+- `pnpm --filter @workspace/darzi-khata typecheck`: passed.
+- `pnpm --filter @workspace/darzi-khata test`: 29 core tests and 77 Vitest tests passed.
+  Includes 17 reminder/export regression tests covering opt-in, dismissal,
+  register changes, per-shop/demo isolation, quota rollback, changes during an
+  export, invalid restore, both export formats, interrupted/failed downloads,
+  and the explicit saved-file confirmation boundary.
+- `PORT=24310 BASE_PATH=/ pnpm --filter @workspace/darzi-khata build`: passed.
+  Existing source-map reporting and large-chunk warnings remain.
+- One signed-in browser pass at 390×844 verified reminder opt-in, dismissal
+  across reload, reappearance after an order edit, navigation to the backup
+  section, plain export cancellation/confirmation, encrypted export and
+  passphrase cancellation, local metadata privacy, and English/Urdu RTL layout.
+  No horizontal overflow was observed on the changed backup settings.
+- That browser pass flagged language switching as re-triggering a reminder.
+  Fixed by excluding display preferences from business-register comparisons;
+  the added regression test checks language, theme, font and paper changes,
+  including an in-flight export snapshot. Confirmed by the passing final unit
+  suite above, not a second browser pass.
+- The browser cannot attest that an anchor download reached the owner's files.
+  The interface therefore requires “I saved the file” before updating the last
+  confirmed backup date, and never counts the download request alone.
+
 ## Print, customer isolation and account verification — 6 November 2026
 
 ### Commands and results

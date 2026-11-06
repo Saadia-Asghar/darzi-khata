@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useSyncExternalStore } from 'react';
 import { storage as localStorage } from './storage';
+import { withBackupChanges } from './backup-reminder';
 const EVENT = 'darzi-khata-local-update';
 export function deepFreeze<T>(value: T): T {
   if (value && typeof value === 'object' && !Object.isFrozen(value)) {
@@ -12,12 +13,10 @@ export function notifyStorage(key: string) {
   window.dispatchEvent(new CustomEvent(EVENT, { detail: key }));
 }
 export function writeStorage(key: string, value: unknown) {
-  // Do not swallow quota errors: callers must know their data was not persisted.
-  localStorage.setItem(key, JSON.stringify(value));
-  notifyStorage(key);
+  writeStorageBatch([[key, value]]);
 }
 export function writeStorageBatch(entries: [string,unknown][]) {
-  const next = entries.map(([key,value])=>({key,raw:JSON.stringify(value),previous:localStorage.getItem(key)}));
+  const next = withBackupChanges(entries).map(([key,value])=>({key,raw:JSON.stringify(value),previous:localStorage.getItem(key)}));
   try {
     for(const entry of next)localStorage.setItem(entry.key,entry.raw);
   } catch(error) {
