@@ -1,3 +1,13 @@
+# Local accounts
+
+Darzi Khata accounts are device-only: registration and sign-in work offline on
+this browser, not through a server identity service. A different device needs an
+explicit backup transfer. Keep a protected backup before clearing browser data.
+New passwords use Web Crypto PBKDF2-SHA-256 with a random salt and 210,000
+iterations. Older unsalted password hashes remain readable and are upgraded
+only after a successful password check. Passwords are never saved as plaintext.
+The optional PIN is a local privacy lock, not encryption of the shop register.
+
 # Darzi Khata — درزی کھاتہ
 
 An offline-first, bilingual Pakistani tailor-shop khata with order management,

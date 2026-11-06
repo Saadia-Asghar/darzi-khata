@@ -80,7 +80,7 @@ describe('interpolation', () => {
   it('fills placeholders and uses Urdu digits in Urdu', () => {
     expect(fill('{n} pcs', { n: 3 }, 'en')).toBe('3 pcs');
     expect(fill('{n} جوڑے', { n: 3 }, 'ur')).toBe('۳ جوڑے');
-    expect(bi('when_late', { days: 2 })).toBe('2 din late / ۲ دن تاخیر');
+    expect(bi('when_late', { days: 2 })).toBe('2 din late');
   });
 });
 

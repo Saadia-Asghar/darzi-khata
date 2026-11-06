@@ -39,7 +39,7 @@ export const DICT = {
   qr_demo_alt: { en: 'Demo payment QR, not bank-scannable', ur: 'نمونہ ادائیگی کیو آر، بینک اسکین نہیں کرے گا' },
   qr_future_note: { en: 'Future merchant integration: scan with Zindigi/Raast. This placeholder will not work in banking apps today.', ur: 'یہ نمونہ کیو آر ہے، بینک ایپ میں کام نہیں کرے گا' },
   collar_normal: { en: 'Normal Collar', ur: 'عام کالر' },
-  collar_ban: { en: 'Sherwani/Ban', ur: 'شیروانی / بین' },
+  collar_ban: { en: 'Sherwani/Ban', ur: 'شیروانی یا بین' },
   collar_kurta: { en: 'Kurta Open', ur: 'کرتا کھلا' },
   collar_round: { en: 'Round/Gol Gala', ur: 'گول گلا' },
   daman_square: { en: 'Choras (Square)', ur: 'چورس' },
@@ -190,7 +190,7 @@ export const DICT = {
   d_collected: { en: 'Collected', ur: 'وصول' },
   d_digital_share_all_time: { en: 'Digital share (all time)', ur: 'ڈیجیٹل حصہ' },
   d_on_time_delivery: { en: 'On-time delivery', ur: 'بروقت ترسیل' },
-  m_assalam_o_alaikum_customername_order_ser: { en: 'Assalam o Alaikum {customerName}\nOrder / آرڈر: {serialNumber}\nDelivery / ترسیل: {toLocaleDateString}\nBalance / بقایا: Rs {baqi}\n{shopName}', ur: 'Assalam o Alaikum {customerName}\nOrder / آرڈر: {serialNumber}\nDelivery / ترسیل: {toLocaleDateString}\nBalance / بقایا: Rs {baqi}\n{shopName}' },
+  m_assalam_o_alaikum_customername_order_ser: { en: 'Hello {customerName}\nOrder: {serialNumber}\nDelivery: {toLocaleDateString}\nBalance: Rs {baqi}\n{shopName}', ur: 'السلام علیکم {customerName}\nآرڈر: {serialNumber}\nترسیل: {toLocaleDateString}\nبقایا: Rs {baqi}\n{shopName}' },
   m_copied: { en: 'Copied', ur: 'کاپی ہو گیا' },
   m_copy_failed: { en: 'Copy failed', ur: 'کاپی نہیں ہوا' },
   m_use_whatsapp_button_instead: { en: 'Use WhatsApp button instead.', ur: 'واٹس ایپ بٹن استعمال کریں' },
@@ -233,7 +233,7 @@ export const DICT = {
   m_trusted: { en: 'Trusted', ur: 'قابلِ اعتماد' },
   d_gents_shalwar_kameez: { en: 'Gents Shalwar Kameez', ur: 'مردانہ شلوار قمیض' },
   d_ladies_shirt_kameez: { en: 'Ladies Shirt / Kameez', ur: 'زنانہ قمیض' },
-  d_ladies_trouser_shalwar: { en: 'Ladies Trouser / Shalwar', ur: 'زنانہ شلوار / پاجامہ' },
+  d_ladies_trouser_shalwar: { en: 'Ladies Trouser / Shalwar', ur: 'زنانہ شلوار یا پاجامہ' },
   d_waistcoat: { en: 'Waistcoat', ur: 'واسکٹ' },
   d_pant_shirt: { en: 'Pant–Shirt', ur: 'پینٹ شرٹ' },
   d_kids: { en: 'Kids', ur: 'بچوں کے کپڑے' },
@@ -293,9 +293,9 @@ export const DICT = {
   m_legacy_pin_format_needs_recovery: { en: 'Legacy PIN format needs recovery', ur: 'پرانے پن کی بحالی ضروری ہے' },
   m_your_suit_is_ready: { en: 'Your suit is ready', ur: 'آپ کا سوٹ تیار ہے' },
   m_delivery_tomorrow: { en: 'Delivery tomorrow', ur: 'آپ کے آرڈر کی ترسیل کل ہے' },
-  m_payment_reminder: { en: 'Payment reminder / ادائیگی کی یاد دہانی: Rs {balance} باقی', ur: 'Payment reminder / ادائیگی کی یاد دہانی: Rs {balance} باقی' },
-  m_assalam_o_alaikum_customername_heading_s: { en: 'Assalam o Alaikum {customerName}\n{heading}\n{serialNumber} · {shopName}\nBalance / بقایا: Rs {balance}\n{details}', ur: 'Assalam o Alaikum {customerName}\n{heading}\n{serialNumber} · {shopName}\nBalance / بقایا: Rs {balance}\n{details}' },
-  m_saved_data_cannot_be_read_original_retai: { en: 'Saved data cannot be read; original retained / محفوظ ڈیٹا برقرار ہے ({key})', ur: 'Saved data cannot be read; original retained / محفوظ ڈیٹا برقرار ہے ({key})' },
+  m_payment_reminder: { en: 'Payment reminder: Rs {balance} due', ur: 'ادائیگی کی یاد دہانی: Rs {balance} باقی' },
+  m_assalam_o_alaikum_customername_heading_s: { en: 'Hello {customerName}\n{heading}\n{serialNumber} · {shopName}\nBalance: Rs {balance}\n{details}', ur: 'السلام علیکم {customerName}\n{heading}\n{serialNumber} · {shopName}\nبقایا: Rs {balance}\n{details}' },
+  m_saved_data_cannot_be_read_original_retai: { en: 'Saved data cannot be read; original retained ({key})', ur: 'محفوظ ڈیٹا پڑھا نہیں جا سکتا؛ اصل برقرار ہے ({key})' },
   m_newer_khata_format_update_this_app_befor: { en: 'Newer khata format. Update this app before editing', ur: 'پہلے ایپ اپ ڈیٹ کریں' },
   t_n_deliveries_n_to_collect: { en: '{deliveries} deliveries · {collect} to collect', ur: '{deliveries} ڈیلیوری · {collect} وصول کرنا ہے' },
   t_n_overdue: { en: '{overdue} overdue', ur: '{overdue} تاخیر' },
@@ -529,7 +529,7 @@ export const DICT = {
   clear_demo_data_2: { en: 'Clear demo data?', ur: 'ڈیمو ڈیٹا ختم کریں؟' },
   clear_filters_x: { en: 'Clear filters', ur: 'فلٹر ہٹائیں' },
   close: { en: 'Close', ur: 'بند کریں' },
-  collar: { en: 'Collar', ur: 'کالر / گلا' },
+  collar: { en: 'Collar', ur: 'کالر یا گلا' },
   collected: { en: 'Collected', ur: 'وصول شدہ' },
   collected_2: { en: 'Collected', ur: 'وصول' },
   collection_progress: { en: 'Collection progress', ur: 'وصولی' },
@@ -722,7 +722,7 @@ export const DICT = {
   price_each_rs: { en: 'Price each (Rs)', ur: 'فی کپڑا قیمت' },
   price_rs: { en: 'Price (Rs)', ur: 'قیمت' },
   print: { en: 'Print', ur: 'پرنٹ' },
-  print_save_pdf: { en: 'Print / save PDF', ur: 'پرنٹ / PDF محفوظ کریں' },
+  print_save_pdf: { en: 'Print / save PDF', ur: 'پرنٹ یا PDF محفوظ کریں' },
   production_work_sheet: { en: 'Production work sheet', ur: 'کام کی شیٹ' },
   profile_name: { en: 'Profile name', ur: 'پروفائل کا نام' },
   quantity: { en: 'Quantity', ur: 'تعداد' },
@@ -821,7 +821,7 @@ export const DICT = {
   valid_phone_required: { en: 'Valid phone required', ur: 'درست فون نمبر' },
   whatsapp_number: { en: 'WhatsApp number', ur: 'واٹس ایپ نمبر' },
   whatsapp_receipt: { en: 'WhatsApp receipt', ur: 'واٹس ایپ پرچی' },
-  whatsapp_share: { en: 'WhatsApp / Share', ur: 'واٹس ایپ / شیئر' },
+  whatsapp_share: { en: 'WhatsApp / Share', ur: 'واٹس ایپ پر بھیجیں' },
   woman_led_home_business_each_recorded_or: { en: 'Woman-led home business: each recorded order adds to a documented income history.', ur: 'خاتون کا گھریلو کاروبار: ہر آرڈر آمدن کا ریکارڈ بناتا ہے' },
   write_first_order: { en: 'Write first order', ur: 'پہلا آرڈر لکھیں' },
   write_the_first_order_or_try_the_app_wit: { en: 'Write the first order, or try the app with sample orders.', ur: 'پہلا آرڈر لکھیں یا نمونہ ڈیٹا سے آزمائیں' },
@@ -861,8 +861,8 @@ function joined(k: DictKey, vars: Vars | undefined, urduFirst: boolean) {
   const e = fill(DICT[k].en, vars, 'en'), u = fill(DICT[k].ur, vars, 'ur');
   return e === u ? e : pair(e, u, urduFirst);
 }
-/** Fixed "English / اردو" text from the dictionary (stable format for errors and stored text). */
-export function bi(k: DictKey, vars?: Vars) { return joined(k, vars, false); }
+/** Compatibility alias: errors and domain labels use only the selected language. */
+export function bi(k: DictKey, vars?: Vars) { return tl(k, vars); }
 /** Selected-language text for code outside the usePreferences hook. */
 export function tl(k: DictKey, vars?: Vars) { return fill(DICT[k][currentLang], vars, currentLang); }
 

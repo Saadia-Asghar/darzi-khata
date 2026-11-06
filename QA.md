@@ -1,5 +1,97 @@
 # Darzi Khata verification
 
+## Print, customer isolation and account verification — 6 November 2026
+
+### Commands and results
+
+Run TypeScript and Vitest from `artifacts/darzi-khata`:
+
+```text
+$ npx tsc --noEmit
+(no output; exit 0)
+
+$ pnpm vitest run
+Test Files  6 passed (6)
+     Tests  67 passed (67)
+```
+
+Includes `i18n.test.ts`, customer/migration regressions, password/deep-freeze,
+offline storage, design-source rules and protected-backup compatibility tests.
+The separate finance runner passed 29 tests. The production PWA build passed.
+
+Before fixes, `e2e/bug-regressions.spec.ts` produced:
+
+```text
+3 failed
+  BUG 1: print isolates the complete receipt and exports one A4 page
+  BUG 2: editing customer A never renames or changes customer B
+  BUG 3: customer validation contains only the chosen language
+```
+
+The initial unit regressions also failed all four checks (customer ID priority,
+detached nested data, and selected-language errors in English and Urdu).
+An additional invalid-phone migration test first failed, then passed after
+removing invalid contact numbers from legacy matching.
+
+Final verification covers **46 distinct passing Playwright scenarios and one
+intentional skip**, across the main run and focused reruns. The main run had
+36 passes, one development-only skip, and two outdated test assertions:
+the demo test needed to wait for onboarding, and history now navigates by
+customer ID instead of a phone. Both corrected assertions passed in the final
+three-test rerun, along with the full customer-edit/template/quick-order flow.
+The eight additional team/reminder/share scenarios all passed. No passing
+unrelated scenarios were rerun solely to replace the earlier log.
+
+### Walk-through table
+
+Mobile matrix: **360×800 and 390×844 × English/Urdu × light/dark**.
+All eight combinations passed layout, minimum 12px text, selected-language
+copy and dialog-height checks. Eight further matrix scenarios monitored browser
+console errors and uncaught exceptions and exercised team/reminder/share actions.
+
+| Screen | Controls / behavior verified | Works | Fixed |
+| --- | --- | --- | --- |
+| Login/signup | Required fields, bad email, short password, mismatch, duplicate email, signup, password eye | Yes | Salted PBKDF2 passwords; signup validation; fresh account opens at home |
+| Session | Right/wrong password, reload, logout, A/B accounts, demo login | Yes | Preserve legacy hashes until verified login, then upgrade; keep account namespaces separate |
+| Account data | Orders, customers, photo display, templates, settings and demo separation | Yes | Test A's data remains available after B/demo; no A records or photos displayed in B |
+| PIN | Set, reload, wrong/right PIN, fifth-failure lockout, timer, Lock now | Yes | Existing behavior retained and tested |
+| Orders | Search/filter/status, receipt, edit, payment, delete confirmation, undo | Yes | Retained existing order actions; customer links now use IDs |
+| Full order | Four steps, next/back, garment types/items, measure +/- buttons, style, bill, save/reload | Yes | Detached item and legacy measurements; only one measurement-label language |
+| Templates | Name dialog, save, select from list, apply measurements and styles | Yes | Replaced native prompts; copy measurements rather than retain live references |
+| Quick order | Pick a saved customer/profile, choose garment, price/date, save | Yes | Lookup by selected customer ID; detached measurement objects |
+| Customers | Search, editor, history, quick order | Yes | ID-based association even for identical normalized phones |
+| Customer editor | Name, notes, profile add/edit, measurements, save/validation | Yes | Deep-copy draft; duplicate phone no longer redirects edits to another customer |
+| Customer history | Open by ID, copy measurements into a new order | Yes | Distinct histories for customers sharing a phone; legacy phone URLs remain readable |
+| Parchi | Open/close, A4/58/80 paper choice, WhatsApp text/URL, QR | Yes | Shared isolated print root; no dashboard underneath or clipped modal |
+| Print/PDF | Full A4 receipt, 58/80mm roll width, QR, Urdu RTL/font, afterprint cleanup | Yes | One-page PDF assertions for the standard A4 receipt and four English/Urdu thermal cases |
+| Work sheet | Open, print, return to screen | Yes | Same print helper; handles page-mode region as well as modal mode |
+| Payments | Full amount, cash/Zindigi/Raast/bank selection, partial/full save, history | Yes | Payment-method controls/history show only the selected language |
+| Credit | Empty/scored states, consent, create profile, isolated print | Yes | Same print helper; selected-language shop type |
+| Impact | Metrics, chart/table, scroll | Yes | Removed bilingual shop-type summary |
+| Reminders | Payment reminder button and generated WhatsApp intent | Yes | Selected-language button and reminder text |
+| Team/karigar | Activity/add/invite tabs, copy/share invite, confirm removal, search/relink member | Yes | Retained team functions; karigar logout uses AlertDialog instead of confirm |
+| More | Tool navigation, share, logout, language controls | Yes | Existing navigation preserved; no duplicated helper copy |
+| Settings | Save/reopen, language/theme, receipt preview, PIN, plain/protected backups | Yes | Preview follows selected language; all stored settings remain scoped |
+| Error/recovery | Selected-language error fallback, development freeze guard | Yes | Removed bilingual error fallback; nested mutation throws under development guard |
+
+Print is verified with emulated print media, screenshots and Chromium PDFs,
+not by controlling the operating system's print window. Share/clipboard and
+WhatsApp intents are intercepted in isolated test browsers: no message is sent
+and no real phone call is made. Voice recognition, native share sheets,
+camera hardware and an installed WhatsApp application are not device-tested.
+The QR remains explicitly a non-bank-scannable demo placeholder.
+
+### Evidence
+
+All raw failing/passing logs and printable screenshots/PDF are in the ignored
+`generated-artifacts/bugs/` directory. The downloadable verification report
+embeds those logs and print screenshots. Original business data was not cleared;
+browser tests used isolated contexts and synthetic records.
+
+---
+
+## Earlier verification history
+
 ## Latest evidence: build 1.4.0+20261106110943Z
 
 Measured on 6 November 2026, 11:10 UTC, against the production build:

@@ -19,6 +19,7 @@ import { GARMENTS, garment, defaultMeasurements, LEGACY_MEASUREMENTS, newItem, i
 import { normalizePakistaniPhone } from '../lib/reminders';
 import { MeasurementDiagram } from './measurement-diagram';
 import { FabricPhotoPicker } from './fabric-photo';
+import { Dialog as ListDialog, DialogContent as ListContent, DialogTitle as ListTitle, DialogDescription as ListDescription } from './page-dialog';
 
 /** 03XXXXXXXXX, 923XXXXXXXXX or +92 3XX XXXXXXX. */
 export function isPakistaniMobile(v: string) {
@@ -99,7 +100,6 @@ function MeasureField({ fieldKey, tk, value, active, onFocus, onChange }: {
     <div className={`flex items-center justify-between gap-2 py-1.5 px-2 -mx-2 rounded-lg transition-colors ${active ? 'bg-warning-soft ' : ''}`}>
       <label htmlFor={`m-${fieldKey}`} className="flex flex-col min-w-0">
         <span className={`text-sm font-semibold ${urduFirst ? 'font-urdu' : ''}`} lang={urduFirst ? 'ur' : 'en'}>{urduFirst ? ur : en}</span>
-        <span className={`text-sm text-muted-foreground ${urduFirst ? '' : 'font-urdu'}`} lang={urduFirst ? 'en' : 'ur'} dir={urduFirst ? 'ltr' : 'rtl'}>{urduFirst ? en : ur}</span>
       </label>
       <div className="flex items-center gap-1 bg-muted rounded-lg border border-border p-0.5 shrink-0" dir="ltr">
         <button type="button" onClick={() => step(-0.5)} className="w-11 h-11 flex items-center justify-center bg-card rounded-md border border-border active:bg-muted" aria-label={label('t_decrease_n', { fieldEn: en, fieldUr: ur })}><Minus size={16} /></button>
@@ -137,6 +137,8 @@ export function OrderForm({ open, onOpenChange, order, prefill, onSave }: OrderF
   const [activeField, setActiveField] = useState<string>();
   const [photoId, setPhotoId] = useState<string | undefined>(order?.fabricPhotoId ?? prefill?.fabricPhotoId);
   const [itemsError, setItemsError] = useState<string>();
+  const [templateMode, setTemplateMode] = useState<'save' | 'load' | null>(null);
+  const [templateName, setTemplateName] = useState('');
 
   const [step, setStep] = useState(0);
   const { register, handleSubmit, control, reset, watch, setError, trigger, getValues, formState: { errors } } = useForm<FormInput, unknown, FormValues>({
@@ -167,22 +169,21 @@ export function OrderForm({ open, onOpenChange, order, prefill, onSave }: OrderF
 
   const handleSaveTemplate = () => {
     if (current.garmentType !== 'gents') return;
-    const name = window.prompt(label('t_template_name_e_g_standard_large'));
-    if (!name) return;
+    setTemplateName(''); setTemplateMode('save');
+  };
+  const saveNamedTemplate = () => {
+    const name = templateName.trim();
+    if (!name || !current) return;
     const vals = watch();
-    addTemplate({ name, measurements: current.measurements as unknown as Measurements, collarType: vals.collarType, damanType: vals.damanType, pockets: vals.pockets, cuffType: vals.cuffType });
+    addTemplate({ name, measurements: { ...current.measurements } as unknown as Measurements, collarType: vals.collarType, damanType: vals.damanType, pockets: vals.pockets, cuffType: vals.cuffType });
+    setTemplateMode(null);
     toast({ title: label('template_saved') });
   };
 
   const handleLoadTemplate = () => {
     if (current.garmentType !== 'gents') return;
     if (templates.length === 0) { toast({ title: label('no_templates_yet_save_one_first') }); return; }
-    const choice = window.prompt(`${label('template_number')}:\n\n${templates.map((t, i) => `${i + 1}. ${t.name}`).join('\n')}`);
-    if (!choice) return;
-    const t = templates[parseInt(choice, 10) - 1];
-    if (!t) { toast({ title: label('wrong_number'), variant: 'destructive' }); return; }
-    patchItem(activeItem, { measurements: { ...(t.measurements as unknown as Record<string, number>) } });
-    toast({ title: label('template_loaded'), description: t.name });
+    setTemplateMode('load');
   };
 
   const deliveryInPast = (v: string) => {
@@ -209,7 +210,7 @@ export function OrderForm({ open, onOpenChange, order, prefill, onSave }: OrderF
 
   const onSubmit = (data: FormValues) => {
     if (deliveryInPast(data.deliveryDate)) { setError('deliveryDate', { message: label('k_delivery_past') }); setStep(0); return; }
-    const clean = items.map((i) => ({ ...i, quantity: Math.round(Number(i.quantity)), unitPrice: Number(i.unitPrice) }));
+    const clean = items.map((i) => ({ ...structuredClone(i), quantity: Math.round(Number(i.quantity)), unitPrice: Number(i.unitPrice) }));
     try { validateItems(clean); setItemsError(undefined); }
     catch (e) { setItemsError(e instanceof Error ? e.message : label('k_check_garments')); setStep(1); return; }
     const totalAmount = itemsTotal(clean);
@@ -224,9 +225,7 @@ export function OrderForm({ open, onOpenChange, order, prefill, onSave }: OrderF
     const gents = clean.find((i) => i.garmentType === 'gents');
     const legacy = (gents?.measurements as unknown as Measurements) ?? order?.measurements ?? prefill?.measurements ?? LEGACY_MEASUREMENTS;
 
-    const norm = normalizePakistaniPhone(data.phone);
-    const customerId = customers.find(c => normalizePakistaniPhone(c.phone) === norm)?.id
-      ?? (order && normalizePakistaniPhone(order.phone) === norm ? order.customerId : undefined);
+    const customerId = order?.customerId ?? prefill?.customerId ?? crypto.randomUUID();
     // New customers are created atomically with the order by useOrders.
 
     try {
@@ -237,7 +236,7 @@ export function OrderForm({ open, onOpenChange, order, prefill, onSave }: OrderF
         totalAmount,
         suitCount: clean.reduce((s, i) => s + i.quantity, 0),
         items: clean,
-        measurements: legacy,
+        measurements: { ...legacy },
         customerId,
         fabricPhotoId: photoId,
         orderDate: new Date(data.orderDate).toISOString(),
@@ -257,6 +256,7 @@ export function OrderForm({ open, onOpenChange, order, prefill, onSave }: OrderF
   const activeMeta = g.fields.find((f) => f.key === activeField);
 
   return (
+    <>
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-foreground/60 z-50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
@@ -474,5 +474,20 @@ export function OrderForm({ open, onOpenChange, order, prefill, onSave }: OrderF
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
+    <ListDialog open={templateMode !== null} onOpenChange={v => { if (!v) setTemplateMode(null); }}>
+      <ListContent className="max-w-md max-h-[85dvh] overflow-y-auto">
+        <ListTitle>{label(templateMode === 'save' ? 'save_template' : 'load_template')}</ListTitle>
+        <ListDescription>{label('t_template_name_e_g_standard_large')}</ListDescription>
+        {templateMode === 'save' ? <>
+          <input autoFocus aria-label={label('t_template_name_e_g_standard_large')} value={templateName} onChange={e => setTemplateName(e.target.value)} className={inputCls} data-testid="input-template-name" />
+          <button type="button" onClick={saveNamedTemplate} disabled={!templateName.trim()} className="min-h-[48px] rounded-lg bg-primary text-primary-foreground disabled:opacity-40" data-testid="btn-save-named-template">{label('save')}</button>
+        </> : templates.map(t => <button type="button" key={t.id} className="min-h-[48px] rounded-lg border border-border px-3 text-start" data-testid={`template-${t.id}`} onClick={() => {
+          patchItem(activeItem, { measurements: { ...t.measurements } });
+          reset({ ...getValues(), collarType: t.collarType ?? getValues('collarType'), damanType: t.damanType ?? getValues('damanType'), pockets: t.pockets ?? getValues('pockets'), cuffType: t.cuffType ?? getValues('cuffType') });
+          setTemplateMode(null); toast({ title: label('template_loaded'), description: t.name });
+        }}>{t.name}</button>)}
+      </ListContent>
+    </ListDialog>
+    </>
   );
 }

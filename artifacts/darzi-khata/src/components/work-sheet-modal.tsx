@@ -5,6 +5,7 @@ import * as Dialog from './page-dialog';
 import { X, Printer, ClipboardList, AlertTriangle } from 'lucide-react';
 import { Order } from '../types/order';
 import { useSettings } from '../hooks/use-settings';
+import { printElement } from '../lib/print';
 
 interface WorkSheetModalProps {
   open: boolean;
@@ -106,7 +107,7 @@ export function WorkSheetModal({ open, onOpenChange, orders }: WorkSheetModalPro
             </div>
             <div className="flex items-center gap-2 print:hidden">
               <button
-                onClick={() => window.print()}
+                onClick={(event) => void printElement(event.currentTarget.closest('[role="dialog"], [role="region"]') as HTMLElement, { paper: 'a4' })}
                 className="flex items-center gap-2 px-4 min-h-[44px] bg-card/10 hover:bg-card/20 rounded-lg text-sm font-bold transition-colors"
               >
                 <Printer size={16} aria-hidden /> {label('print')}

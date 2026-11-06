@@ -19,11 +19,11 @@ export function CustomerEditor({ customer, onClose }: { customer: Customer | nul
   const { saveCustomer } = useCustomers();
   const { label } = usePreferences();
   const { toast } = useToast();
-  const [draft, setDraft] = useState<Customer | null>(customer);
+  const [draft, setDraft] = useState<Customer | null>(() => customer ? structuredClone(customer) : null);
   const [openProfile, setOpenProfile] = useState<string | null>(null);
   const [focusKey, setFocusKey] = useState<string>();
   const [err, setErr] = useState<string>();
-  useEffect(() => { setDraft(customer); setErr(undefined); setOpenProfile(null); }, [customer]);
+  useEffect(() => { setDraft(customer ? structuredClone(customer) : null); setErr(undefined); setOpenProfile(null); }, [customer]);
   if (!draft) return null;
 
   const patchProfile = (id: string, p: Partial<MeasurementProfile>) => setDraft({ ...draft, profiles: draft.profiles.map((x) => x.id === id ? { ...x, ...p } : x) });

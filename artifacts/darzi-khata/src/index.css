@@ -384,6 +384,24 @@ input:not([type='checkbox']):not([type='radio']), textarea, select { font-size: 
 #dk-print-root { display: none; }
 :root { --dk-paper: 80mm; }
 @media print {
+  html, body { height: auto !important; min-width: 0 !important; overflow: visible !important; background: white !important; }
+  #dk-print-root { font-size: 14px; line-height: 1.5; }
+  #dk-print-root [role="dialog"], #dk-print-root > div > div {
+    position: static !important; inset: auto !important; transform: none !important;
+    translate: none !important; width: 100% !important; max-width: none !important;
+  }
+  #dk-print-root *, #dk-print-root [role="dialog"] {
+    max-height: none !important; overflow: visible !important; box-shadow: none !important;
+    animation: none !important;
+  }
+  #dk-print-root .print-paper { width: 100% !important; max-width: none !important; background: white !important; padding: 12px !important; }
+  #dk-print-root[data-paper="a4"] { width: 180mm; margin: 0 auto; }
+  #dk-print-root[data-paper="58mm"] { width: 54mm; }
+  #dk-print-root[data-paper="80mm"] { width: 76mm; }
+  #dk-print-root img { break-inside: avoid; }
+  #dk-print-root table { min-width: 0 !important; width: 100% !important; table-layout: fixed; }
+  #dk-print-root th, #dk-print-root td { overflow-wrap: anywhere; }
+  #dk-print-root .bg-primary { background: white !important; }
   body.dk-printing > *:not(#dk-print-root) { display: none !important; }
   body.dk-printing #dk-print-root { display: block !important; }
   body.dk-printing, .print-paper { background: #fff !important; }
@@ -395,9 +413,6 @@ input:not([type='checkbox']):not([type='radio']), textarea, select { font-size: 
 @media print { body[data-paper='58'] .print-paper { width: 54mm !important; max-width: 54mm !important; font-size: 12px; } }
 @media print { body[data-paper='80'] .print-paper { width: 76mm !important; max-width: 76mm !important; font-size: 12px; } }
 @media print { body[data-paper='a4'] .print-paper { width: 100% !important; max-width: 180mm !important; } }
-@page dk58 { size: 58mm auto; margin: 2mm; }
-@page dk80 { size: 80mm auto; margin: 2mm; }
-@media print { body[data-paper='58'] { page: dk58; } body[data-paper='80'] { page: dk80; } }
 
 /* Motion: 150-200ms ease-out only. */
 @keyframes dk-rise { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }

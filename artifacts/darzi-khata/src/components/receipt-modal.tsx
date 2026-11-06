@@ -16,6 +16,7 @@ import { useDemoMode } from '../hooks/use-demo-mode';
 import { useToast } from '@/hooks/use-toast';
 import { balance, buildPaymentPayload, paymentDetailsText } from '../lib/payments';
 import { normalizePakistaniPhone } from '../lib/reminders';
+import { printElement } from '../lib/print';
 
 interface ReceiptModalProps {
   open: boolean;
@@ -218,7 +219,7 @@ export function ReceiptModal({ open, onOpenChange, order }: ReceiptModalProps) {
           {/* Action Buttons - Hidden in Print */}
           <div className="bg-card p-4 border-t rounded-b-lg flex gap-2 print:hidden sticky bottom-0">
             <button 
-              onClick={() => window.print()}
+              onClick={() => void printElement(document.getElementById('receipt-print-area'), { paper: paperSize === 'a4' ? 'a4' : `${paperSize}mm` })}
               className="flex-1 flex flex-col items-center justify-center min-h-[48px] py-2 bg-muted hover:bg-muted text-foreground rounded-lg transition-colors"
               data-testid="btn-print-receipt"
             >

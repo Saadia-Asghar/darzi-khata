@@ -6,6 +6,7 @@ import { useAuthContext } from '../context/auth-context';
 import { OrderChatModal } from './order-chat-modal';
 import { Order, OrderStatus } from '../types/order';
 import { OrderComment } from '../types/order';
+import { AlertDialog, AlertDialogContent, AlertDialogTitle, AlertDialogDescription, AlertDialogCancel, AlertDialogAction, AlertDialogFooter } from './ui/alert-dialog';
 import {
   Scissors, MessageCircle, LogOut, CheckCircle2, Clock, AlertCircle,
   CalendarClock, User, Package, Search,
@@ -18,9 +19,8 @@ export function KarigarDashboard() {
   const [search, setSearch] = useState('');
   const [chatOrder, setChatOrder] = useState<Order | null>(null);
 
-  const handleLogout = () => {
-    if (window.confirm(label('log_out_2'))) logout();
-  };
+  const [confirmLogout, setConfirmLogout] = useState(false);
+  const handleLogout = () => setConfirmLogout(true);
 
   // Only show orders assigned to this karigar (match by name)
   const myOrders = useMemo(() => {
@@ -230,6 +230,12 @@ export function KarigarDashboard() {
         )}
       </main>
 
+      <AlertDialog open={confirmLogout} onOpenChange={setConfirmLogout}>
+        <AlertDialogContent><AlertDialogTitle>{label('log_out_2')}</AlertDialogTitle>
+          <AlertDialogDescription>{label('log_out_2')}</AlertDialogDescription>
+          <AlertDialogFooter><AlertDialogCancel>{label('cancel_x')}</AlertDialogCancel><AlertDialogAction onClick={logout}>{label('log_out_2')}</AlertDialogAction></AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       <OrderChatModal
         order={chatOrder ? orders.find((o) => o.id === chatOrder.id) ?? null : null}
         onClose={() => setChatOrder(null)}

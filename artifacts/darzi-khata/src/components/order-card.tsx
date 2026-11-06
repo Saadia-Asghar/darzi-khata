@@ -41,7 +41,7 @@ export function OrderCard({ order, onEdit, onDelete, onViewReceipt, onStatusChan
         <FabricThumb id={order.fabricPhotoId} size={44} />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1 min-w-0">
-            <button onClick={() => onCustomerClick(order.phone)} className="min-h-[32px] min-w-0 text-lg font-semibold text-foreground text-start [overflow-wrap:anywhere] hover:underline underline-offset-4" data-testid={`btn-customer-${order.id}`}>
+            <button onClick={() => onCustomerClick(order.customerId ?? order.phone)} className="min-h-[32px] min-w-0 text-lg font-semibold text-foreground text-start [overflow-wrap:anywhere] hover:underline underline-offset-4" data-testid={`btn-customer-${order.id}`}>
               {order.customerName}
             </button>
             {order.serialNumber && <span dir="ltr" className="num text-sm text-muted-foreground whitespace-nowrap">{order.serialNumber}</span>}

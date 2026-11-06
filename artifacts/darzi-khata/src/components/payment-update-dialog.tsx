@@ -100,7 +100,7 @@ export function PaymentUpdateDialog({ order, open, onOpenChange }: PaymentUpdate
                 return (
                   <button key={m} type="button" aria-pressed={on} onClick={() => setMethod(m)}
                     className={`min-h-[56px] rounded-lg border flex flex-col items-center justify-center gap-0.5 text-xs font-bold transition ${on ? 'bg-primary text-primary-foreground border-primary' : 'bg-card border-border text-foreground hover:bg-muted'}`} data-testid={`btn-method-${m}`}>
-                    <Icon size={16} />{METHOD_META[m].en}<span className="font-urdu font-normal text-xs" lang="ur" dir="rtl">{METHOD_META[m].ur}</span>
+                    <Icon size={16} />{tl(METHOD_META[m].tk)}
                   </button>
                 );
               })}
@@ -136,7 +136,7 @@ export function PaymentUpdateDialog({ order, open, onOpenChange }: PaymentUpdate
                 {[...history].reverse().map((p) => (
                   <li key={p.id} className="flex items-center justify-between px-3 py-2 text-sm bg-card">
                     <span className="flex flex-col">
-                      <span className="font-semibold">{METHOD_META[p.method] ? `${METHOD_META[p.method].en} / ${METHOD_META[p.method].ur}` : p.method} {p.demo && <span className="ml-1 text-xs bg-warning-soft text-warning px-1.5 rounded">{tl('j_demo')}</span>}</span>
+                      <span className="font-semibold">{METHOD_META[p.method] ? tl(METHOD_META[p.method].tk) : p.method} {p.demo && <span className="ml-1 text-xs bg-warning-soft text-warning px-1.5 rounded">{tl('j_demo')}</span>}</span>
                       <span className="text-xs text-muted-foreground">{new Date(p.date).toLocaleDateString()}</span>
                     </span>
                     <span className="font-mono font-bold text-primary ">Rs {p.amount.toLocaleString()}</span>

@@ -1,4 +1,4 @@
-import { entry, tl } from '../lib/i18n';
+import { entry, tl, type DictKey } from '../lib/i18n';
 import { MessageCircle } from 'lucide-react';
 import { Order } from '../types/order';
 import { useSettings } from '../hooks/use-settings';
@@ -16,7 +16,7 @@ export function reminderKinds(order: Order, now = new Date()): ReminderKind[] {
   return kinds;
 }
 
-const LABEL: Record<ReminderKind, { en: string; ur: string }> = {
+const LABEL: Record<ReminderKind, { tk: DictKey; en: string; ur: string }> = {
   ready: { ...entry('d_ready') },
   payment: { ...entry('d_payment') },
   tomorrow: { ...entry('d_tomorrow') },
@@ -49,7 +49,7 @@ export function ReminderButtons({ order, compact = false }: { order: Order; comp
           className={`min-h-[44px] inline-flex items-center gap-1.5 rounded-lg border border-border  bg-primary-soft/70  text-primary  hover:bg-primary-soft  active:scale-[0.97] transition px-3 text-sm font-bold ${compact ? 'flex-1 justify-center' : ''}`}
           data-testid={`btn-remind-${k}-${order.id}`}>
           <MessageCircle size={14} />
-          <span>{LABEL[k].en}</span><span className="font-urdu font-normal" lang="ur" dir="rtl">{LABEL[k].ur}</span>
+          <span>{tl(LABEL[k].tk)}</span>
         </button>
       ))}
     </div>

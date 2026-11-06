@@ -263,8 +263,7 @@ export function SettingsModal({ open, onOpenChange, orders }: SettingsModalProps
                 <div className="text-xs  font-bold text-primary   mb-2">{label('receipt_preview')}</div>
                 <div className="text-center border-2 border-dashed border-border  p-3 bg-card dark:bg-card rounded">
                   <Scissors size={18} className="mx-auto mb-1 text-primary " />
-                  <div className="font-bold text-base   text-foreground">{formData.shopName || 'Shop Name'}</div>
-                  <div className="font-urdu text-sm text-foreground" lang="ur" dir="rtl">{formData.shopNameUrdu || DICT.shop_name_ur_placeholder.ur}</div>
+                  <div className="font-bold text-base text-foreground">{urduFirst ? (formData.shopNameUrdu || DICT.shop_name_ur_placeholder.ur) : (formData.shopName || label('auth_shop_name'))}</div>
                 </div>
               </div>
             </section>

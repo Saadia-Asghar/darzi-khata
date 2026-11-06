@@ -1,6 +1,13 @@
 import { useCallback, useMemo, useSyncExternalStore } from 'react';
 import { storage as localStorage } from './storage';
 const EVENT = 'darzi-khata-local-update';
+export function deepFreeze<T>(value: T): T {
+  if (value && typeof value === 'object' && !Object.isFrozen(value)) {
+    for (const child of Object.values(value)) deepFreeze(child);
+    Object.freeze(value);
+  }
+  return value;
+}
 export function notifyStorage(key: string) {
   window.dispatchEvent(new CustomEvent(EVENT, { detail: key }));
 }
@@ -37,7 +44,10 @@ export function useStoredValue<T>(key: string, fallback: T): T {
     };
   }, []);
   const snapshot = useSyncExternalStore(subscribe, () => localStorage.getItem(key), () => null);
-  return useMemo(() => snapshot === null ? fallback : JSON.parse(snapshot) as T, [snapshot, fallback]);
+  return useMemo(() => {
+    const value = snapshot === null ? structuredClone(fallback) : JSON.parse(snapshot) as T;
+    return import.meta.env.DEV ? deepFreeze(value) : value;
+  }, [snapshot, fallback]);
 }
 
 // Transfer the pre-account register together, regardless of which hook mounts first.

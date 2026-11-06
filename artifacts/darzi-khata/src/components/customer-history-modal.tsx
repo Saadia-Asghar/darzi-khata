@@ -5,6 +5,7 @@ import { Order } from '../types/order';
 import { StatusBadge } from './status-meta';
 import { FabricThumb } from './fabric-photo';
 import { garment } from '../lib/garments';
+import { customerKey } from '../lib/migrations';
 
 interface CustomerHistoryModalProps {
   phone: string | null;
@@ -17,9 +18,11 @@ export function CustomerHistoryModal({ phone, onClose, orders, onCopyMeasurement
   const { label } = usePreferences();
   if (!phone) return null;
 
-  // Find all orders for this phone, sorted newest first
+  // Older bookmarks encoded the phone used to construct a legacy import ID.
+  // Resolve that ID without grouping distinct modern customers by contact number.
+  const customerId = orders.some(o => o.customerId === phone) ? phone : customerKey(phone, phone);
   const customerOrders = orders
-    .filter(o => o.phone === phone)
+    .filter(o => o.customerId === customerId)
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   if (customerOrders.length === 0) return null;
@@ -38,7 +41,7 @@ export function CustomerHistoryModal({ phone, onClose, orders, onCopyMeasurement
             <div>
               <Dialog.Title className="text-xl font-bold text-foreground">{customerName}</Dialog.Title>
               <div className="flex items-center text-primary text-sm font-mono mt-1 gap-1.5 font-semibold">
-                <Phone size={14} /> {phone}
+                <Phone size={14} /> {customerOrders[0].phone}
               </div>
             </div>
             <Dialog.Close asChild>

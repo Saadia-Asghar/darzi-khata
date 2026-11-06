@@ -19,9 +19,8 @@ export function CustomersPanel({ orders, onHistory, onQuickOrder }: { orders: Or
   const rows = useMemo<Row[]>(() => {
     const map = new Map<string, Row>();
     for (const c of customers) map.set(c.id, { customer: c, name: c.name, phone: c.phone, orders: 0, due: 0 });
-    const byPhone = new Map(customers.map((c) => [normalizePakistaniPhone(c.phone), c.id]));
     for (const o of orders) {
-      const key = (o.customerId && map.has(o.customerId)) ? o.customerId : byPhone.get(normalizePakistaniPhone(o.phone)) ?? `phone:${normalizePakistaniPhone(o.phone)}`;
+      const key = o.customerId ?? `order:${o.id}`;
       const r = map.get(key) ?? { name: o.customerName, phone: o.phone, orders: 0, due: 0 };
       r.orders += 1; r.due += balance(o);
       if (!r.last || o.orderDate > r.last) r.last = o.orderDate;
@@ -64,7 +63,7 @@ export function CustomersPanel({ orders, onHistory, onQuickOrder }: { orders: Or
               </div>
               <div className="grid grid-cols-3 gap-1.5 mt-2">
                 <button onClick={() => setEditing(r.customer ?? emptyCustomer(r.name, r.phone))} className="min-h-[64px] py-2 px-1 rounded-md bg-muted text-sm font-medium flex flex-col items-center justify-center gap-1" aria-label={r.customer ? label('edit') : label('save')} data-testid="btn-edit-customer"><Pencil size={20} aria-hidden /> {r.customer ? one('edit') : one('save')}</button>
-                <button onClick={() => onHistory(r.phone)} disabled={r.orders === 0} className="min-h-[64px] py-2 px-1 rounded-md bg-muted text-sm font-medium flex flex-col items-center justify-center gap-1 disabled:opacity-40" aria-label={label('history')} data-testid="btn-customer-history"><History size={20} aria-hidden /> {one('history')}</button>
+                <button onClick={() => onHistory(r.customer?.id ?? r.phone)} disabled={r.orders === 0} className="min-h-[64px] py-2 px-1 rounded-md bg-muted text-sm font-medium flex flex-col items-center justify-center gap-1 disabled:opacity-40" aria-label={label('history')} data-testid="btn-customer-history"><History size={20} aria-hidden /> {one('history')}</button>
                 <button onClick={() => onQuickOrder(r.customer ?? emptyCustomer(r.name, r.phone))} className="min-h-[64px] py-2 px-1 rounded-md bg-accent text-accent-foreground text-sm font-medium flex flex-col items-center justify-center gap-1" aria-label={label('quick_order_x')} data-testid="btn-customer-quick"><Zap size={20} aria-hidden /> {one('quick_order_x')}</button>
               </div>
             </li>

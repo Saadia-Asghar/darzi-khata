@@ -23,7 +23,7 @@ export const GARMENTS: { value: GarmentType; tk: DictKey; en: string; ur: string
 ];
 export const garment = (type: GarmentType) => GARMENTS.find(g => g.value === type) || GARMENTS[0];
 export const defaultMeasurements = (type: GarmentType) => Object.fromEntries(garment(type).fields.map(f => [f.key, f.default]));
-export const LEGACY_MEASUREMENTS = defaultMeasurements('gents') as unknown as Measurements;
+export const LEGACY_MEASUREMENTS = Object.freeze(defaultMeasurements('gents')) as unknown as Measurements;
 export function newItem(type: GarmentType = 'gents'): OrderItem {
   return { id: crypto.randomUUID(), garmentType: type, quantity: 1, unitPrice: 1500, measurements: defaultMeasurements(type) };
 }

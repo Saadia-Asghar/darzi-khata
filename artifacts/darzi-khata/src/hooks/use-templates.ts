@@ -39,7 +39,7 @@ export function useTemplates() {
   }, [STORAGE_KEY]);
 
   const addTemplate = useCallback((template: Omit<MeasurementTemplate, 'id' | 'createdAt'>) => {
-    saveTemplates([{ ...template, id: crypto.randomUUID(), createdAt: new Date().toISOString() }, ...templates]);
+    saveTemplates([{ ...structuredClone(template), id: crypto.randomUUID(), createdAt: new Date().toISOString() }, ...templates]);
   }, [templates, saveTemplates]);
 
   const deleteTemplate = useCallback((id: string) => { saveTemplates(templates.filter((t) => t.id !== id)); }, [templates, saveTemplates]);

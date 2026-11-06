@@ -3,15 +3,22 @@ import type { Customer, Order, OrderItem } from '../types/order';
 import { normalizePakistaniPhone } from './reminders';
 import { migrateOrder } from './payments';
 export const SCHEMA_VERSION = 2;
+const importPhone = (phone: string) => {
+  const normalized = normalizePakistaniPhone(phone);
+  return /^923\d{9}$/.test(normalized) ? normalized : '';
+};
 export const customerKey = (phone: string, fallback: string) =>
-  `customer-${normalizePakistaniPhone(phone) || phone.replace(/\D/g, '') || fallback}`;
+  `customer-${importPhone(phone) || fallback}`;
 export function migrateRegister(input: Order[], existing: Customer[] = []): { orders: Order[]; customers: Customer[] } {
   if (!Array.isArray(input) || !Array.isArray(existing)) throw new Error(bi('m_invalid_khata_backup'));
-  const customers = new Map(existing.map(c => [c.id, { ...c, profiles: [...(c.profiles || [])] }]));
+  const customers = new Map(existing.map(c => [c.id, structuredClone(c)]));
   const orders = input.map(raw => {
-    const o = migrateOrder(raw);
-    const matched = existing.find(c => customerKey(c.phone, c.id) === customerKey(o.phone, o.id));
-    const id = matched?.id || o.customerId || customerKey(o.phone, o.id);
+    const o = migrateOrder(structuredClone(raw));
+    // Explicit IDs are authoritative. Phone matching is legacy-import recovery only.
+    const phone = importPhone(o.phone);
+    const matches = !o.customerId && phone ? existing.filter(c => importPhone(c.phone) === phone) : [];
+    const id = o.customerId || (matches.length === 1 ? matches[0].id :
+      matches.length > 1 ? `customer-${o.id}` : customerKey(o.phone, o.id));
     const items: OrderItem[] = o.items?.length ? o.items : [{
       id: `legacy-item-${o.id}`, garmentType: 'gents', quantity: o.suitCount || 1,
       unitPrice: o.totalAmount / (o.suitCount || 1), measurements: { ...o.measurements }, notes: o.specialNotes,
@@ -21,7 +28,7 @@ export function migrateRegister(input: Order[], existing: Customer[] = []): { or
       customer = { id, name: o.customerName, phone: o.phone, profiles: [], notes: '', createdAt: o.createdAt || o.orderDate, updatedAt: o.createdAt || o.orderDate };
       customers.set(id, customer);
     }
-    if (Date.parse(o.orderDate) >= Date.parse(customer.updatedAt)) {
+    if (!existing.some(c => c.id === id) && Date.parse(o.orderDate) >= Date.parse(customer.updatedAt)) {
       customer.name = o.customerName; customer.phone = o.phone;
       customer.updatedAt = o.createdAt || o.orderDate;
     }

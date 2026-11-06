@@ -44,9 +44,8 @@ export function QuickOrderForm({ open, onOpenChange, initialCustomer, orders, on
   const profiles = picked?.profiles ?? [];
   const profile = profiles.find((p) => p.id === profileId);
   const lastGents = useMemo(() => {
-    const n = normalizePakistaniPhone(phone);
-    return n.length >= 10 ? orders.filter((o) => normalizePakistaniPhone(o.phone) === n).sort((a, b) => b.orderDate.localeCompare(a.orderDate))[0] : undefined;
-  }, [orders, phone]);
+    return picked ? orders.filter((o) => o.customerId === picked.id).sort((a, b) => b.orderDate.localeCompare(a.orderDate))[0] : undefined;
+  }, [orders, picked]);
 
   const choose = (c: Customer) => { setPicked(c); setName(c.name); setPhone(c.phone); setQ(''); setProfileId(c.profiles[0]?.id ?? ''); if (c.profiles[0]) setType(c.profiles[0].garmentType); };
 
@@ -61,16 +60,12 @@ export function QuickOrderForm({ open, onOpenChange, initialCustomer, orders, on
     const item = { ...newItem(type), unitPrice: amount, measurements };
     let customerId = picked?.id;
     try {
-      if (!customerId) {
-        const n = normalizePakistaniPhone(phone);
-        const existing = customers.find((c) => normalizePakistaniPhone(c.phone) === n);
-        customerId = existing?.id;
-      }
+      customerId ??= crypto.randomUUID();
       onSave({
         customerName: name.trim(), phone, customerId,
         orderDate: new Date().toISOString(), deliveryDate: new Date(date).toISOString(),
         urgent: false, suitCount: 1, fabric: profile ? profile.name : label('quick_order_x'),
-        items: [item], measurements: type === 'gents' ? (measurements as unknown as Measurements) : (lastGents?.measurements ?? LEGACY_MEASUREMENTS),
+        items: [item], measurements: { ...(type === 'gents' ? (measurements as unknown as Measurements) : (lastGents?.measurements ?? LEGACY_MEASUREMENTS)) },
         collarType: 'Normal Collar', damanType: 'Choras (Square)', pockets: '2 Side Pockets', cuffType: 'Simple',
         specialNotes: '', totalAmount: amount, advanceAmount: 0, status: 'pending',
       });

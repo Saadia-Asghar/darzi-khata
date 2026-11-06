@@ -1,4 +1,4 @@
-import { DICT } from '../lib/i18n';
+import { tl } from '../lib/i18n';
 import {
   Component,
   type ComponentType,
@@ -37,15 +37,13 @@ function toError(value: unknown): Error {
 }
 
 function DefaultFallback({ error, resetError }: ErrorFallbackProps) {
-  // Rendered outside providers, so copy comes straight from the dictionary in both languages.
-  const d = (k: 'error_title' | 'error_body' | 'reload' | 'try_again') => `${DICT[k].en} / ${DICT[k].ur}`;
+  // Rendered outside providers; the selected language is available to helpers.
+  const d = (k: 'error_title' | 'error_body' | 'reload' | 'try_again') => tl(k);
   return (
     <div className="min-h-[100dvh] w-full flex items-center justify-center bg-background p-6" role="alert">
       <div className="max-w-md w-full rounded-lg border border-border bg-card p-6 text-center">
-        <h1 className="text-lg font-semibold text-foreground">{DICT.error_title.en}</h1>
-        <p className="font-urdu text-lg text-foreground" lang="ur" dir="rtl">{DICT.error_title.ur}</p>
-        <p className="mt-2 text-base text-muted-foreground">{DICT.error_body.en}</p>
-        <p className="font-urdu text-base text-muted-foreground" lang="ur" dir="rtl">{DICT.error_body.ur}</p>
+        <h1 className="text-lg font-semibold text-foreground">{d('error_title')}</h1>
+        <p className="mt-2 text-base text-muted-foreground">{d('error_body')}</p>
         {import.meta.env.DEV ? (
           <pre className="mt-4 overflow-x-auto rounded-md bg-muted p-3 text-start text-sm text-foreground">{error.message || String(error)}</pre>
         ) : null}

@@ -1,4 +1,4 @@
-import { entry, type DictKey } from '../lib/i18n';
+import { entry, tl, type DictKey } from '../lib/i18n';
 import type { ShopSettings } from '../hooks/use-settings';
 export const SHOP_TYPES: { value: NonNullable<ShopSettings['shopType']>; tk: DictKey; en: string; ur: string }[] = [
   { value: 'shop', ...entry('d_shop') },
@@ -7,7 +7,7 @@ export const SHOP_TYPES: { value: NonNullable<ShopSettings['shopType']>; tk: Dic
 ];
 export const shopTypeLabel = (t?: ShopSettings['shopType']) => {
   const s = SHOP_TYPES.find((x) => x.value === (t || 'shop')) || SHOP_TYPES[0];
-  return `${s.en} / ${s.ur}`;
+  return tl(s.tk);
 };
 export const pkr = (n: number) => `Rs ${Math.round(n).toLocaleString('en-PK')}`;
 export const monthLabel = (ym: string) => {

@@ -3,14 +3,11 @@ import { useState, useEffect, useCallback } from 'react';
 import { UserAccount } from '../context/auth-context';
 import { notifyStorage } from '../lib/local-store';
 import { storage as localStorage } from '../lib/storage';
+import { hashPassword, verifyPassword } from '../lib/password';
 
 const ACCOUNTS_KEY = 'darzi-khata-accounts';
 const SESSION_KEY = 'darzi-khata-session';
 
-async function hashPassword(password: string): Promise<string> {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(password));
-  return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join('');
-}
 
 export function getAccounts(): UserAccount[] {
   try {
@@ -96,9 +93,13 @@ export function useAuth() {
     const accounts = getAccounts();
     const account = accounts.find((a) => a.email.toLowerCase() === email.toLowerCase().trim());
     if (!account) return { success: false, error: tl('auth_err_not_registered') };
-    const hash = await hashPassword(password);
-    if (hash !== account.passwordHash) return { success: false, error: tl('auth_err_wrong_password') };
+    if (!await verifyPassword(password, account.passwordHash)) return { success: false, error: tl('auth_err_wrong_password') };
+    if (!account.passwordHash.startsWith('pbkdf2:')) {
+      account.passwordHash = await hashPassword(password);
+      saveAccounts(getAccounts().map(a => a.id === account.id ? account : a));
+    }
     sessionStorage.setItem(SESSION_KEY, account.id);
+    window.history.replaceState(null, '', import.meta.env.BASE_URL);
     setCurrentUser(account);
     return { success: true };
   }, []);
@@ -109,6 +110,7 @@ export function useAuth() {
   ): Promise<{ success: boolean; error?: string }> => {
     if (!name.trim()) return { success: false, error: tl('auth_err_name_required') };
     if (!email.trim()) return { success: false, error: tl('auth_err_email_required') };
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) return { success: false, error: tl('auth_err_email_required') };
     if (password.length < 6) return { success: false, error: tl('auth_err_pw_short') };
 
     const accounts = getAccounts();
@@ -138,8 +140,11 @@ export function useAuth() {
       createdAt: new Date().toISOString(),
     };
 
-    saveAccounts([...accounts, newAccount]);
+    const latest = getAccounts();
+    if (latest.some(a => a.email === newAccount.email)) return { success: false, error: tl('auth_err_email_taken') };
+    saveAccounts([...latest, newAccount]);
     sessionStorage.setItem(SESSION_KEY, newAccount.id);
+    window.history.replaceState(null, '', import.meta.env.BASE_URL);
     setCurrentUser(newAccount);
     return { success: true };
   }, []);

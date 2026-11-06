@@ -185,7 +185,7 @@ test('customer history reuses measurements in a new order', async ({ page }) => 
   await page.getByTestId('nav-customers').click();
   await expect(page).toHaveURL(/\/customers$/);
   await page.getByTestId('btn-customer-history').first().click();
-  await expect(page).toHaveURL(/\/customers\/03001234567$/);
+  await expect(page).toHaveURL(/\/customers\/customer-923001234567$/);
   await page.getByRole('button', { name: /Copy|Use.*measurements|ناپ.*استعمال|ناپ.*کاپی/i }).first().click();
   await expect(page.getByTestId('input-name')).toHaveValue('QA Tailor Customer');
 });

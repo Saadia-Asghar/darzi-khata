@@ -8,7 +8,8 @@ sync, external database or bank integration in the approved offline-only upgrade
 
 - Extend existing orders, measurements, receipts, team, customer history,
   earnings, backup/restore and dark mode; do not replace them.
-- New labels English + Urdu; emerald/gold identity; 360px mobile layout.
+- Provide English and Urdu, but show only the selected language at a time.
+  Preserve the emerald/gold identity and 360px mobile layout.
 - Keep local email/password accounts. A separate OPTIONAL salted-hash PIN privacy
   lock can protect the local session, with five wrong tries locking for 30 seconds.
   It is not encryption or server authentication; never export account/PIN hashes.
@@ -47,7 +48,11 @@ Always preserve ledger totals when editing order advances.
 Never fabricate deliveredAt for historical orders with no known delivery date.
 Preserve legacy measurements on old orders. New items carry their own garment
 type/measurements/price/quantity; total and suit count must equal the item sums.
-Saved customers link old orders by normalized phone. Real and demo customers,
+Customer IDs, not phones, identify customers, order associations and history.
+Distinct customers may share a phone; never automatically merge their profiles
+or orders. Match valid normalized phones only when importing legacy records
+that have no customer ID, and only when the match is unambiguous.
+Real and demo customers,
 photo IDs, settings and template registers must remain separate.
 Backup/restore includes photos, customers, templates and manual karigars. Validate
 all inputs before mutation and recompute the serial counter from restored DK IDs.
