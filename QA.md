@@ -1,5 +1,109 @@
 # Darzi Khata verification
 
+## Judges release, 7 November 2026
+
+**Release source:** `d743ac63`. Actual More-page text:
+`Version 1.5.0+d743ac63.20261106211440Z`.
+Urdu: `ورژن 1.5.0+d743ac63.20261106211440Z`.
+The version identifies the latest commit changing the app directory; later
+QA/checkpoint metadata-only commits do not change the application source.
+
+### Important: preview is not the published site
+
+All PASS results below are against the **production Vite build in preview**,
+not the public deployment. The live domain was checked again after pushing:
+it still returned the old bilingual title and old login page. A Publish action
+has been shown. **Republishing and public-domain acceptance are BLOCKED until
+the user clicks Publish.** No claim is made that the live site was updated.
+Do not clear customer storage or uninstall the PWA to update it.
+
+### Pass/fail checklist
+
+| Requirement/flow | Production-build preview |
+|---|---|
+| `/` landing; `/app` signed-out login; installed PWA starts `/app` | PASS |
+| English and Urdu login, order list, new form, parchi, Settings screenshots | PASS |
+| Intro Skip and final Next persist after reload in both languages | PASS |
+| Header fits 320/360/375 px; shop and owner truncate; small inline Demo; lock icon | PASS |
+| In-app language selection in Settings, not shop/tool headers | PASS |
+| Today counts active due-today deliveries; deduplicated ready/late/today balances; no zero-only message | PASS — pure calendar/payment tests |
+| Actual Pending/Stitching/Ready/Delivered status; separate red lateness | PASS |
+| Built-in/legacy fabric and demo text display in selected language; custom text preserved | PASS |
+| Notes is labeled; overflow Edit/Delete only; paid payment action replaced by Paid; no More badge or intro icon tile | PASS |
+| Signup, empty account, first order with two garment types | PASS — automated and manual-browser evidence |
+| Parchi, A4/58/80 mm print and print-media controls hidden | PASS |
+| Saved-customer reuse; other customer's edit does not change first customer | PASS |
+| Quick order promoted to full form preserves selected saved measurements | PASS — regression confirms 42 stays 42, saved profile unchanged |
+| Partial cash and full simulated QR payments update balances/credit | PASS — no real bank payment claimed |
+| WhatsApp 92-normalized number, selected-language message/parchi and RTL arrows | PASS — intercepted handoff/message checks; no message sent |
+| Lender profile without login, read-only consent, expiry/tamper checks | PASS |
+| Guided pitch finishes with the same recomputed credit score | PASS |
+| Wrong password rejected; accounts remain isolated | PASS |
+| Offline reload and save after install | PASS |
+| Existing worker replaced, refresh notice displayed, stored sentinel preserved | PASS |
+| All 12 main/tool routes dark, English/Urdu, 375×812 | PASS — 24 screenshots and automated contrast checks |
+| Eight `/screens/*.webp` respond 200; OG image 1200×630 with image metadata | PASS in preview; public assets need Publish |
+| README live URL, credentials, three screenshots, five-step pitch | PASS |
+| README full team names | BLOCKED — names were requested but not supplied |
+| Published landing, current More version and real WhatsApp OG preview | BLOCKED — Publish needed; third-party WhatsApp preview not asserted |
+
+### Commands and evidence
+
+- `pnpm typecheck`: PASS, entire workspace.
+- In `artifacts/darzi-khata`, `npx tsc --noEmit`: exit 0, no diagnostics.
+- `pnpm test`: 29 core checks plus 118 Vitest tests in 10 files passed,
+  including `i18n.test.ts`.
+- In the app directory, `pnpm vitest run`: 118 passed. The root command is
+  unavailable because Vitest is installed in the app package, not the root.
+- Playwright: **65 unique scenarios passed, 1 intentional production-only
+  skip**. Initial pass exposed two dark-mode failures, subsequently fixed.
+  A manual browser pass found Quick→Full dropping saved measurements; fixed
+  and covered by a new regression. This total combines the original pass
+  with targeted successful reruns, not an invented single clean run.
+- `npx impeccable detect src/`: 170 source files scanned, no regex findings.
+  This is a source-only scan; its parsed-page/contrast rules did not run.
+- Additional axe color-contrast scan: **24 route/language checks, 0 detected
+  violations** after fixing payment/loan buttons and the credit badge.
+  Five pages have incomplete SVG/chart regions; this is not a full WCAG
+  certification.
+- Production build succeeds, managed Vite preview running, final smoke
+  reports no page errors and verifies both-language More strings against
+  the source SHA.
+
+### Lighthouse mobile — two isolated final-build runs
+
+Scores below use the lower score of both runs for each category.
+Lighthouse uses its mobile preset; 375×812 refers to the Playwright screenshots.
+
+| Route | Performance | Accessibility | Best practices | SEO |
+|---|---:|---:|---:|---:|
+| Landing, cold | 91 | 100 | 100 | 100 |
+| Login, cold | 100 | 100 | 100 | 100 |
+| Signed-in demo order list | 99 | 100 | 100 | 92 |
+
+Landing performance runs were 91/99; order list 99/100.
+Signed-in order-list auditing preserves the signed-in session and installed
+app resources; it is **not** presented as a cold signed-out load.
+No claim that these are measurements of the outdated published domain.
+
+### Files
+
+- `qa-screens/en/`, `qa-screens/ur/`: light proof, print-media, 12 dark pages
+  each, and final More version captures. Generated/ignored, not user data.
+- `generated-artifacts/judges/`: exact command output, initial failures,
+  successful reruns, release smoke JSON, contrast output and Lighthouse
+  HTML/JSON. Downloadable HTML and ZIP contain the evidence.
+- Updated actual 375×812 screenshots and social image are tracked under
+  `artifacts/darzi-khata/public/screens/`.
+
+### Public acceptance after Publish
+
+Open a fresh browser at the public `/`, confirm the landing (not login).
+Open `/app`, confirm login; check all eight WebP assets and OG metadata.
+Then open an already-installed PWA, accept its refresh notice, verify
+the new source version in More and confirm existing data remains intact.
+This last public/installed-device pass has **not** been claimed as complete.
+
 ## Landing, routed app and shop tools, 6 November 2026
 
 Current verification evidence is in `generated-artifacts/launch/`. Earlier
