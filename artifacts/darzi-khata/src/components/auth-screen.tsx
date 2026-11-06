@@ -88,8 +88,7 @@ export function AuthScreen({ onLogin, onSignup }: AuthScreenProps) {
       <div className="w-full max-w-sm mb-6 flex items-center gap-3">
         <BrandMark size={48} />
         <div className="min-w-0">
-          <h1 className="text-xl font-semibold text-foreground" lang="en">{DICT.app_name.en}</h1>
-          <p className="font-urdu text-base text-muted-foreground" lang="ur" dir="rtl">{DICT.app_name.ur}</p>
+          <h1 className={`text-xl font-semibold text-foreground ${urduFirst ? 'font-urdu' : ''}`} lang={urduFirst ? 'ur' : 'en'}>{L('app_name')}</h1>
         </div>
       </div>
       <p className="w-full max-w-sm text-base text-muted-foreground mb-4">{L('auth_tagline')}</p>

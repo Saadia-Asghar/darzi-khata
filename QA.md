@@ -5,6 +5,12 @@ acceptance criterion is complete.
 
 ## Results
 
+Stale-preview recovery follow-up: reproduced an older offline worker serving
+the bilingual sign-in screen, then verified it upgrades to the current
+single-language sign-up screen. The test checks both English and Urdu and
+preservation of localStorage and IndexedDB markers. The recovery worker is
+served only by Vite development; production PWA behavior is unchanged.
+
 Language/clutter follow-up: added a visible English/Urdu switch to the main
 header, routed tool headers and sign-in. UI labels now show one language at a
 time. Help on More is collapsed by default. TypeScript, all 68 unit tests,

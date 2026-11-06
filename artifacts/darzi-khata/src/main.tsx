@@ -9,6 +9,16 @@ import '@fontsource/ibm-plex-sans/latin-600.css';
 import '@fontsource/ibm-plex-sans/latin-700.css';
 import './index.css';
 
+if (import.meta.env.DEV && 'serviceWorker' in navigator) {
+  // Ask installed offline workers to check the dev-only replacement now.
+  // Merely unregistering from a fresh page cannot fix an already-cached page.
+  void navigator.serviceWorker.getRegistrations().then(registrations =>
+    Promise.all(registrations.map(registration => registration.update().catch(error => {
+      console.warn('Preview update check failed', error);
+    }))),
+  );
+}
+
 // Precache the offline shell after fonts and first rendering have settled.
 // Installing a multi-megabyte cache during first paint stalls low-end phones.
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {

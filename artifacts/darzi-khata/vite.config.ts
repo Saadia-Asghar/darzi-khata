@@ -1,4 +1,5 @@
 import path from 'path';
+import { readFileSync } from 'node:fs';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vite';
@@ -31,6 +32,20 @@ if (!basePath) {
 export default defineConfig({
   base: basePath,
   plugins: [
+    {
+      name: 'refresh-cached-preview',
+      apply: 'serve',
+      configureServer(server) {
+        // Worker updates bypass the old worker's navigation cache. Replacing
+        // sw.js lets already-cached tabs recover, not just fresh browsers.
+        server.middlewares.use((req, res, next) => {
+          if (req.url?.split('?')[0] !== `${basePath}sw.js`) return next();
+          res.setHeader('Content-Type', 'application/javascript');
+          res.setHeader('Cache-Control', 'no-store, max-age=0');
+          res.end(readFileSync(path.resolve(import.meta.dirname, 'dev-preview-worker.js'), 'utf8'));
+        });
+      },
+    },
     react(),
     tailwindcss(),
     VitePWA({
