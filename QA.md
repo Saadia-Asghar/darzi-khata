@@ -1,5 +1,19 @@
 # Darzi Khata verification
 
+## Individual delivery status follow-up, 7 November 2026
+
+App source `23afdb4`: keep cards in their current positions when changing an
+individual status in All, and confirm the specific order number/customer.
+Explicit filter/search changes and reload restore active-first sorting.
+No other order statuses are rewritten.
+
+Verified against the production build: workspace typecheck, 29 core checks,
+118 Vitest tests, and three targeted Playwright scenarios passed. English and
+Urdu regressions check four orders (including two sharing a customer), exact
+unchanged other records, stable card positions, repeated Delivered selection,
+reload persistence, and that the Delivered filter only filters the view.
+This is preview evidence; publishing is still required for the live domain.
+
 ## Judges release, 7 November 2026
 
 **Release source:** `d743ac63`. Actual More-page text:
