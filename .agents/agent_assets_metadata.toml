@@ -98,3 +98,31 @@ mtime_ms = 1793986163354
 storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:00e5e9e4-bf06-459e-935c-fb2d11805f64/7042de7c-55f8-4b4a-af23-a04f7e13f282/a4b5b952-4bf1-4b3c-84c0-7511d79cb18a"
 storage_version_token = "1793986196496679"
 content_type = "text/html"
+
+[[outputs]]
+id = "5KEPc6a2tM2uiNtK2RSLD"
+uri = "file://generated-artifacts/judges/judges-proof.html"
+type = "html"
+title = "Darzi Khata — screenshots and verification proof"
+description = "Self-contained report with English/Urdu screenshots, exact logs, current More version, test results and mobile Lighthouse scores. Public deployment still requires Publish."
+logical_id = "e441bf94-ae08-424d-9f52-6058dafbf1ea"
+content_hash = "sha256:7c7c438edb72bd799d70cc12e6e7b5922aa802fe38cd29bc8b66476721c7b386"
+size = 2838651
+mtime_ms = 1794000158592
+storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:00e5e9e4-bf06-459e-935c-fb2d11805f64/e441bf94-ae08-424d-9f52-6058dafbf1ea/8268180b-5029-4388-a264-d744576dd2f9"
+storage_version_token = "1794000169818816"
+content_type = "text/html"
+
+[[outputs]]
+id = "JBdG4PugX9yp2zxNSNfGq"
+uri = "file://generated-artifacts/judges/qa-evidence.zip"
+type = "unspecified"
+title = "Download QA screenshots and raw logs"
+description = "English/Urdu light and dark screenshots, print captures, command output, Lighthouse reports and the pass/fail checklist."
+logical_id = "cee5a307-6a07-44a2-8541-de19957fc85e"
+content_hash = "sha256:415af62a0afd1b1c031150220b5cc5ea267025b695c9f036494e96a59a1481ba"
+size = 3001616
+mtime_ms = 1794000158852
+storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:00e5e9e4-bf06-459e-935c-fb2d11805f64/cee5a307-6a07-44a2-8541-de19957fc85e/e88d9892-8e94-4f89-b3c9-c3e8d3edd9b8"
+storage_version_token = "1794000171140080"
+content_type = "application/octet-stream"
