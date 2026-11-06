@@ -31,6 +31,9 @@ if (!basePath) {
 
 export default defineConfig({
   base: basePath,
+  define: {
+    __DARZI_BUILD__: JSON.stringify(`1.4.0+${new Date().toISOString().replace(/\D/g, '').slice(0, 14)}Z`),
+  },
   plugins: [
     {
       name: 'refresh-cached-preview',

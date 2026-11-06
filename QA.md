@@ -1,5 +1,42 @@
 # Darzi Khata verification
 
+## Latest evidence: build 1.4.0+20261106110943Z
+
+Measured on 6 November 2026, 11:10 UTC, against the production build:
+
+- `npx tsc --noEmit`: no diagnostics, exit 0.
+- `pnpm vitest run --reporter=verbose`: 4 files, 60 tests passed, including
+  all 12 tests in `src/lib/i18n.test.ts`.
+- Existing Node finance suite: 29 passed.
+- Production Playwright: 16 passed, 1 intentionally skipped. The skipped test
+  exercises the development-only worker recovery endpoint.
+- Ten actual 390×844 Playwright screenshots: login, orders, new-order form,
+  parchi and settings in each language.
+- Both WhatsApp message URLs decode into the selected language. Receipt
+  headings, style names, payment labels and default thank-you copy follow it.
+  Customer-entered names, fabric, addresses and custom notes remain unchanged.
+- Urdu document and receipt direction: `rtl`. Back arrows and More chevrons:
+  computed CSS `rotate: 180deg`; English arrows have no rotation.
+- `npx impeccable detect src/`: 140 files scanned, no source findings.
+  Source scanning alone cannot run parsed-page rules. A rendered 390×844
+  entry-page scan additionally returned `[]`.
+- Lighthouse mobile, simulated 4× CPU throttling: **Performance 100,
+  Accessibility 100, Best Practices 100**. LCP 0.9s, TBT 10ms, CLS 0.
+  These scores cover the signed-out entry page, not all signed-in routes.
+
+Full unedited command logs, raw Lighthouse HTML/JSON, decoded message text,
+computed arrow styles and original screenshots are under
+`generated-artifacts/proof/`. The self-contained `verification-report.html`
+embeds all ten screenshots and the complete command output.
+
+Failures fixed before the final run: bilingual account/payment labels embedded
+inside the dictionary, bilingual receipt shop heading, Roman-Urdu receipt-number
+label, English-only style/date/footer copy, and clipped phone-size date fields.
+Receipt money now uses the shared grouping formatter. A timestamped More-page
+build identifier distinguishes current bundles from stale offline copies.
+
+The older results below are historical and superseded by this run.
+
 Verified on 6 November 2026. This is an evidence report, not a claim that every
 acceptance criterion is complete.
 

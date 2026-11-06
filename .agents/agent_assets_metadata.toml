@@ -1,0 +1,44 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "F4yM8U6IVBVFf7BUubbwO"
+uri = "file://generated-artifacts/proof/en-screenshots.png"
+type = "image"
+title = "English: five Playwright screenshots"
+description = "Login, order list, new-order form, parchi and settings. Actual 390×844 browser captures."
+logical_id = "e7fe0582-346e-4780-9860-d24d8b959971"
+content_hash = "sha256:375a7586b8b9ad03a8a61ac009972f766c66c26f315b0d8066aba5184b9c467f"
+size = 249569
+mtime_ms = 1793963506535
+storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:00e5e9e4-bf06-459e-935c-fb2d11805f64/e7fe0582-346e-4780-9860-d24d8b959971/bd78d3b8-9b3a-4def-afd3-969238708ed3"
+storage_version_token = "1793963650959513"
+content_type = "image/png"
+
+[[outputs]]
+id = "sWJrascG-zgghJLIQaCdC"
+uri = "file://generated-artifacts/proof/ur-screenshots.png"
+type = "image"
+title = "Urdu: five Playwright screenshots"
+description = "The same five screens in Urdu, with right-to-left layouts."
+logical_id = "8dce528c-11b6-4333-ba39-54ba52b97cbf"
+content_hash = "sha256:7ef911e3a878a57357bf14f50cf04320d6b985d61f1630e079d2ca4b9a78f1f0"
+size = 252860
+mtime_ms = 1793963506711
+storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:00e5e9e4-bf06-459e-935c-fb2d11805f64/8dce528c-11b6-4333-ba39-54ba52b97cbf/d19c3cab-efc9-4de0-b3c8-8509f63da9ca"
+storage_version_token = "1793963652226956"
+content_type = "image/png"
+
+[[outputs]]
+id = "xVPG0ehZaKo7G73fN1GIC"
+uri = "file://generated-artifacts/proof/verification-report.html"
+type = "html"
+title = "Complete verification evidence"
+description = "All ten original screenshots, full command output, decoded WhatsApp messages, build version, RTL arrow checks and Lighthouse results."
+logical_id = "bc7ea2d5-dcd5-4e26-81be-309b79e8fa01"
+content_hash = "sha256:fa6343706c1bf0639b9995879ec32d1cfdc5accfb6d42173c0ea70e672e6341d"
+size = 1311177
+mtime_ms = 1793963506727
+storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:00e5e9e4-bf06-459e-935c-fb2d11805f64/bc7ea2d5-dcd5-4e26-81be-309b79e8fa01/75bf0fce-9baa-4a64-9107-e29117918480"
+storage_version_token = "1793963653498182"
+content_type = "text/html"

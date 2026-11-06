@@ -1,4 +1,4 @@
-import { bi } from './i18n';
+import { bi, DICT, fill, getCurrentLang, type Lang } from './i18n';
 import type { Order, Payment, PaymentMethod } from '../types/order';
 
 export interface PaymentDetails {
@@ -40,11 +40,11 @@ export function buildPaymentPayload(order: Order, details: PaymentDetails): stri
     reference: order.serialNumber || order.id,
   });
 }
-export function paymentDetailsText(details: PaymentDetails): string {
+export function paymentDetailsText(details: PaymentDetails, lang: Lang = getCurrentLang()): string {
   return [
-    details.accountTitle && bi('m_account_title', { accountTitle: details.accountTitle }),
-    details.zindigiWallet && bi('m_zindigi', { zindigiWallet: details.zindigiWallet }),
-    details.raastId && bi('m_raast', { raastId: details.raastId }),
+    details.accountTitle && fill(DICT.m_account_title[lang], { accountTitle: details.accountTitle }, lang),
+    details.zindigiWallet && fill(DICT.m_zindigi[lang], { zindigiWallet: details.zindigiWallet }, lang),
+    details.raastId && fill(DICT.m_raast[lang], { raastId: details.raastId }, lang),
   ].filter(Boolean).join('\n');
 }
 export function paymentShare(orders: Order[], month?: Date) {

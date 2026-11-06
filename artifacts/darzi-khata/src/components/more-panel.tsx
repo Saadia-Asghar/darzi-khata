@@ -20,7 +20,8 @@ const TOOLS: { id: MoreTool; icon: LucideIcon; k: DictKey }[] = [
   { id: 'team', icon: UserCog, k: 'team' },
   { id: 'settings', icon: Settings, k: 'tool_settings' },
 ];
-const APP_VERSION = '1.4.0';
+declare const __DARZI_BUILD__: string;
+const APP_VERSION = __DARZI_BUILD__;
 
 export function MorePanel({ onLogout, pendingCount }: { onLogout: () => void; pendingCount: number }) {
   const { label } = usePreferences();

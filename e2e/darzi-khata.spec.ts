@@ -162,7 +162,8 @@ test('receipt QR, thermal sizes and encoded Pakistani WhatsApp message', async (
   const link = popup.url();
   expect(link).toMatch(/(?:wa\.me\/|phone=)923001234567/);
   const text = new URL(link).searchParams.get('text');
-  expect(text).toMatch(/[\u0600-\u06ff]/);
+  expect(text).toContain('Customer:');
+  expect(text).not.toMatch(/[\u0600-\u06ff]/);
   expect(link).toMatch(/%[0-9A-F]{2}/i);
   await popup.close();
 });

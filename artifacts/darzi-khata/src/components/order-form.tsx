@@ -296,12 +296,12 @@ export function OrderForm({ open, onOpenChange, order, prefill, onSave }: OrderF
                   <input id="of-phone" type="tel" dir="ltr" {...register('phone')} className={`${inputCls} font-mono`} placeholder="03XXXXXXXXX" data-testid="input-phone" />
                   {errors.phone && <p className="text-danger text-sm mt-1" role="alert">{label(errors.phone.message ?? '')}</p>}
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label htmlFor="of-od" className="block text-sm font-semibold mb-1">{label('order_date')}</label>
                     <div className="relative"><input id="of-od" type="date" {...register('orderDate')} className={`${inputCls} ps-9`} /><CalendarIcon className="absolute start-3 top-3.5 text-muted-foreground pointer-events-none" size={16} /></div>
-                  </div>
                     {errors.orderDate && <p className="text-danger text-sm mt-1" role="alert">{label(errors.orderDate.message ?? '')}</p>}
+                  </div>
                   <div>
                     <label htmlFor="of-dd" className="block text-sm font-semibold mb-1">{label('delivery_date')}</label>
                     <div className="relative"><input id="of-dd" type="date" {...register('deliveryDate')} className={`${inputCls} ps-9`} data-testid="input-delivery" /><CalendarIcon className="absolute start-3 top-3.5 text-muted-foreground pointer-events-none" size={16} /></div>

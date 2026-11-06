@@ -1,4 +1,5 @@
-import { money, tl, bi } from '../lib/i18n';
+import { money, tl, shortDate } from '../lib/i18n';
+import { receiptMessage, receiptShopName, receiptStyle, receiptThanks } from '../lib/receipt-message';
 import { haptic } from '../lib/haptics';
 import { QR_INK, QR_PAPER } from '../lib/brand';
 import { usePreferences } from '../hooks/use-preferences';
@@ -24,7 +25,7 @@ interface ReceiptModalProps {
 
 export function ReceiptModal({ open, onOpenChange, order }: ReceiptModalProps) {
   const { settings } = useSettings();
-  const { label, paperSize, setPaperSize } = usePreferences();
+  const { label, lang, paperSize, setPaperSize } = usePreferences();
   const { recordPayment } = useOrders();
   const { demoMode } = useDemoMode();
   const { toast } = useToast();
@@ -54,33 +55,10 @@ export function ReceiptModal({ open, onOpenChange, order }: ReceiptModalProps) {
       </div>
     </div>
   );
-  const details = paymentDetailsText(settings);
+  const details = paymentDetailsText(settings, lang);
 
   const generateWhatsAppMessage = () => {
-    const garments = order.items?.length ? order.items : [{
-      id: order.id, garmentType: 'gents' as const, quantity: order.suitCount,
-      unitPrice: order.totalAmount / order.suitCount,
-      measurements: order.measurements as unknown as Record<string, number>,
-    }];
-    const text = label('receipt_message', {
-      shop: settings.shopName,
-      serial: order.serialNumber || order.id,
-      customer: order.customerName,
-      phone: order.phone,
-      date: new Date(order.deliveryDate).toLocaleDateString('en-PK', { day: 'numeric', month: 'short' }),
-      urgent: order.urgent ? label('urgent_chip') : '',
-      garments: garments.map(i => `${i.quantity} ${label(garment(i.garmentType).tk)}`).join(', '),
-      fabric: order.fabric,
-      measurements: garments.map(i => `${label(garment(i.garmentType).tk)}\n${garment(i.garmentType).fields.map(f => `${label(f.tk)}: ${i.measurements[f.key] ?? 0}`).join(' · ')}`).join('\n'),
-      style: [order.collarType, order.damanType, order.pockets, order.cuffType].join(' · '),
-      notes: order.specialNotes || '',
-      total: money(order.totalAmount), collected: money(order.advanceAmount), balance: money(baqi),
-      payment: details && baqi > 0 ? `${bi('receipt_pay_online')}\n${details}\n${bi('receipt_reference', { ref: order.serialNumber || order.id, amount: baqi })}\n${bi('receipt_share_screenshot')}` : '',
-      thanks: settings.thankYouMessage,
-      address: settings.address,
-      shopPhone: settings.phone,
-    });
-    return encodeURIComponent(text);
+    return encodeURIComponent(receiptMessage(order, settings, lang));
   };
 
   const copyToClipboard = async () => {
@@ -108,8 +86,8 @@ export function ReceiptModal({ open, onOpenChange, order }: ReceiptModalProps) {
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-foreground/60 z-50  data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 print:hidden" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg bg-card p-0  outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 print:static print:transform-none print:shadow-none print:max-w-none print:p-0 max-h-[90vh] overflow-y-auto">
-          
+        <Dialog.Content dir={lang === 'ur' ? 'rtl' : 'ltr'} lang={lang} aria-describedby={undefined} data-testid="receipt-dialog" className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg bg-card p-0  outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 print:static print:transform-none print:shadow-none print:max-w-none print:p-0 max-h-[90vh] overflow-y-auto">
+          <Dialog.Title className="sr-only">{label('receipt')}</Dialog.Title>
           {paperChooser}
           {/* Printable Area */}
           <div className="p-6 md:p-8" id="receipt-print-area">
@@ -122,15 +100,14 @@ export function ReceiptModal({ open, onOpenChange, order }: ReceiptModalProps) {
 
               <div className="text-center mb-4 border-b-2 border-double border-border pb-4">
                 <div className="flex justify-center text-primary mb-2"><Scissors size={28} /></div>
-                <h1 className="text-2xl font-bold  text-primary mb-1 ">{settings.shopName}</h1>
-                <h2 className="text-xl font-urdu text-primary" lang="ur" dir="rtl">{settings.shopNameUrdu}</h2>
+                <h1 className={`text-2xl font-bold text-primary mb-1 ${lang === 'ur' ? 'font-urdu' : ''}`} lang={lang}>{receiptShopName(settings, lang)}</h1>
               </div>
 
               {/* Serial Number */}
               {order.serialNumber && (
                 <div className="text-center mb-3">
                   <span className="bg-primary text-primary-foreground text-sm font-bold px-3 py-1 rounded-full ">
-                    Raseed No. {order.serialNumber}
+                    {label('receipt_number')} {order.serialNumber}
                   </span>
                 </div>
               )}
@@ -147,7 +124,7 @@ export function ReceiptModal({ open, onOpenChange, order }: ReceiptModalProps) {
                 <div className="flex justify-between items-center border-b border-border pb-2">
                   <span className="text-muted-foreground">{label('delivery')}:</span>
                   <span className={`font-bold ${order.urgent ? 'text-danger' : ''}`}>
-                    {new Date(order.deliveryDate).toLocaleDateString()} {order.urgent ? `(${label('urgent')})` : ''}
+                    {shortDate(order.deliveryDate, lang)} {order.urgent ? `(${label('urgent')})` : ''}
                   </span>
                 </div>
                 <div className="flex justify-between items-center border-b border-border pb-2 gap-2">
@@ -158,7 +135,7 @@ export function ReceiptModal({ open, onOpenChange, order }: ReceiptModalProps) {
                   <ul className="border-b border-border pb-2 text-sm space-y-1" data-testid="receipt-items">
                     {order.items.map((it, i) => (
                       <li key={it.id}>
-                        <div className="flex justify-between font-bold"><span>{i + 1}. {label(garment(it.garmentType).tk)} x{it.quantity}</span><span className="font-mono">Rs {it.unitPrice * it.quantity}</span></div>
+                        <div className="flex justify-between font-bold"><span>{i + 1}. {label(garment(it.garmentType).tk)} x{it.quantity}</span><span className="font-mono">{money(it.unitPrice * it.quantity)}</span></div>
                         <div className="font-mono text-xs text-muted-foreground">{garment(it.garmentType).fields.map((f) => `${label(f.tk)} ${it.measurements[f.key]}`).join(' · ')}</div>
                       </li>
                     ))}
@@ -189,22 +166,22 @@ export function ReceiptModal({ open, onOpenChange, order }: ReceiptModalProps) {
               </div>}
 
               <div className="mt-4 text-sm">
-                <div className="flex gap-2 mb-1"><span className="font-bold">{label('style')}:</span> {order.collarType}, {order.damanType}, {order.cuffType}, {order.pockets}</div>
+                <div className="flex gap-2 mb-1"><span className="font-bold">{label('style')}:</span> {[order.collarType, order.damanType, order.cuffType, order.pockets].map(value => receiptStyle(value, lang)).join(' · ')}</div>
                 {order.specialNotes && <div className="italic text-muted-foreground">"{order.specialNotes}"</div>}
               </div>
 
               <div className="mt-4 pt-4 border-t-2 border-primary text-sm">
                 <div className="flex justify-between mb-1">
                   <span>{label('total_stitching')}</span>
-                  <span className="font-mono">Rs {order.totalAmount}</span>
+                  <span className="font-mono">{money(order.totalAmount)}</span>
                 </div>
                 <div className="flex justify-between mb-2 pb-2 border-b border-border">
                   <span>{label('paid_2')}</span>
-                  <span className="font-mono">Rs {order.advanceAmount}</span>
+                  <span className="font-mono">{money(order.advanceAmount)}</span>
                 </div>
                 <div className="flex justify-between font-bold text-lg">
                   <span>{label('balance_2')}</span>
-                  <span className="font-mono">Rs {baqi}</span>
+                  <span className="font-mono">{money(baqi)}</span>
                 </div>
               </div>
               
@@ -225,7 +202,8 @@ export function ReceiptModal({ open, onOpenChange, order }: ReceiptModalProps) {
               )}
 
               <div className="mt-4 text-center text-xs text-muted-foreground   border-t border-border pt-3">
-                Powered by Darzi Khata
+                <p>{receiptThanks(settings, lang)}</p>
+                {label('receipt_footer')}
               </div>
             </div>
           </div>
@@ -233,7 +211,7 @@ export function ReceiptModal({ open, onOpenChange, order }: ReceiptModalProps) {
           {demoMode && baqi > 0 && (
             <div className="px-4 pb-3 print:hidden">
               <button onClick={demoMarkPaid} className="w-full min-h-[44px] rounded-lg border-2 border-dashed border-warning bg-warning-soft text-accent-foreground text-sm font-bold flex items-center justify-center gap-2" data-testid="btn-demo-mark-paid">
-                <FlaskConical size={16} /> Demo: mark paid via Zindigi / ڈیمو ادائیگی
+                <FlaskConical size={16} /> {label('receipt_demo_paid')}
               </button>
             </div>
           )}
