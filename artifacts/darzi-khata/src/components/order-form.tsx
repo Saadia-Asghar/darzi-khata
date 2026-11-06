@@ -43,6 +43,7 @@ const formSchema = z.object({
 });
 
 type FormValues = z.infer<typeof formSchema>;
+type FormInput = z.input<typeof formSchema>;
 
 interface OrderFormProps {
   open: boolean;
@@ -138,7 +139,7 @@ export function OrderForm({ open, onOpenChange, order, prefill, onSave }: OrderF
   const [itemsError, setItemsError] = useState<string>();
 
   const [step, setStep] = useState(0);
-  const { register, handleSubmit, control, reset, watch, setError, trigger, getValues, formState: { errors } } = useForm<FormValues>({
+  const { register, handleSubmit, control, reset, watch, setError, trigger, getValues, formState: { errors } } = useForm<FormInput, unknown, FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: initialValues(order, prefill),
   });
