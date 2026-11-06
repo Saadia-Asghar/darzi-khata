@@ -1,2 +1,3 @@
 - [Prize presentation constraints](prize-presentation.md) — phone-first, bilingual financial-product presentation while preserving all offline features and existing data.
 - [Offline preview updates](offline-preview-updates.md) — production checks can leave cached screens on the development origin; verify upgrades with an already-controlled browser.
+- [Backup compatibility](backup-compatibility.md) — downloaded encrypted backups need long-lived readers; crypto upgrades must not strand older files.

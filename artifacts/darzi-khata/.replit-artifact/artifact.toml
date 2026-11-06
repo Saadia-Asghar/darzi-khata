@@ -12,7 +12,7 @@ paths = [ "/" ]
 localPort = 24310
 
 [services.development]
-run = "pnpm --filter @workspace/darzi-khata run dev"
+run = "pnpm --filter @workspace/darzi-khata run serve"
 
 [services.production]
 build = [ "pnpm", "--filter", "@workspace/darzi-khata", "run", "build" ]

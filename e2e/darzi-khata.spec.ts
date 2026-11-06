@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { readFile } from 'node:fs/promises';
 
 // Each test gets an isolated browser context. Never clear a user's actual khata.
 const owner = 'qa-owner';
@@ -232,6 +233,89 @@ test('backup export and restore preserve orders and next serial', async ({ page 
   await expect.poll(async () => (await saved(page)).length).toBe(before.length);
   expect((await saved(page))[0].serialNumber).toBe('DK-007');
   expect(await page.evaluate(key => Number(localStorage.getItem(key)), `darzi-khata-serial-${owner}`)).toBeGreaterThanOrEqual(7);
+});
+
+test('encrypted backup rejects wrong passphrase and damaged file before confirmed restore', async ({ page }) => {
+  await seed(page);
+  await page.goto('/settings');
+  // The fixture is intentionally legacy data. Wait for normal startup migration
+  // before taking the immutable-data baseline for the decryption failure checks.
+  await expect.poll(async () => {
+    const order = (await saved(page))[0];
+    return !!order?.customerId && Array.isArray(order.items) && Array.isArray(order.payments);
+  }).toBe(true);
+  const before = await saved(page);
+  const passphrase = 'unique test backup phrase';
+  await page.getByTestId('btn-export-encrypted').click();
+  await page.getByTestId('input-backup-passphrase').fill(passphrase);
+  await page.getByTestId('input-backup-confirm').fill('does not match');
+  await page.getByTestId('btn-submit-passphrase').click();
+  await expect(page.getByRole('alert')).toContainText('do not match');
+  await page.getByTestId('input-backup-confirm').fill(passphrase);
+  const downloadPromise = page.waitForEvent('download');
+  await page.getByTestId('btn-submit-passphrase').click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toContain('encrypted-backup');
+  const backupFile = (await download.path())!;
+  const contents = await readFile(backupFile, 'utf8');
+  expect(contents).not.toContain('QA Tailor Customer');
+  expect(contents).not.toContain('passwordHash');
+  const envelope = JSON.parse(contents);
+  expect(envelope.cipher).toBe('AES-256-GCM');
+  await expect(page.getByTestId('backup-passphrase-form')).toHaveCount(0);
+
+  const upload = page.locator('input[type="file"][accept*="json"]');
+  await upload.setInputFiles(backupFile);
+  await page.getByTestId('input-backup-passphrase').fill('incorrect backup phrase');
+  await page.getByTestId('btn-submit-passphrase').click();
+  await expect(page.getByRole('alert')).toContainText('wrong passphrase or damaged file');
+  await expect(page.getByTestId('input-backup-passphrase')).toHaveValue('');
+  await expect(page.getByTestId('btn-confirm-restore')).toHaveCount(0);
+  expect(await saved(page)).toEqual(before);
+
+  // Authentic decryption still requires the existing destructive-action confirmation.
+  await page.getByTestId('input-backup-passphrase').fill(passphrase);
+  await page.getByTestId('btn-submit-passphrase').click();
+  await expect(page.getByTestId('btn-confirm-restore')).toBeVisible();
+  expect(await saved(page)).toEqual(before);
+  await page.getByRole('button', { name: /^Cancel/ }).click();
+  expect(await saved(page)).toEqual(before);
+
+  const bytes = Buffer.from(envelope.ciphertext, 'base64');
+  bytes[bytes.length - 1] ^= 1;
+  await upload.setInputFiles({ name: 'damaged.json', mimeType: 'application/json',
+    buffer: Buffer.from(JSON.stringify({ ...envelope, ciphertext: bytes.toString('base64') })) });
+  await page.getByTestId('input-backup-passphrase').fill(passphrase);
+  await page.getByTestId('btn-submit-passphrase').click();
+  await expect(page.getByRole('alert')).toContainText('wrong passphrase or damaged file');
+  expect(await saved(page)).toEqual(before);
+  await page.getByTestId('btn-cancel-passphrase').click();
+  await expect(page.getByTestId('backup-passphrase-form')).toHaveCount(0);
+
+  await page.evaluate(key => localStorage.setItem(key, '[]'), ordersKey);
+  await page.reload();
+  await upload.setInputFiles(backupFile);
+  await page.getByTestId('input-backup-passphrase').fill(passphrase);
+  await page.getByTestId('btn-submit-passphrase').click();
+  expect(await saved(page)).toEqual([]);
+  await page.getByTestId('btn-confirm-restore').click();
+  await expect.poll(async () => (await saved(page)).length).toBe(before.length);
+  expect((await saved(page))[0].serialNumber).toBe('DK-007');
+  expect(await page.evaluate(key => Number(localStorage.getItem(key)), `darzi-khata-serial-${owner}`)).toBeGreaterThanOrEqual(7);
+  const browserData = await page.evaluate(() => JSON.stringify({ local: { ...localStorage }, session: { ...sessionStorage } }));
+  expect(browserData).not.toContain(passphrase);
+  await page.reload();
+  expect((await saved(page))[0].serialNumber).toBe('DK-007');
+  await page.setViewportSize({ width: 360, height: 844 });
+  await page.getByTestId('btn-lang-ur').click();
+  await page.getByTestId('toggle-dark-mode').click();
+  await page.getByTestId('btn-export-encrypted').click();
+  await noOverflow(page);
+  await expect(page.getByTestId('input-backup-passphrase')).toHaveValue('');
+  await page.getByTestId('input-backup-passphrase').fill('cancelled memory only');
+  await page.getByTestId('btn-cancel-passphrase').click();
+  await page.getByTestId('btn-export-encrypted').click();
+  await expect(page.getByTestId('input-backup-passphrase')).toHaveValue('');
 });
 
 test('all full pages fit at 360px in dark Urdu-first mode', async ({ page }) => {

@@ -11,6 +11,37 @@ single-language sign-up screen. The test checks both English and Urdu and
 preservation of localStorage and IndexedDB markers. The recovery worker is
 served only by Vite development; production PWA behavior is unchanged.
 
+### Optional encrypted backup verification
+
+Verified on 6 November 2026 against the production preview build:
+
+- `pnpm --filter @workspace/darzi-khata test`: 29 finance tests and 48 Vitest
+  tests passed, including 9 new encrypted-backup tests. The expanded customer
+  profile round-trip fixture was then checked with the focused encryption suite:
+  all 9 tests passed.
+- `pnpm --filter @workspace/darzi-khata typecheck`: passed.
+- `PORT=24310 BASE_PATH=/ pnpm --filter @workspace/darzi-khata build`: passed;
+  existing sourcemap and large-chunk warnings remain.
+- Focused mobile Playwright backup checks: the original plain JSON export/
+  restore test passed. The encrypted journey initially exposed a test-fixture
+  timing issue: startup migration added customer IDs, garment items and payment
+  arrays after the baseline snapshot. The test now waits for that migration.
+  `E2E_BASE_URL=https://$REPLIT_DEV_DOMAIN pnpm exec playwright test --grep
+  'encrypted backup rejects'` then passed.
+- Browser checks cover mismatched confirmation, encrypted download without
+  customer plaintext, wrong passphrase, damaged authentication tag, unchanged
+  current data on failure/cancel, explicit replacement confirmation, successful
+  restore and reload, serial repair, passphrase clearing and absence from
+  browser storage. Plain JSON compatibility remains covered.
+- Signed-in browser inspection at 360×844 in dark Urdu RTL showed the encrypted
+  backup panel and its controls without horizontal overflow.
+- Unit round trips include customers and saved measurement profiles, payment
+  records, photos, templates, team and settings. They also check random salts/
+  IVs, altered metadata, unsupported formats, unavailable Web Crypto, recursive
+  password/PIN filtering, and legacy JSON restoration.
+- No cloud storage or new authentication was introduced. Physical Android/
+  iPhone cross-device file transfer has not been verified.
+
 Language/clutter follow-up: added a visible English/Urdu switch to the main
 header, routed tool headers and sign-in. UI labels now show one language at a
 time. Help on More is collapsed by default. TypeScript, all 68 unit tests,

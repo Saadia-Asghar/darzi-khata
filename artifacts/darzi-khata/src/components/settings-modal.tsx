@@ -23,6 +23,8 @@ import { validateBackup, restoreBackup, stripSecrets, type ParsedBackup } from '
 import { SCHEMA_VERSION } from '../lib/migrations';
 import { usePhotoScope } from './fabric-photo';
 import { Languages, Type } from 'lucide-react';
+import { BackupPassphrase } from './backup-passphrase';
+import { decryptBackup, encryptBackup, isEncryptedBackup, validateEncryptedBackup, type EncryptedBackup } from '../lib/backup-encryption';
 
 
 interface SettingsModalProps {
@@ -48,6 +50,19 @@ export function SettingsModal({ open, onOpenChange, orders }: SettingsModalProps
   const photoScope = usePhotoScope();
   const [pendingRestore, setPendingRestore] = useState<ParsedBackup | null>(null);
   const [busy, setBusy] = useState(false);
+  const [protection, setProtection] = useState<'export' | EncryptedBackup | null>(null);
+  const operation = useRef(0);
+  const cancelProtection = () => {
+    operation.current++;
+    setProtection(null);
+    setBusy(false);
+  };
+  useEffect(() => {
+    setProtection(null);
+    setPendingRestore(null);
+    setBusy(false);
+    return () => { operation.current++; };
+  }, [open, photoScope]);
 
   // Initialise form only when the dialog opens, so unrelated re-renders never wipe typed input.
   const settingsRef = useRef(settings);
@@ -73,39 +88,62 @@ export function SettingsModal({ open, onOpenChange, orders }: SettingsModalProps
     onOpenChange(false);
   };
 
-  const handleExport = async () => {
+  const handleExport = async (passphrase?: string) => {
+    const token = ++operation.current;
     setBusy(true);
-    let photos: PhotoBackup[] = [];
-    try { photos = await exportPhotos(orders.map((o) => o.fabricPhotoId).filter(Boolean) as string[]); }
-    catch { setBusy(false); toast({ title: label('backup_stopped_fabric_photo_unavailable'), variant: 'destructive' }); return; }
-    setBusy(false);
-    const backup = { schemaVersion: SCHEMA_VERSION, orders, customers, photos, templates, karigars, settings: stripSecrets({...formData,language:settings.language,fontSize:settings.fontSize,paperSize:settings.paperSize}), exportedAt: new Date().toISOString() };
-    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `darzi-khata-backup-${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    toast({ title: label('backup_downloaded') });
+    try {
+      let photos: PhotoBackup[];
+      try { photos = await exportPhotos(orders.map((o) => o.fabricPhotoId).filter(Boolean) as string[]); }
+      catch { throw new Error(label('backup_stopped_fabric_photo_unavailable')); }
+      const backup = stripSecrets({ schemaVersion: SCHEMA_VERSION, orders, customers, photos, templates, karigars,
+        settings: {...formData,language:settings.language,fontSize:settings.fontSize,paperSize:settings.paperSize}, exportedAt: new Date().toISOString() });
+      const payload = passphrase === undefined ? backup : await encryptBackup(backup, passphrase);
+      if (token !== operation.current) return;
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      if (blob.size > 100 * 1024 * 1024) throw new Error(label('backup_must_be_under_100_mb'));
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      try {
+        a.href = url;
+        a.download = `darzi-khata-${passphrase === undefined ? 'backup' : 'encrypted-backup'}-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+      } finally { a.remove(); URL.revokeObjectURL(url); }
+      setProtection(null);
+      toast({ title: label('backup_downloaded') });
+    } finally { if (token === operation.current) setBusy(false); }
   };
 
-  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = '';
     if (!file) return;
+    const token = ++operation.current;
+    setProtection(null);
+    setPendingRestore(null);
     if(file.size>100*1024*1024) { toast({title:label('backup_must_be_under_100_mb'),variant:'destructive'});return; }
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      try { setPendingRestore(validateBackup(JSON.parse(event.target?.result as string))); }
-      catch (err) { toast({ title: label('invalid_backup_file'), description: err instanceof Error ? err.message : undefined, variant: 'destructive' }); }
-    };
-    reader.onerror = () => toast({ title: label('could_not_read_file'), variant: 'destructive' });
-    reader.readAsText(file);
-    if (fileInputRef.current) fileInputRef.current.value = '';
+    setBusy(true);
+    try {
+      const raw: unknown = JSON.parse(await file.text());
+      if (token !== operation.current) return;
+      if (isEncryptedBackup(raw)) setProtection(validateEncryptedBackup(raw));
+      else setPendingRestore(validateBackup(raw));
+    } catch (err) {
+      if (token === operation.current) toast({ title: label('invalid_backup_file'), description: err instanceof Error ? err.message : undefined, variant: 'destructive' });
+    } finally { if (token === operation.current) setBusy(false); }
   };
 
+  const unlockBackup = async (passphrase: string) => {
+    if (!protection || protection === 'export') return;
+    const token = ++operation.current;
+    setBusy(true);
+    try {
+      const data = await decryptBackup(protection, passphrase);
+      if (token !== operation.current) return;
+      setProtection(null);
+      setPendingRestore(data);
+    } finally { if (token === operation.current) setBusy(false); }
+  };
   const runRestore = async () => {
     const data = pendingRestore;
     setPendingRestore(null);
@@ -273,7 +311,7 @@ export function SettingsModal({ open, onOpenChange, orders }: SettingsModalProps
                     <div className="text-xs text-muted-foreground">{label('sample_shop_with_about_150_orders_your_r')}</div>
                   </div>
                 </div>
-                <Switch checked={demoMode} onCheckedChange={(v) => { setDemoMode(v); toast({ title: v ? label('demo_data_on') : label('real_data_restored') }); }} className="shrink-0 scale-125" aria-label={label('demo_mode')} data-testid="switch-demo-mode" />
+                <Switch checked={demoMode} disabled={busy} onCheckedChange={(v) => { setDemoMode(v); toast({ title: v ? label('demo_data_on') : label('real_data_restored') }); }} className="shrink-0 scale-125" aria-label={label('demo_mode')} data-testid="switch-demo-mode" />
               </div>
               {demoMode && (
                 <button type="button" onClick={() => setClearOpen(true)} className="w-full min-h-[44px] rounded-lg border border-border text-danger  text-sm font-bold hover:bg-danger-soft " data-testid="btn-clear-demo">
@@ -339,23 +377,29 @@ export function SettingsModal({ open, onOpenChange, orders }: SettingsModalProps
             {/* Backup */}
             <section className="bg-card p-4 rounded-lg border border-card-border">
               <h3 className="font-bold text-foreground border-b border-border pb-2 text-sm   mb-3">{label('data_backup')}</h3>
+              <p className="text-sm text-muted-foreground mb-3">{label('backup_plain_help')}</p>
               <div className="flex gap-3">
-                <button onClick={handleExport} disabled={busy} className="disabled:opacity-60 flex-1 flex flex-col items-center gap-1.5 py-3 bg-primary-soft  text-primary  hover:bg-primary-soft rounded-lg border border-border  transition-colors" data-testid="btn-export">
+                <button onClick={() => { setProtection(null); void handleExport().catch(err => toast({ title: label('backup_export_failed'), description: err instanceof Error ? err.message : undefined, variant: 'destructive' })); }} disabled={busy} className="disabled:opacity-60 flex-1 flex flex-col items-center gap-1.5 py-3 bg-primary-soft  text-primary  hover:bg-primary-soft rounded-lg border border-border  transition-colors" data-testid="btn-export">
                   <Download size={20} />
                   <span className="text-sm font-bold">{label('export_backup')}</span>
                 </button>
                 <label className="flex-1 flex flex-col items-center gap-1.5 py-3 bg-muted text-muted-foreground hover:bg-accent rounded-lg border border-border cursor-pointer transition-colors">
                   <Upload size={20} />
                   <span className="text-sm font-bold">{label('restore_data')}</span>
-                  <input type="file" accept=".json" className="hidden" ref={fileInputRef} onChange={handleImport} />
+                  <input type="file" accept=".json" className="hidden" ref={fileInputRef} onChange={handleImport} disabled={busy} aria-label={label('restore_data')} />
                 </label>
               </div>
+              <button type="button" disabled={busy} onClick={() => setProtection('export')} className="mt-3 w-full min-h-[44px] rounded-lg border border-border px-3 text-sm font-bold text-primary disabled:opacity-60" data-testid="btn-export-encrypted">
+                {label('backup_export_encrypted')}
+              </button>
+              {protection && <BackupPassphrase key={protection === 'export' ? 'export' : protection.iv} exporting={protection === 'export'} busy={busy}
+                onSubmit={protection === 'export' ? handleExport : unlockBackup} onCancel={cancelProtection} />}
             </section>
 
           </div>
 
           <div className="p-4 border-t border-border bg-card shrink-0">
-            <button onClick={handleSave} className="w-full bg-primary hover:bg-primary text-primary-foreground rounded-lg py-3 font-bold  active:scale-[0.98] transition-all flex items-center justify-center gap-2" data-testid="btn-save-settings">
+            <button onClick={handleSave} disabled={busy} className="w-full bg-primary hover:bg-primary text-primary-foreground rounded-lg py-3 font-bold  active:scale-[0.98] transition-all flex items-center justify-center gap-2" data-testid="btn-save-settings">
               <Save size={18} aria-hidden /> {label('save_2')}
             </button>
           </div>

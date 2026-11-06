@@ -99,6 +99,30 @@ not customers or verified financial transactions. Do not send messages to demo n
 
 ## Offline and data safety
 
+### Optional passphrase-protected backups
+
+In **Settings → Data backup**, **Export backup** still downloads the original
+plain JSON format. Anyone who has that file can read it. The separate
+**Export encrypted backup** action asks for a unique passphrase (at least 12
+characters) and confirmation. Use something different from your account
+password or PIN, and keep it safe: there is no passphrase reset or recovery.
+
+Encryption runs locally using Web Crypto: AES-256-GCM with a random 12-byte IV,
+a 128-bit authentication tag, and a key derived by PBKDF2-SHA-256 with 600,000
+iterations and a fresh 16-byte salt. Versioned envelope metadata is authenticated.
+The encrypted file is named `darzi-khata-encrypted-backup-YYYY-MM-DD.json`.
+Current browsers over HTTPS (or a trusted localhost context) are required;
+unsupported browsers fail explicitly without downloading a plaintext substitute.
+
+**Restore data** accepts both formats. An encrypted file first asks for its
+passphrase, then validates the decrypted data and shows the same replacement
+confirmation as plain JSON. A wrong passphrase or damaged file leaves the
+current register unchanged. Old plain JSON backups still use the existing
+migration and restore path. Both exports exclude passwords and PIN hashes.
+The passphrase is held only in memory, never stored by the app or uploaded.
+Only the downloaded file is encrypted: existing files and local browser data
+are not rewritten or encrypted.
+
 **No backend or cloud sync.** Accounts and business records live in this browser's
 `localStorage`; fabric photos use IndexedDB and the session uses `sessionStorage`. Accounts are a local access
 convenience, not secure server-enforced authentication. Hashing alone does not

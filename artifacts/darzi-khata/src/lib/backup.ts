@@ -15,8 +15,17 @@ export interface ParsedBackup {
   templates?: MeasurementTemplate[];
   karigars?: string[];
 }
-const SECRET_KEYS = ['pin','pinHash','pinSalt','password','passwordHash','salt','hash'];
-export const stripSecrets = <T extends object>(o:T):T => Object.fromEntries(Object.entries(o).filter(([k])=>!SECRET_KEYS.includes(k))) as T;
+const SECRET_KEYS = new Set(['pin','pinhash','pinsalt','password','passwordhash','salt','hash']);
+// Filter recursively: imported/legacy records can contain extra fields, not just settings.
+export function stripSecrets<T>(value: T): T {
+  if (Array.isArray(value)) return value.map(stripSecrets) as T;
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(Object.entries(value)
+      .filter(([key]) => !SECRET_KEYS.has(key.toLowerCase()))
+      .map(([key, child]) => [key, stripSecrets(child)])) as T;
+  }
+  return value;
+}
 export function validateBackup(raw: unknown): ParsedBackup {
   if (!raw || typeof raw!=='object') throw new Error(bi('m_not_a_khata_backup'));
   const d = raw as Record<string,unknown>;
