@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './app-test';
 
 test('an old offline sign-in updates without deleting saved browser data', async ({ page, context }) => {
   test.skip(process.env.E2E_PRODUCTION === '1', 'Recovery worker is development-only.');

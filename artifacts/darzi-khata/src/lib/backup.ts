@@ -1,6 +1,7 @@
 import { bi } from './i18n';
 import type { Customer, Order } from '../types/order';
 import type { ShopSettings } from '../hooks/use-settings';
+import { validateExpense, type Expense, type SavingsGoal } from './shop-tools';
 import type { MeasurementTemplate } from '../hooks/use-templates';
 import { importPhotos, deleteFabricPhoto, type PhotoBackup } from './photos';
 import { validateCustomers, validateOrders } from './order-validation';
@@ -61,6 +62,19 @@ export function validateBackup(raw: unknown): ParsedBackup {
   if(d.settings!==undefined) {
     if(!d.settings||typeof d.settings!=='object'||Array.isArray(d.settings))throw new Error(bi('m_invalid_shop_settings'));
     const s=d.settings as Record<string,unknown>;
+    if(s.hideShopPhone!==undefined&&typeof s.hideShopPhone!=='boolean')throw new Error(bi('m_invalid_shop_settings'));
+    if(s.expenses!==undefined&&(!Array.isArray(s.expenses)||s.expenses.length>50000||s.expenses.some(e=>!e||!validateExpense(e as Expense))))throw new Error(bi('m_invalid_shop_settings'));
+    if(s.savings!==undefined) {
+      const goal=s.savings as SavingsGoal;
+      if(!goal||typeof goal.name!=='string'||!Number.isFinite(goal.target)||goal.target<=0||!Number.isFinite(goal.percent)||goal.percent<0||goal.percent>100
+        ||!Array.isArray(goal.contributions)||goal.contributions.length>50000
+        ||goal.contributions.some(c=>!c||typeof c.id!=='string'||!Number.isFinite(c.amount)||c.amount<=0||!Number.isFinite(Date.parse(c.date)))
+        ||goal.contributions.reduce((sum,c)=>sum+c.amount,0)>goal.target)throw new Error(bi('m_invalid_shop_settings'));
+    }
+    if(s.rushPlan!==undefined) {
+      const plan=s.rushPlan as NonNullable<ShopSettings['rushPlan']>;
+      if(!plan||!Number.isFinite(Date.parse(plan.deadline))||!Number.isInteger(plan.workers)||plan.workers<1||plan.workers>100||!Number.isInteger(plan.dailyPerKarigar)||plan.dailyPerKarigar<1||plan.dailyPerKarigar>100)throw new Error(bi('m_invalid_shop_settings'));
+    }
     for(const k of ['shopName','shopNameUrdu','address','phone','thankYouMessage','zindigiWallet','raastId','accountTitle'])
       if(s[k]!==undefined&&typeof s[k]!=='string')throw new Error(bi('m_invalid_shop_settings'));
     if(s.darkMode!==undefined&&typeof s.darkMode!=='boolean')throw new Error(bi('m_invalid_theme'));

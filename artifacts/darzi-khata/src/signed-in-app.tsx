@@ -11,6 +11,7 @@ import type { useAuth } from './hooks/use-auth';
 import { AuthContext } from './context/auth-context';
 import NotFound from './pages/not-found';
 import { bi } from './lib/i18n';
+import { APP_PATH } from './lib/app-paths';
 
 const queryClient = new QueryClient();
 const Dashboard = lazy(() => import('./pages/dashboard'));
@@ -39,6 +40,12 @@ function Router() {
         <Route path="/impact">{() => <Dashboard section="impact" />}</Route>
         <Route path="/reminders">{() => <Dashboard section="reminders" />}</Route>
         <Route path="/due">{() => <Dashboard section="due" />}</Route>
+        <Route path="/pitch">{() => <Dashboard section="pitch" />}</Route>
+        <Route path="/recovery">{() => <Dashboard section="recovery" />}</Route>
+        <Route path="/rush">{() => <Dashboard section="rush" />}</Route>
+        <Route path="/expenses">{() => <Dashboard section="expenses" />}</Route>
+        <Route path="/savings">{() => <Dashboard section="savings" />}</Route>
+        <Route path="/share-profile">{() => <Dashboard section="share-profile" />}</Route>
         <Route component={NotFound} />
       </Switch>
     </RoutedErrorBoundary>
@@ -63,7 +70,7 @@ export default function SignedInApp({ currentUser, logout, updateCurrentUser }: 
               <FirstRunIntro />
               <Suspense fallback={<main className="min-h-[100dvh] p-6 bg-background text-foreground" role="status">{bi('loading')}</main>}>
                 {currentUser.role === 'karigar' ? <KarigarDashboard /> : (
-                  <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
+                  <WouterRouter base={APP_PATH}>
                     <Router />
                   </WouterRouter>
                 )}

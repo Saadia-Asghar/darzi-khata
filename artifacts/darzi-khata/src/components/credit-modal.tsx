@@ -17,8 +17,8 @@ type View = 'score' | 'consent' | 'profile';
 
 export function CreditModal({ open, onOpenChange, orders }: Props) {
   const { label, lang } = usePreferences();
-  const p = useMemo(() => computeCreditScore(orders), [orders, lang]);
   const { settings } = useSettings();
+  const p = useMemo(() => computeCreditScore(orders, new Date(), settings.expenses), [orders, lang, settings.expenses]);
   const { demoMode } = useDemoMode();
   const [view, setView] = useState<View>('score');
   const [agree, setAgree] = useState(false);
@@ -144,7 +144,7 @@ function ProfileSheet({ p, shopName, shopType, at, demo, print }: { p: CreditPro
   return (
     <article className={print ? 'text-[12pt] text-foreground p-2' : 'text-sm'} style={print ? { fontFamily: 'Georgia, serif' } : undefined}>
       <header className="border-b-2 border-primary pb-2 mb-3">
-        <div className="text-xs  tracking-[0.2em] text-primary">{tl('j_darzi_khata_business_profile')}</div>
+        <div className="text-xs text-primary">{tl('j_darzi_khata_business_profile')}</div>
         <h2 className="text-2xl font-bold text-primary dark:text-foreground">{shopName}</h2>
         <div className="text-sm">{shopTypeLabel(shopType)} · Generated {at.toLocaleDateString('en-PK')}</div>
         {demo && <div className="mt-1 text-sm font-bold text-danger">{tl('credit_demo_flag')}</div>}

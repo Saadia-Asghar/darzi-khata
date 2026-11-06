@@ -19,6 +19,14 @@ sync, external database or bank integration in the approved offline-only upgrade
   No customer names, phones or measurements enter that profile.
 - Demo mode isolates financial sample data from original records. Never clear
   real storage while refreshing a demo. Team/accounts remain local browser data.
+- The public landing page is `/`; application routes live under `/app`.
+  Installed PWAs bypass the landing page. Demo counters must stay labelled
+  as demo until genuine pilot aggregates exist.
+- Shared lender/status links are seven-day self-signed snapshots, not
+  bank-verified profiles or live feeds. Never imply that a signature verifies
+  business identity, or that a demo QR can receive real bank payments.
+- Pitch before/after scores must use the same credit model as the credit page.
+  Never hard-code a separate score for the guided presentation.
 
 ## Run and validate
 

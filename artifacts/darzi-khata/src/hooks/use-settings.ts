@@ -18,6 +18,10 @@ export interface ShopSettings {
   language?: 'en' | 'ur';
   fontSize?: 'normal' | 'large';
   paperSize?: 'a4' | '80' | '58';
+  hideShopPhone?: boolean;
+  expenses?: import('../lib/shop-tools').Expense[];
+  savings?: import('../lib/shop-tools').SavingsGoal;
+  rushPlan?: { deadline: string; dailyPerKarigar: number; workers: number };
 }
 
 const getDefaultSettings = (shopName?: string): ShopSettings => ({
@@ -27,6 +31,7 @@ const getDefaultSettings = (shopName?: string): ShopSettings => ({
   phone: '',
   thankYouMessage: 'Shukriya! Delivery ki tareekh par rabta farmaiye ga.',
   darkMode: false,
+  language: localStorage.getItem('darzi-khata-auth-lang') === 'ur' ? 'ur' : 'en',
 });
 
 export function useSettings() {

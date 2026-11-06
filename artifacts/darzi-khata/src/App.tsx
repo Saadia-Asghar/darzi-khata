@@ -1,39 +1,41 @@
-import { useEffect, lazy, Suspense } from 'react';
-import { bi } from './lib/i18n';
-import { AuthScreen } from './components/auth-screen';
-import { useAuth } from './hooks/use-auth';
+import { lazy, Suspense, useSyncExternalStore } from 'react';
+import { APP_PATH, BASE, isStandalone, routeOf } from './lib/app-paths';
 
-// The lock, onboarding, routing and UI providers are only needed after sign-in.
-// Workbox still precaches this chunk and its dependencies for offline use.
-const SignedInApp = lazy(() => import('./signed-in-app'));
-function ScreenLoading() {
-  return <main className="min-h-[100dvh] p-6 bg-background text-foreground" role="status">{bi('loading')}</main>;
+// Three separate chunks: the landing page stays small, and nothing from auth,
+// storage or the signed-in shell loads until the visitor goes to /app.
+const Landing = lazy(() => import('./pages/landing'));
+const AppShell = lazy(() => import('./app-shell'));
+const PublicPages = lazy(() => import('./pages/public-pages'));
+
+function subscribe(cb: () => void) {
+  window.addEventListener('popstate', cb);
+  return () => window.removeEventListener('popstate', cb);
+}
+const getPath = () => window.location.pathname;
+
+// Preserve older bookmarks after moving the register under /app.
+const oldPath = window.location.pathname.slice(BASE.length);
+if (/^\/(?:customers(?:\/.*)?|hisaab|more|settings|earnings|credit|worksheet|work-sheet|team|impact|reminders|due)\/?$/.test(oldPath)) {
+  window.history.replaceState(null, '', `${APP_PATH}${oldPath}${location.search}${location.hash}`);
+}
+
+// An installed app starts at /app, never on the marketing page.
+if (isStandalone() && routeOf(window.location.pathname).kind === 'landing' && window.location.pathname.replace(/\/$/, '') === BASE) {
+  window.history.replaceState(null, '', APP_PATH);
+}
+
+function Blank() {
+  return <main className="min-h-[100dvh] bg-background" aria-busy="true" />;
 }
 
 function App() {
-  const { currentUser, isAuthenticated, login, signup, logout, updateCurrentUser } = useAuth();
-
-  // Apply dark mode from user-specific settings on login
-  useEffect(() => {
-    if (!currentUser) return;
-    try {
-      const stored = localStorage.getItem(`darzi-khata-settings-${currentUser.id}`);
-      if (stored) {
-        const s = JSON.parse(stored);
-        document.documentElement.classList.toggle('dark', !!s.darkMode);
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
-    } catch { /* ignore */ }
-  }, [currentUser?.id]);
-
-  if (!isAuthenticated || !currentUser) {
-    return <AuthScreen onLogin={login} onSignup={signup} />;
-  }
-
+  const path = useSyncExternalStore(subscribe, getPath);
+  const route = routeOf(path);
   return (
-    <Suspense fallback={<ScreenLoading />}>
-      <SignedInApp currentUser={currentUser} logout={logout} updateCurrentUser={updateCurrentUser} />
+    <Suspense fallback={<Blank />}>
+      {route.kind === 'app' ? <AppShell />
+        : route.kind === 'public' ? <PublicPages kind={route.page} token={route.token} />
+        : <Landing />}
     </Suspense>
   );
 }

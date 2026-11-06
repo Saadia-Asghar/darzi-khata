@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './app-test';
 
 test('signed-out shell stays small and switches language before loading shop tools', async ({ page }) => {
   const scripts: string[] = [];

@@ -14,6 +14,7 @@ import { VoiceMeasurements } from './voice-measurements';
 import { getAccounts } from '../hooks/use-auth';
 import { useAuthContext } from '../context/auth-context';
 import { usePreferences } from '../hooks/use-preferences';
+import { useSettings } from '../hooks/use-settings';
 import { useCustomers } from '../hooks/use-customers';
 import { GARMENTS, garment, defaultMeasurements, LEGACY_MEASUREMENTS, newItem, itemsTotal, validateItems } from '../lib/garments';
 import { normalizePakistaniPhone } from '../lib/reminders';
@@ -131,6 +132,9 @@ export function OrderForm({ open, onOpenChange, order, prefill, onSave }: OrderF
   const { dataOwnerId } = useAuthContext();
   const { label, one, urduFirst } = usePreferences();
   const { customers } = useCustomers();
+  const { settings } = useSettings();
+  const homeBased = settings.shopType === 'women-home-tailor';
+  const garments = homeBased ? [...GARMENTS].sort((a, b) => Number(!a.value.startsWith('ladies')) - Number(!b.value.startsWith('ladies'))) : GARMENTS;
 
   const [items, setItems] = useState<OrderItem[]>(() => initialItems(order, prefill));
   const [activeItem, setActiveItem] = useState(0);
@@ -150,10 +154,10 @@ export function OrderForm({ open, onOpenChange, order, prefill, onSave }: OrderF
     if (!open) return;
     setStep(0);
     reset(initialValues(order, prefill));
-    setItems(initialItems(order, prefill));
+    setItems(!order && !prefill && homeBased ? [newItem('ladies-shirt')] : initialItems(order, prefill));
     setActiveItem(0); setActiveField(undefined); setItemsError(undefined);
     setPhotoId(order?.fabricPhotoId ?? prefill?.fabricPhotoId);
-  }, [open, order, prefill, reset]);
+  }, [open, order, prefill, reset, homeBased]);
 
   const total = itemsTotal(items);
   const suitCount = items.reduce((s, i) => s + (Number(i.quantity) || 0), 0);
@@ -260,7 +264,7 @@ export function OrderForm({ open, onOpenChange, order, prefill, onSave }: OrderF
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-foreground/60 z-50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-        <Dialog.Content className="fixed inset-x-0 bottom-0 z-50 h-[94dvh] flex flex-col rounded-t-lg bg-background border-t overflow-hidden data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom motion-reduce:animate-none  outline-none max-w-lg mx-auto sm:h-[88vh] sm:bottom-auto sm:top-[50%] sm:-translate-y-1/2 sm:rounded-[20px]">
+        <Dialog.Content className="fixed inset-x-0 bottom-0 z-50 h-[94dvh] flex flex-col rounded-t-lg bg-background border-t overflow-hidden data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom motion-reduce:animate-none  outline-none max-w-lg mx-auto sm:h-[88vh] sm:bottom-auto sm:top-[50%] sm:-translate-y-1/2 sm:rounded-lg">
           <div className="px-4 py-3 border-b flex justify-between items-center bg-card text-foreground border-border shrink-0">
             <div>
               <Dialog.Title className={"text-lg font-bold"}>{order ? label('edit_order') : label('new_order_2')}</Dialog.Title>
@@ -358,7 +362,7 @@ export function OrderForm({ open, onOpenChange, order, prefill, onSave }: OrderF
                     <div>
                       <label htmlFor="of-gt" className="block text-sm font-semibold mb-1">{label('garment_type')}</label>
                       <select id="of-gt" value={current.garmentType} onChange={(e) => changeType(activeItem, e.target.value as GarmentType)} className={inputCls} data-testid="select-garment">
-                        {GARMENTS.map((gg) => <option key={gg.value} value={gg.value}>{label(gg.tk)}</option>)}
+                        {garments.map((gg) => <option key={gg.value} value={gg.value}>{label(gg.tk)}</option>)}
                       </select>
                     </div>
                     <button type="button" disabled={items.length <= 1} onClick={() => removeItem(activeItem)} className="h-11 w-11 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:text-danger disabled:opacity-40" aria-label={label('remove_this_garment')} data-testid="btn-remove-item"><Trash2 size={16} /></button>

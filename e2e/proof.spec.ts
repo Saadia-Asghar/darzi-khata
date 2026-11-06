@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './app-test';
 import { mkdir, writeFile } from 'node:fs/promises';
 
 const dir = 'generated-artifacts/proof';

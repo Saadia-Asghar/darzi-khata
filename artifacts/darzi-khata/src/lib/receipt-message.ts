@@ -8,6 +8,7 @@ export interface ReceiptSettings extends PaymentDetails {
   thankYouMessage?: string;
   address: string;
   phone: string;
+  hideShopPhone?: boolean;
 }
 
 const styleKeys: DictKey[] = [
@@ -53,6 +54,6 @@ export function receiptMessage(order: Order, settings: ReceiptSettings, lang: La
     payment: details && remaining > 0 ? `${t('receipt_pay_online')}\n${details}\n${t('receipt_reference', { ref: order.serialNumber || order.id, amount: remaining })}\n${t('receipt_share_screenshot')}` : '',
     thanks: receiptThanks(settings, lang),
     address: settings.address,
-    shopPhone: settings.phone,
+    shopPhone: settings.hideShopPhone ? '' : settings.phone,
   });
 }

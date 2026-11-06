@@ -17,6 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { balance, buildPaymentPayload, paymentDetailsText } from '../lib/payments';
 import { normalizePakistaniPhone } from '../lib/reminders';
 import { printElement } from '../lib/print';
+import { OrderTracking } from './order-tracking';
 
 interface ReceiptModalProps {
   open: boolean;
@@ -90,6 +91,7 @@ export function ReceiptModal({ open, onOpenChange, order }: ReceiptModalProps) {
         <Dialog.Content dir={lang === 'ur' ? 'rtl' : 'ltr'} lang={lang} aria-describedby={undefined} data-testid="receipt-dialog" className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg bg-card p-0  outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 print:static print:transform-none print:shadow-none print:max-w-none print:p-0 max-h-[90vh] overflow-y-auto">
           <Dialog.Title className="sr-only">{label('receipt')}</Dialog.Title>
           {paperChooser}
+          <OrderTracking order={order} />
           {/* Printable Area */}
           <div className="p-6 md:p-8" id="receipt-print-area">
             <div className="print-paper border-2 border-dashed border-border p-5 relative bg-card mx-auto max-w-[400px]" data-paper={paperSize}>
@@ -204,6 +206,7 @@ export function ReceiptModal({ open, onOpenChange, order }: ReceiptModalProps) {
 
               <div className="mt-4 text-center text-xs text-muted-foreground   border-t border-border pt-3">
                 <p>{receiptThanks(settings, lang)}</p>
+                {!!settings.phone && !settings.hideShopPhone && <p className="num" dir="ltr" data-testid="receipt-shop-phone">{settings.phone}</p>}
                 {label('receipt_footer')}
               </div>
             </div>

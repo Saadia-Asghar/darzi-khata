@@ -1,4 +1,4 @@
-import { money, tl } from '../lib/i18n';
+import { money, tl, getCurrentLang } from '../lib/i18n';
 import { useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 import { ChartContainer } from './ui/chart';
@@ -7,12 +7,12 @@ import type { Order } from '../types/order';
 
 export function PaymentShareStat({ orders }: { orders: Order[] }) {
   const share = useMemo(() => paymentShare(orders, new Date()), [orders]);
-  const month = new Date().toLocaleDateString('en-PK', { month: 'long', year: 'numeric' });
+  const month = new Date().toLocaleDateString(getCurrentLang() === 'ur' ? 'ur-PK' : 'en-PK', { month: 'long', year: 'numeric' });
   return (
     <section className="rounded-lg border border-border bg-card p-3 mb-4" aria-label={tl('m_digital_vs_cash_this_month')}>
       <div className="flex items-start justify-between gap-3 text-sm">
         <div><h2 className="font-bold">{tl('j_digital_vs_cash')}</h2><p className="text-muted-foreground mt-1">{month} · PKR · {tl('j_by_payment_date')}</p></div>
-        <b className="text-primary  shrink-0">{share.digitalPercent.toFixed(1)}% digital</b>
+        <b className="text-primary  shrink-0">{share.digitalPercent.toFixed(1)}% {tl('m_digital')}</b>
       </div>
       {share.total > 0 ? (
         <ChartContainer className="h-8 w-full aspect-auto" config={{ digital: { label: tl('m_digital'), color: 'hsl(var(--primary))' }, cash: { label: tl('m_cash'), color: 'hsl(var(--accent))' } }}>

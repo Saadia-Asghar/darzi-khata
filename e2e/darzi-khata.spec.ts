@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page } from './app-test';
 import { readFile } from 'node:fs/promises';
 
 // Each test gets an isolated browser context. Never clear a user's actual khata.

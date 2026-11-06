@@ -123,7 +123,7 @@ export function PaymentUpdateDialog({ order, open, onOpenChange }: PaymentUpdate
           {demoMode && due > 0 && (
             <button type="button" onClick={() => save(due, 'zindigi', todayStr(), true)}
               className="w-full min-h-[48px] rounded-lg border-2 border-dashed border-warning bg-warning-soft  text-accent-foreground  text-sm font-bold flex items-center justify-center gap-2" data-testid="btn-demo-zindigi-paid">
-              <FlaskConical size={16} /> Simulate Zindigi paid (demo) / ڈیمو
+              <FlaskConical size={16} /> {tl('pay_simulate_demo')}
             </button>
           )}
 

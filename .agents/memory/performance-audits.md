@@ -15,3 +15,13 @@ varied even when the bundle was demonstrably smaller.
 browser suites. Record baseline, final ranges and actual bundle sizes, and avoid
 claiming a causal CPU improvement when the timing ranges overlap. Preserve fonts
 and offline behavior rather than removing them just to improve an audit.
+
+Closed dialogs can still execute every hook and normalize the entire register.
+Lazy imports alone do not defer that work if the component is always mounted.
+
+**Why:** Reducing visible order cards and deferring charts left substantial
+startup blocking because closed order forms still ran their storage hooks.
+
+**How to apply:** Inspect closed-dialog hook costs before changing data storage
+or removing features. Mount expensive forms when opened, while preserving any
+draft behavior the product explicitly promises.

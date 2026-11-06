@@ -1,6 +1,7 @@
 import { tl as bi } from './i18n';
 import type { Order } from '../types/order';
 import { paymentShare } from './payments';
+import type { Expense } from './shop-tools';
 
 export interface CreditFactor { key: string; label: string; weight: number; score: number; tip: string }
 export interface CreditProfile {
@@ -14,7 +15,7 @@ const clamp = (n: number) => Math.min(100, Math.max(0, Number.isFinite(n) ? n : 
 const monthKey = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 
 // An explainable, illustrative on-device score, NOT a lender or credit-bureau model.
-export function computeCreditScore(orders: Order[], now = new Date()): CreditProfile {
+export function computeCreditScore(orders: Order[], now = new Date(), expenses: Expense[] = []): CreditProfile {
   const valid = orders.filter(o => Number.isFinite(Date.parse(o.orderDate)) && Date.parse(o.orderDate) <= now.getTime());
   const earliest = valid.length ? new Date(Math.min(...valid.map(o => Date.parse(o.orderDate)))) : now;
   const monthsActive = valid.length ? Math.max(1, (now.getFullYear() - earliest.getFullYear()) * 12 + now.getMonth() - earliest.getMonth() + 1) : 0;
@@ -48,6 +49,15 @@ export function computeCreditScore(orders: Order[], now = new Date()): CreditPro
     { key: 'digital', label: bi('m_digital_payments'), weight: 10, score: digitalPercent, tip: bi('m_record_wallet_and_bank_payments') },
   ];
   const enoughData = valid.length >= 5 && monthsActive >= 2;
+  // Preserve legacy scoring for shops without expense records. With recorded
+  // costs, replace half of the revenue-trend weight with observed profit margin.
+  if (expenses.length) {
+    const costs = expenses.filter(e => Date.parse(e.date) <= now.getTime()).reduce((s, e) => s + e.amount, 0);
+    const margin = collected ? clamp((collected - costs) / collected * 100) : 0;
+    const trend = factors.find(f => f.key === 'growth')!;
+    trend.weight = 10;
+    factors.push({ key: 'profit', label: bi('feature_profit'), weight: 10, score: margin, tip: bi('feature_profit_tip') });
+  }
   const score = Math.round(factors.reduce((sum, f) => sum + f.score * f.weight / 100, 0));
   return {
     score, band: score < 40 ? bi('m_starter') : score < 70 ? bi('m_growing') : bi('m_trusted'),

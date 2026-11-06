@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './app-test';
 import { DICT, type DictKey } from '../artifacts/darzi-khata/src/lib/i18n';
 
 for (const width of [360, 390]) for (const language of ['en', 'ur'] as const) for (const dark of [false, true]) {

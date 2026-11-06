@@ -56,10 +56,12 @@ export default defineConfig({
       injectRegister: false,
       includeAssets: ['favicon.svg', 'icon-192.png', 'icon-512.png'],
       manifest: {
+        id: `${basePath}app`,
         name: 'Darzi Khata. درزی کھاتہ',
         short_name: 'Darzi Khata',
-        description: 'Record orders, track payments, build an illustrative credit profile.',
-        start_url: basePath,
+        description: 'Offline khata for tailors: orders, payments and an illustrative credit profile.',
+        // Installed app opens the register, not the landing page.
+        start_url: `${basePath}app`,
         scope: basePath,
         display: 'standalone',
         background_color: '#F9FAF9',
@@ -72,7 +74,9 @@ export default defineConfig({
         ],
       },
       workbox: {
+        // Landing screenshots are fetched on demand, not installed with the app.
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+        globIgnores: ['**/screens/**'],
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         navigateFallback: `${basePath}index.html`,
         cleanupOutdatedCaches: true,
@@ -114,6 +118,9 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, 'dist/public'),
     emptyOutDir: true,
+    // Keep the landing route lean: the signed-in shell, auth and data layers
+    // stay in their own lazy chunks (see src/App.tsx).
+    modulePreload: { resolveDependencies: (_file, deps, ctx) => ctx.hostType === 'html' ? deps.filter(d => !/signed-in-app|app-shell|dashboard/.test(d)) : deps },
   },
   server: {
     port,

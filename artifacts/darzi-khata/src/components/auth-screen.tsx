@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { Eye, EyeOff, LogIn, UserPlus, Loader2, Store, Users, ChevronDown, ChevronUp } from 'lucide-react';
-import { DICT, type DictKey } from '../lib/i18n';
+import { DICT, setCurrentLang, type DictKey } from '../lib/i18n';
 import { BrandMark } from './brand-mark';
 import { LanguageSwitch } from './language-switch';
 
 interface AuthScreenProps {
   onLogin: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  /** Opening tab, e.g. from /app/login?mode=signup. */
+  initialTab?: 'login' | 'signup';
   onSignup: (name: string, email: string, password: string, shopName: string, role: 'owner' | 'karigar', ownerEmail?: string) => Promise<{ success: boolean; error?: string }>;
 }
 
@@ -19,10 +21,11 @@ const DEMO_ACCOUNTS = [
   { label: 'Rustam Ustad', name: 'Rustam Ustad', shop: 'Karigar', email: 'rustam@darzikhata.com', password: 'demo1234', color: 'amber' },
 ];
 
-export function AuthScreen({ onLogin, onSignup }: AuthScreenProps) {
+export function AuthScreen({ onLogin, onSignup, initialTab = 'login' }: AuthScreenProps) {
   const [urduFirst, setUrduFirst] = useState(() => { try { return localStorage.getItem('darzi-khata-auth-lang') === 'ur'; } catch { return false; } });
+  setCurrentLang(urduFirst ? 'ur' : 'en');
   const L = (k: DictKey) => DICT[k][urduFirst ? 'ur' : 'en'];
-  const [tab, setTab] = useState<Tab>('login');
+  const [tab, setTab] = useState<Tab>(initialTab);
   const [demoOpen, setDemoOpen] = useState(false);
 
   // Login

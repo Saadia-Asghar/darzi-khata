@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page } from './app-test';
 import { mkdir, writeFile } from 'node:fs/promises';
 
 export async function seedRegression(page: Page, language = 'en', dark = false) {

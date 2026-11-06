@@ -22,7 +22,11 @@ if (import.meta.env.DEV && 'serviceWorker' in navigator) {
 // Precache the offline shell after fonts and first rendering have settled.
 // Installing a multi-megabyte cache during first paint stalls low-end phones.
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
+  let offlineRequested = false;
+  const installOfflineApp = () => {
+    const appBase = `${import.meta.env.BASE_URL}app`;
+    if (offlineRequested || !(location.pathname === appBase || location.pathname.startsWith(`${appBase}/`))) return;
+    offlineRequested = true;
     void document.fonts.ready.then(() => {
       const register = () => {
         void navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch(error => {
@@ -32,7 +36,10 @@ if (import.meta.env.PROD && 'serviceWorker' in navigator) {
       if ('requestIdleCallback' in window) window.requestIdleCallback(register, { timeout: 10_000 });
       else setTimeout(register, 0);
     });
-  }, { once: true });
+  };
+  window.addEventListener('load', installOfflineApp, { once: true });
+  // Landing-to-app navigation is client-side, so it does not fire load again.
+  window.addEventListener('popstate', installOfflineApp);
 }
 
 createRoot(document.getElementById('root')!, {

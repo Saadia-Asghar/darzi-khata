@@ -1,4 +1,5 @@
 import { tl } from '../lib/i18n';
+import { APP_PATH } from '../lib/app-paths';
 import { useState, useEffect, useCallback } from 'react';
 import { UserAccount } from '../context/auth-context';
 import { notifyStorage } from '../lib/local-store';
@@ -99,7 +100,7 @@ export function useAuth() {
       saveAccounts(getAccounts().map(a => a.id === account.id ? account : a));
     }
     sessionStorage.setItem(SESSION_KEY, account.id);
-    window.history.replaceState(null, '', import.meta.env.BASE_URL);
+    window.history.replaceState(null, '', APP_PATH);
     setCurrentUser(account);
     return { success: true };
   }, []);
@@ -144,7 +145,7 @@ export function useAuth() {
     if (latest.some(a => a.email === newAccount.email)) return { success: false, error: tl('auth_err_email_taken') };
     saveAccounts([...latest, newAccount]);
     sessionStorage.setItem(SESSION_KEY, newAccount.id);
-    window.history.replaceState(null, '', import.meta.env.BASE_URL);
+    window.history.replaceState(null, '', APP_PATH);
     setCurrentUser(newAccount);
     return { success: true };
   }, []);

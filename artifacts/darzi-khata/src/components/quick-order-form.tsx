@@ -5,6 +5,7 @@ import { Zap, ListChecks, Check } from 'lucide-react';
 import type { Customer, GarmentType, Measurements, Order } from '../types/order';
 import { useCustomers } from '../hooks/use-customers';
 import { usePreferences } from '../hooks/use-preferences';
+import { useSettings } from '../hooks/use-settings';
 import { useToast } from '@/hooks/use-toast';
 import { GARMENTS, garment, defaultMeasurements, LEGACY_MEASUREMENTS, newItem } from '../lib/garments';
 import { normalizePakistaniPhone } from '../lib/reminders';
@@ -20,6 +21,9 @@ export function QuickOrderForm({ open, onOpenChange, initialCustomer, orders, on
 }) {
   const { customers } = useCustomers();
   const { label } = usePreferences();
+  const { settings } = useSettings();
+  const homeBased = settings.shopType === 'women-home-tailor';
+  const garments = homeBased ? [...GARMENTS].sort((a, b) => Number(!a.value.startsWith('ladies')) - Number(!b.value.startsWith('ladies'))) : GARMENTS;
   const { toast } = useToast();
   const [q, setQ] = useState('');
   const [picked, setPicked] = useState<Customer | undefined>();
@@ -36,9 +40,9 @@ export function QuickOrderForm({ open, onOpenChange, initialCustomer, orders, on
     const c = initialCustomer;
     setPicked(c && customers.some((x) => x.id === c.id) ? c : undefined);
     setName(c?.name ?? ''); setPhone(c?.phone ?? ''); setQ('');
-    setProfileId(c?.profiles[0]?.id ?? ''); setType(c?.profiles[0]?.garmentType ?? 'gents');
+    setProfileId(c?.profiles[0]?.id ?? ''); setType(c?.profiles[0]?.garmentType ?? (homeBased ? 'ladies-shirt' : 'gents'));
     setPrice('1500'); setDate(day(5)); setErr(undefined);
-  }, [open, initialCustomer, customers]);
+  }, [open, initialCustomer, customers, homeBased]);
 
   const matches = useMemo(() => q.trim() ? customers.filter((c) => matchesCustomer(q, c.name, c.phone)).slice(0, 5) : [], [q, customers]);
   const profiles = picked?.profiles ?? [];
@@ -117,7 +121,7 @@ export function QuickOrderForm({ open, onOpenChange, initialCustomer, orders, on
           )}
           <label className="block text-sm font-semibold">{label('garment')}
             <select value={type} onChange={(e) => { setType(e.target.value as GarmentType); if (profile && profile.garmentType !== e.target.value) setProfileId(''); }} className={inputCls} data-testid="select-quick-garment">
-              {GARMENTS.map((g) => <option key={g.value} value={g.value}>{label(g.tk)}</option>)}
+              {garments.map((g) => <option key={g.value} value={g.value}>{label(g.tk)}</option>)}
             </select>
           </label>
           <p className="text-xs text-muted-foreground">{profile && profile.garmentType === type ? label('t_using_saved_profile_n', { name: profile.name }) : type === 'gents' && lastGents ? label('using_measurements_from_last_order') : label('standard_measurements_edit_later_in_full')}</p>

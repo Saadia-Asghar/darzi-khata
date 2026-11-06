@@ -101,7 +101,7 @@ export function DueTodayModal({ open, onOpenChange, orders, onViewReceipt }: Due
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-foreground/60 z-50  data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-        <Dialog.Content className="fixed inset-x-0 bottom-0 z-50 mt-24 h-[85dvh] flex flex-col rounded-t-lg bg-background border-t overflow-hidden data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom  outline-none max-w-md mx-auto sm:h-[80vh] sm:bottom-auto sm:top-[50%] sm:-translate-y-1/2 sm:rounded-[20px]">
+        <Dialog.Content className="fixed inset-x-0 bottom-0 z-50 mt-24 h-[85dvh] flex flex-col rounded-t-lg bg-background border-t overflow-hidden data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom  outline-none max-w-md mx-auto sm:h-[80vh] sm:bottom-auto sm:top-[50%] sm:-translate-y-1/2 sm:rounded-t-lg">
           
           <div className="px-5 py-4 border-b flex justify-between items-center bg-card shrink-0">
             <div className="flex items-center gap-3">

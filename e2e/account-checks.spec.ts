@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page } from './app-test';
 
 async function signup(page: Page, suffix: string) {
   await page.getByTestId('tab-signup').click();
@@ -122,6 +122,7 @@ test('signup validation, salted passwords, duplicate email, login, refresh and d
   await expect(page.locator('body')).not.toContainText('Private customer A');
   await logout(page);
   await login(page, 'account-a@example.test', 'safe-password');
+  await expect(page.getByTestId('nav-more')).toBeVisible();
   await page.goto('/');
   await expect(page.locator('[data-testid^="card-order-"]')).toContainText('Private customer A');
   await expect(page.getByTestId('img-fabric').first()).toBeVisible();

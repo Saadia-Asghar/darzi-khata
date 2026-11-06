@@ -1,5 +1,110 @@
 # Darzi Khata verification
 
+## Landing, routed app and shop tools, 6 November 2026
+
+Current verification evidence is in `generated-artifacts/launch/`. Earlier
+sections below are history, not results for this build.
+
+### Commands and actual results
+
+- `pnpm typecheck`: exit 0 across the workspace.
+- `pnpm test`: 29 finance/core checks and 112 Vitest tests across 9 files passed.
+  This includes `i18n.test.ts`, `design-lint.test.ts` and the new shop-tool,
+  backup-field and signed-link tests.
+- Production build: passed with `PORT=24310 BASE_PATH=/`.
+- `npx impeccable detect src/`: 167 source files scanned, no source-regex
+  findings. The tool explicitly says source mode does **not** check rendered
+  contrast/tiny elements; do not present it as a full visual-accessibility audit.
+- Playwright: **59 unique scenarios passed, one intentionally skipped**.
+  The complete first run was 53 passed, 3 failed, 1 skipped. The failures were
+  test-harness issues: one successful login was followed by navigation before
+  asynchronous password verification finished, and two receipt screenshot cases
+  chose an already-paid order, which correctly has no payment QR. Those
+  assertions were corrected, not hidden. An 8-test focused run then passed;
+  a further 10-test run passed after order-list batching/lazy chart loading,
+  including the new full-register search/load-more check. The production-only
+  run deliberately skips the development cache-recovery-worker test.
+  After deferring closed forms, another 8 affected-flow checks passed, followed
+  by both final language/screenshot proofs (2 passed).
+- Raw logs: `typecheck.txt`, `tests.txt`, `build.txt`, `playwright.txt`,
+  `rechecked.txt`, `list-optimization-checks.txt`, `impeccable.txt`.
+- `landing-js.json` records actual requested script sizes both raw and gzip.
+  The 150 KB budget is assessed as **compressed JavaScript**, not uncompressed
+  source; this distinction is intentionally visible in the evidence.
+
+### Current mobile Lighthouse
+
+Two sequential isolated Lighthouse runs used the current production build and
+default mobile throttling. Headline results retain the **lower** final score,
+not the best run.
+
+| Route | Performance | Accessibility | Best practices | SEO |
+|---|---:|---:|---:|---:|
+| `/` landing | **97** | 100 | 100 | 100 |
+| `/app/login` | **100** | 100 | 100 | 100 |
+| `/app` signed-in, 150-order demo register | **92** | 100 | 100 | 100 |
+
+Ranges were 97–99 for landing and 92–93 for signed-in orders. The signed-in
+measurement preserved the existing demo session and installed offline assets;
+it is **not** a cold, cache-cleared authenticated load. Login/landing were
+fresh-browser measurements. Initial signed-in performance was 75 before batching
+and on-demand chart/form mounting. A batch/chart-only intermediate run scored
+78; deferring the closed forms' storage hooks removed further startup work.
+These are shared-runner measurements, not a guarantee of every real device's
+score.
+
+Final More-page build text: `Version 1.4.0+20261106172244Z`.
+Final Urdu proof confirms document and parchi `dir=rtl`, both directional
+icons rotated `180deg`, translated WhatsApp/parchi labels, and no page errors.
+Names, addresses and user-entered descriptions remain exactly as stored rather
+than being machine-translated.
+
+### Screen and control coverage
+
+| Screen/control | Result | Important behavior |
+|---|---|---|
+| Landing, English/Urdu | Passed | Single language, correct direction, real images, mobile overflow check |
+| Start free | Passed | `/app/login?mode=signup`, sign-up form visible |
+| Try demo shop | Passed | Actual isolated demo account and synthetic order data |
+| Installed PWA start | Passed | Standalone mode bypasses landing; manifest starts at `/app` |
+| Order list | Passed | First 20 rendered; Show more adds 20; search and totals use all records |
+| Existing orders/forms/customer history | Passed | Create/edit/status/delete/undo and shared-phone isolation preserved |
+| Hisaab | Passed | Existing payment ledger plus real received-income/expense/profit calculation |
+| Parchi and WhatsApp | Passed | Selected language, QR only for unpaid orders, user sends the draft |
+| A4/58mm/80mm printing | Passed | Isolated print root, one-page receipt and thermal width checks |
+| Settings/tool pages | Passed | Routed under `/app`, back button and language switch |
+| Pitch demo | Passed | Resets demo only; real ledger payment; zero baqi; actual model score matches credit page |
+| Lender sharing | Passed | Consent required; no login on recipient page; signature and seven-day expiry checked |
+| Lender PDF action | Implemented | Uses the shared isolated print/PDF path; choose Save as PDF |
+| Baqi recovery | Passed | Customer IDs, amount/age sorting, recovered-month amount, WhatsApp draft containing QR-page link |
+| Rush planner | Passed | Worker/day capacity, due suits, shortfall and suggested cut-off |
+| Expenses | Passed | Save/reload, categories, positive amounts, correct profit, backup validation |
+| Customer tracking | Passed | Read-only signed status snapshot without login; no customer contacts/measurements |
+| Savings/committee | Passed | Target, percentage suggestion, dated saved contribution; no money transfers |
+| Women home-tailor mode | Passed | Simpler home, ladies' garments first, phone privacy choice, lender badge |
+| Backups/PIN/accounts | Passed | Plain/encrypted restore, wrong passphrase rejection, session/PIN and shop isolation |
+| Mobile themes | Passed | 360×800/390×844, English/Urdu, dark/light; no overflow or text below 12px |
+
+### Scope and safety notes
+
+- Real saved user data was not cleared. Tests used isolated browser contexts
+  with synthetic accounts/orders/photos.
+- QR payments and the score remain illustrative, not bank-verified. The
+  landing page now says explicitly that a live merchant QR requires an
+  authorised bank integration.
+- Lender/status links are **snapshots**, not a live feed. Send a new link after
+  updates. Anyone holding a link can read it until expiry; offline links cannot
+  be revoked early. Signatures verify link integrity, not business identity.
+- Financial settings travel with existing plain/protected backups; restore
+  validates them before writing.
+- Native sharing, WhatsApp Send, physical camera/printer behavior and a real
+  Android/iPhone installation were not claimed as hardware-tested. No message
+  or real bank transaction was sent.
+- Team-member names and a public WhatsApp contact were not available. The app
+  does not invent them. The GitHub repository link is present.
+- The live URL is verified as `https://darzi-khata.replit.app`; pushing to GitHub
+  does not publish this source to that deployment.
+
 ## Local backup reminders, 6 November 2026
 
 - `pnpm --filter @workspace/darzi-khata typecheck`: passed.

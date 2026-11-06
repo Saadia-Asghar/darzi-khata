@@ -1,12 +1,9 @@
-import { useState, useMemo, type ReactNode } from 'react';
+import { useState, useMemo, useEffect, lazy, type ReactNode } from 'react';
 import { useLocation } from 'wouter';
 import { useOrders } from '../hooks/use-orders';
 import { useAuthContext } from '../context/auth-context';
 import { OrderCard } from '../components/order-card';
 import { StatsBar } from '../components/stats-bar';
-import { OrderForm } from '../components/order-form';
-import { QuickOrderForm } from '../components/quick-order-form';
-import { ReceiptModal } from '../components/receipt-modal';
 import { SettingsModal } from '../components/settings-modal';
 import { EarningsModal } from '../components/earnings-modal';
 import { DueTodayModal } from '../components/due-today-modal';
@@ -14,13 +11,10 @@ import { CustomerHistoryModal } from '../components/customer-history-modal';
 import { WorkSheetModal } from '../components/work-sheet-modal';
 import { TeamModal } from '../components/team-modal';
 import { OrderChatModal } from '../components/order-chat-modal';
-import { CreditModal } from '../components/credit-modal';
-import { ImpactModal } from '../components/impact-modal';
 import { PendingRemindersModal } from '../components/pending-reminders-modal';
 import { BottomNav, type NavTab } from '../components/bottom-nav';
 import { DailySummary } from '../components/daily-summary';
 import { CustomersPanel } from '../components/customers-panel';
-import { PaymentsPanel } from '../components/payments-panel';
 import { MorePanel, type MoreTool } from '../components/more-panel';
 import { PageMode } from '../components/page-dialog';
 import { isOverdue, startOfDay } from '../components/status-meta';
@@ -40,7 +34,20 @@ import {
 import { Search, FlaskConical, Zap, ListChecks, HardDrive, BarChart2, ChevronRight } from 'lucide-react';
 import { LanguageSwitch } from '../components/language-switch';
 import { BackupReminder } from '../components/backup-reminder';
+import { ExpenseTools, ProfitSummary } from '../components/expense-tools';
+import { RushTools } from '../components/rush-tools';
+import { SavingsTools } from '../components/savings-tools';
+import { RecoveryTools } from '../components/recovery-tools';
+import { ShareProfileTools } from '../components/share-tools';
+import { PitchDemo } from '../components/pitch-demo';
+import { useSettings } from '../hooks/use-settings';
 
+const CreditModal = lazy(() => import('../components/credit-modal').then(m => ({ default: m.CreditModal })));
+const ImpactModal = lazy(() => import('../components/impact-modal').then(m => ({ default: m.ImpactModal })));
+const PaymentsPanel = lazy(() => import('../components/payments-panel').then(m => ({ default: m.PaymentsPanel })));
+const OrderForm = lazy(() => import('../components/order-form').then(m => ({ default: m.OrderForm })));
+const QuickOrderForm = lazy(() => import('../components/quick-order-form').then(m => ({ default: m.QuickOrderForm })));
+const ReceiptModal = lazy(() => import('../components/receipt-modal').then(m => ({ default: m.ReceiptModal })));
 type FilterTab = 'all' | 'overdue' | 'soon' | 'ready' | 'delivered' | 'urgent' | 'pending' | 'stitching';
 export type Section = NavTab | MoreTool | 'customer';
 
@@ -49,6 +56,8 @@ export default function Dashboard({ section = 'orders', phone }: { section?: Sec
   const { currentUser, logout } = useAuthContext();
   const { demoMode, setDemoMode } = useDemoMode();
   const { label, one, lang, setLanguage } = usePreferences();
+  const { settings } = useSettings();
+  const homeBased = settings.shopType === 'women-home-tailor';
   const { toast } = useToast();
   const [, navigate] = useLocation();
   const hidden = useHiddenOrders();
@@ -57,6 +66,8 @@ export default function Dashboard({ section = 'orders', phone }: { section?: Sec
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState<FilterTab>('all');
   const [karigarFilter, setKarigarFilter] = useState('');
+  const [visibleLimit, setVisibleLimit] = useState(20);
+  useEffect(() => { setVisibleLimit(20); }, [searchTerm, activeFilter, karigarFilter]);
 
   const [formOpen, setFormOpen] = useState(false);
   const [quickOpen, setQuickOpen] = useState(false);
@@ -185,9 +196,13 @@ export default function Dashboard({ section = 'orders', phone }: { section?: Sec
 
       {section === 'orders' && (
         <main className="p-4 max-w-2xl mx-auto dk-rise">
+          {homeBased && <section className="rounded-lg border border-border bg-card p-4 mb-3">
+            <h2 className="font-semibold">{label('feature_home_based')}</h2><p className="text-sm text-muted-foreground">{label('feature_home_intro')}</p>
+            <button className="mt-3 min-h-[48px] rounded-lg px-4 bg-primary text-primary-foreground font-semibold" onClick={() => { setQuickCustomer(undefined); setQuickOpen(true); }}>{label('new_order')}</button>
+          </section>}
           <div className="mb-3"><BackupReminder onBackup={() => navigate('/settings#backup')} /></div>
-          <DailySummary orders={orders} onOpenDue={() => navigate('/due')} />
-          <StatsBar orders={orders} onDueTodayClick={() => navigate('/due')} />
+          {!homeBased && <><DailySummary orders={orders} onOpenDue={() => navigate('/due')} />
+          <StatsBar orders={orders} onDueTodayClick={() => navigate('/due')} /></>}
 
           <div className="relative mb-3">
             <Search className="absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" size={20} aria-hidden />
@@ -205,7 +220,7 @@ export default function Dashboard({ section = 'orders', phone }: { section?: Sec
             ))}
           </div>
 
-          {activeKarigars.length > 0 && (
+          {!homeBased && activeKarigars.length > 0 && (
             <div className="flex gap-2 mb-4 overflow-x-auto pb-1 -mx-4 px-4 [scrollbar-width:none]" aria-label={label('all_karigars')}>
               <button onClick={() => setKarigarFilter('')} aria-pressed={karigarFilter === ''} className={chip(karigarFilter === '')}>{label('all_karigars')}</button>
               {activeKarigars.map((k) => (
@@ -230,8 +245,9 @@ export default function Dashboard({ section = 'orders', phone }: { section?: Sec
                 <button onClick={() => { setSearchTerm(''); setActiveFilter('all'); setKarigarFilter(''); }} className="mt-3 min-h-[44px] px-4 rounded-md border border-border text-base font-medium">{label('clear_filters')}</button>
               </div>
             ) : (
-              visible.map((o) => <OrderCard key={o.id} order={o} {...cardProps} />)
+              visible.slice(0, visibleLimit).map((o) => <OrderCard key={o.id} order={o} {...cardProps} />)
             )}
+            {visible.length > visibleLimit && <button type="button" className="w-full min-h-[48px] border border-border rounded-lg bg-card text-primary font-semibold" onClick={() => setVisibleLimit(n => n + 20)} data-testid="orders-show-more">{label('feature_more_orders', { shown: Math.min(visibleLimit, visible.length), total: visible.length })}</button>}
           </div>
         </main>
       )}
@@ -244,6 +260,7 @@ export default function Dashboard({ section = 'orders', phone }: { section?: Sec
       {section === 'hisaab' && (
         <main className="p-4 max-w-2xl mx-auto space-y-4">
           <h1 className="text-xl font-semibold">{label('hisaab_title')}</h1>
+          <ProfitSummary orders={orders} />
           <button onClick={() => navigate('/earnings')} className="w-full min-h-[56px] rounded-lg border border-border bg-card px-4 flex items-center gap-3 text-start hover:bg-muted" data-testid="btn-open-earnings">
             <BarChart2 size={20} aria-hidden className="text-primary" />
             <span className="flex-1 text-base font-medium">{label('open_earnings')}</span>
@@ -266,6 +283,12 @@ export default function Dashboard({ section = 'orders', phone }: { section?: Sec
       {section === 'credit' && page(<CreditModal {...pageOpen} orders={orders} />)}
       {section === 'impact' && page(<ImpactModal {...pageOpen} orders={orders} />)}
       {section === 'reminders' && page(<PendingRemindersModal {...pageOpen} orders={orders} />)}
+      {section === 'pitch' && <PitchDemo />}
+      {section === 'share-profile' && <ShareProfileTools orders={orders} />}
+      {section === 'recovery' && <RecoveryTools orders={orders} />}
+      {section === 'rush' && <RushTools orders={orders} />}
+      {section === 'expenses' && <ExpenseTools orders={orders} />}
+      {section === 'savings' && <SavingsTools orders={orders} />}
       {section === 'customer' && page(
         <CustomerHistoryModal
           phone={phone ?? ''}
@@ -322,9 +345,9 @@ export default function Dashboard({ section = 'orders', phone }: { section?: Sec
         </AlertDialogContent>
       </AlertDialog>
 
-      <OrderForm open={formOpen} onOpenChange={setFormOpen} order={editingOrder} prefill={prefilledData} onSave={handleSave} />
-      <QuickOrderForm open={quickOpen} onOpenChange={setQuickOpen} initialCustomer={quickCustomer} orders={orders} onSave={addOrder} onOpenFull={openFull} />
-      <ReceiptModal open={receiptOpen} onOpenChange={setReceiptOpen} order={receiptOrder} />
+      {formOpen && <OrderForm open={formOpen} onOpenChange={setFormOpen} order={editingOrder} prefill={prefilledData} onSave={handleSave} />}
+      {quickOpen && <QuickOrderForm open={quickOpen} onOpenChange={setQuickOpen} initialCustomer={quickCustomer} orders={orders} onSave={addOrder} onOpenFull={openFull} />}
+      {receiptOpen && <ReceiptModal open={receiptOpen} onOpenChange={setReceiptOpen} order={receiptOrder} />}
       <OrderChatModal order={chatOrder} onClose={() => setChatOrderId(null)} onAddComment={addComment} />
     </div>
   );

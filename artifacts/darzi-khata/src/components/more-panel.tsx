@@ -6,11 +6,18 @@ import { useToast } from '@/hooks/use-toast';
 import { normalizePakistaniPhone } from '../lib/reminders';
 import type { DictKey } from '../lib/i18n';
 
-export type MoreTool = 'credit' | 'impact' | 'reminders' | 'team' | 'worksheet' | 'earnings' | 'due' | 'settings';
+export type MoreTool = 'credit' | 'impact' | 'reminders' | 'team' | 'worksheet' | 'earnings' | 'due' | 'settings' | 'pitch' | 'share-profile' | 'recovery' | 'rush' | 'expenses' | 'savings';
 export const TOOL_PATHS: Record<MoreTool, string> = {
   credit: '/credit', impact: '/impact', reminders: '/reminders', team: '/team', worksheet: '/worksheet', earnings: '/earnings', due: '/due', settings: '/settings',
+  pitch: '/pitch', 'share-profile': '/share-profile', recovery: '/recovery', rush: '/rush', expenses: '/expenses', savings: '/savings',
 };
 const TOOLS: { id: MoreTool; icon: LucideIcon; k: DictKey }[] = [
+  { id: 'pitch', icon: Gauge, k: 'feature_pitch' },
+  { id: 'share-profile', icon: Share2, k: 'feature_share_profile' },
+  { id: 'recovery', icon: HandCoins, k: 'feature_recovery' },
+  { id: 'rush', icon: CalendarClock, k: 'feature_rush' },
+  { id: 'expenses', icon: BarChart2, k: 'feature_expenses' },
+  { id: 'savings', icon: HandCoins, k: 'feature_savings' },
   { id: 'reminders', icon: BellRing, k: 'tool_reminders' },
   { id: 'due', icon: CalendarClock, k: 'tool_due' },
   { id: 'worksheet', icon: ClipboardList, k: 'tool_worksheet' },

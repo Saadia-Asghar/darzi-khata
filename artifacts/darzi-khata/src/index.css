@@ -87,6 +87,7 @@
   --color-info-foreground: hsl(var(--info-foreground));
   --color-info-soft: hsl(var(--info-soft));
   --color-neutral-soft: hsl(var(--neutral-soft));
+  --color-overlay: hsl(var(--overlay));
   --color-delivered: hsl(var(--delivered));
   --color-delivered-foreground: hsl(var(--delivered-foreground));
 
@@ -123,10 +124,10 @@
   --background: 150 10% 98%;
   --foreground: 160 20% 12%;
   --border: 150 8% 88%;
-  --card: 0 0% 100%;
+  --card: 120 20% 99.6%;
   --card-foreground: 160 20% 12%;
   --card-border: 150 8% 88%;
-  --popover: 0 0% 100%;
+  --popover: 120 20% 99.6%;
   --popover-foreground: 160 20% 12%;
   --popover-border: 150 8% 86%;
 
@@ -153,6 +154,7 @@
   --info-foreground: 0 0% 100%;
   --info-soft: 207 80% 94%;
   --neutral-soft: 150 6% 92%;
+  --overlay: 160 30% 8%;
   --delivered: 160 10% 26%;
   --delivered-foreground: 0 0% 100%;
 
@@ -167,7 +169,7 @@
   --chart-4: 0 72% 42%;
   --chart-5: 160 8% 50%;
 
-  --sidebar: 0 0% 100%;
+  --sidebar: 120 20% 99.6%;
   --sidebar-foreground: 160 20% 12%;
   --sidebar-border: 150 8% 88%;
   --sidebar-primary: 158 64% 22%;
@@ -237,6 +239,7 @@
   --info-foreground: 210 40% 10%;
   --info-soft: 207 35% 18%;
   --neutral-soft: 160 6% 20%;
+  --overlay: 160 30% 3%;
   --delivered: 150 8% 78%;
   --delivered-foreground: 160 10% 10%;
 

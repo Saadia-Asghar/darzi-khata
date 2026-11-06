@@ -7,6 +7,7 @@
     "build": "pnpm run typecheck && pnpm -r --if-present run build",
     "typecheck:libs": "tsc --build",
     "test:e2e": "playwright test --config playwright.config.ts",
+    "test": "pnpm --filter @workspace/darzi-khata test",
     "audit:design": "cd artifacts/darzi-khata && impeccable detect src/",
     "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck"
   },

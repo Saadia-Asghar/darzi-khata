@@ -16,10 +16,87 @@ financial-inclusion pitch at GIKI × Zindigi Prize.
 
 ## Live demo
 
-**Published URL:** https://mobile-first-web-u2024550.replit.app
+**Published URL:** https://darzi-khata.replit.app
 
 This is the verified existing deployment URL. Workspace changes require
 **Publish / Republish** before appearing at that URL.
+
+## Landing page and routes
+
+The public home page is `/`. Shop work is under `/app`, with account entry at
+`/app/login`. Start free opens `/app/login?mode=signup`; Try demo shop opens
+the isolated demo account. Existing account/register storage keys are unchanged.
+Installed PWAs use `/app` as their start URL, and opening `/` in standalone mode
+redirects there before painting the landing page.
+
+![Darzi Khata landing page](docs/landing-en.jpg)
+
+![Real English demo order list](artifacts/darzi-khata/public/screens/orders-en.png)
+
+The landing page has real Playwright captures in both languages, demo-derived
+impact counters, the GIKI context, the repository link and a 1200×630 social image
+made from the actual order list. The SBP 92% figure is linked to its original Q2
+FY26 report and correctly refers to transaction volume through banks and EMIs,
+not every cash purchase in Pakistan. Team names and a public WhatsApp contact
+must be supplied by the team; no names or phone numbers have been invented.
+
+## Pitch and shop tools
+
+- **60-second pitch:** More → 60-second pitch demo → Reset demo and begin.
+  This resets only the financial-demo namespace, not the real shop. Follow Next:
+  record an order, inspect its real parchi/WhatsApp draft, simulate a Zindigi
+  collection, see baqi reach zero, and animate the resulting credit score.
+  The score comes from the same model as the credit page, not a hard-coded
+  before/after figure. Demo records and QR payments are clearly synthetic.
+- **Lender link:** More → Share lender profile. Explicit consent creates a
+  signed seven-day read-only snapshot under `/lender/:token`, with revenue
+  chart, operating measures, score factors, profit and a print-to-PDF action.
+  It includes no customer contacts, measurements, photos or account credentials.
+  The link is self-signed by an ephemeral key: this protects integrity, **not**
+  verified business identity. It is not a bank/bureau credit report. Anyone with
+  the link can read it; offline links cannot be revoked before expiry.
+- **Baqi recovery:** customer-ID groups sorted by amount then age; recovered this
+  month counts payments made after the order's calendar date. The reminder link
+  opens a consented parchi snapshot containing payment details and an illustrative
+  QR. WhatsApp requires a separate Send action; nothing is sent automatically.
+- **Eid/season planner:** enter the confirmed local deadline, available workers
+  and suits per worker/day. See remaining suits, capacity, shortfall, allocation
+  by karigar and a suggested new-order cut-off date. It assumes working every day;
+  adjust for leave, weekends and garment complexity.
+- **Expenses/profit:** record thread, buttons, lining, wages, rent and other
+  costs. Hisaab shows this month's received income minus recorded expenses.
+  With expense records, the score allocates 10% to observed profit margin and
+  reduces revenue-trend weight from 20% to 10%; legacy shops retain old scoring.
+- **Customer status:** expand Customer tracking link on a parchi to share a
+  seven-day `/track/:token` status snapshot without login. It deliberately omits
+  customer contacts and measurements. **This is not a live server-synchronised
+  feed**: send a new snapshot when the status changes.
+- **Savings/committee:** set a target and suggested percentage of digital
+  receipts, then record dated contributions. No money is transferred, held or
+  automatically sent to a wallet.
+- **Women home-tailor mode:** choose the business type in Settings for a simpler
+  home screen and ladies' garments first in both order forms. The shop-phone
+  privacy setting removes the shop phone from shared parchi text. Lender
+  snapshots carry a home-based badge.
+
+Expense records, planner preferences, savings contributions and privacy choices
+live in the existing per-shop settings record and travel with plain/encrypted
+backups. Imports validate them before touching saved records.
+
+## Verification commands
+
+```sh
+pnpm typecheck
+pnpm test
+E2E_PRODUCTION=1 pnpm exec playwright test
+cd artifacts/darzi-khata && npx impeccable detect src/
+# Local production build outside the managed workflow:
+PORT=24310 BASE_PATH=/ pnpm --filter @workspace/darzi-khata build
+```
+
+`design-lint.test.ts` covers the section-B regressions, including UI primitives.
+The source-only Impeccable command cannot assess rendered contrast or element
+size; see `QA.md` for actual mobile browser and Lighthouse evidence.
 
 On the login screen, expand **Demo Accounts**. All four accounts use `demo1234`:
 

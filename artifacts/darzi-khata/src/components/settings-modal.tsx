@@ -315,6 +315,10 @@ export function SettingsModal({ open, onOpenChange, orders }: SettingsModalProps
                   })}
                 </div>
               </fieldset>
+              <label className="flex items-center gap-3 min-h-[48px] text-sm font-medium">
+                <input type="checkbox" checked={!!formData.hideShopPhone} onChange={e => handleChange('hideShopPhone', e.target.checked)} className="h-5 w-5" data-testid="hide-shop-phone" />
+                {label('feature_hide_phone')}
+              </label>
             </section>
 
             {/* Demo mode */}

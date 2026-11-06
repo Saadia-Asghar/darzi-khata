@@ -20,3 +20,11 @@ Direction: **Ledger Calm**. It should feel like a quiet, trustworthy shop regist
 - The order form has 4 labelled steps and a sticky Back/Next bar, and validates inline (phone 03XXXXXXXXX, delivery date not in the past, advance no more than total).
 - Receipts print on A4, 80mm or 58mm paper (`body[data-paper]`).
 - Tap targets are at least 44px, and primary actions are 48px.
+
+## Routes and landing
+- `/` is the public landing page (`src/pages/landing.tsx`), `/app` is the register, `/app/login` sign-in (`?mode=signup`, `?demo=1` signs in to the demo shop). `/lender/:token` and `/track/:token` are lazy public pages. An installed PWA starts at `/app`.
+- The landing page reads like a register: numbered folios, ruled rows, a dotted-leader ledger for counters. Real screenshots from `public/screens/*-{en,ur}.png` (390 x 844) sit in a plain phone frame. Counters are labelled "Demo data".
+- Landing JS budget: under 150 KB compressed. Auth, storage and the signed-in shell never load before `/app`.
+
+## Lint
+`src/lib/design-lint.test.ts` scans every source file including `components/ui` (tests excluded) for tiny text, raw palette/hex colours, ALL-CAPS/wide tracking, ping/bounce/blur/gradient/glow, side stripes and radius above 8px, native confirm/prompt, inline "English / Urdu" pairs, emoji and em-dash copy. Exemptions are documented in the file: print CSS (paper), QR ink/paper and theme-color hex (`lib/brand.ts`, `use-preferences.ts`), JPEG canvas fill (`lib/photos.ts`), recharts default-stroke selectors (`ui/chart.tsx`). Dialog overlays use the `overlay` token, never black.
