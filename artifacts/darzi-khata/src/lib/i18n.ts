@@ -4,6 +4,7 @@
  * Sentences end with a full stop, never an em-dash.
  */
 export const DICT = {
+  status_change_failed: { en: 'Could not change order status', ur: 'آرڈر کی حالت تبدیل نہیں ہو سکی' },
   score_scale: { en: 'out of 100', ur: '۱۰۰ میں سے' },
   loan_formula: { en: '1.5 × revenue × score%, capped at Rs 300,000', ur: '۱٫۵ × آمدن × اسکور٪، زیادہ سے زیادہ ۳۰۰،۰۰۰ روپے' },
   demo_instruction: { en: 'Please follow the measurements and delivery date', ur: 'ناپ اور تاریخ کا خیال رکھیں' },

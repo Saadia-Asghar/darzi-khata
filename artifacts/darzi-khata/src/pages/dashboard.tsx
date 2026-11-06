@@ -66,7 +66,8 @@ export default function Dashboard({ section = 'orders', phone }: { section?: Sec
   const [activeFilter, setActiveFilter] = useState<FilterTab>('all');
   const [karigarFilter, setKarigarFilter] = useState('');
   const [visibleLimit, setVisibleLimit] = useState(20);
-  useEffect(() => { setVisibleLimit(20); }, [searchTerm, activeFilter, karigarFilter]);
+  const [displayOrder, setDisplayOrder] = useState<string[] | null>(null);
+  useEffect(() => { setVisibleLimit(20); setDisplayOrder(null); }, [searchTerm, activeFilter, karigarFilter]);
 
   const [formOpen, setFormOpen] = useState(false);
   const [quickOpen, setQuickOpen] = useState(false);
@@ -111,12 +112,19 @@ export default function Dashboard({ section = 'orders', phone }: { section?: Sec
     else if (activeFilter === 'soon') r = r.filter(isSoon);
     else if (activeFilter === 'urgent') r = r.filter((o) => o.urgent);
     else if (activeFilter !== 'all') r = r.filter((o) => o.status === activeFilter);
-    return [...r].sort((a, b) =>
+    const sorted = [...r].sort((a, b) =>
       (isOverdue(b) ? 1 : 0) - (isOverdue(a) ? 1 : 0)
       || (a.status === 'delivered' ? 1 : 0) - (b.status === 'delivered' ? 1 : 0)
       || +new Date(a.deliveryDate) - +new Date(b.deliveryDate));
+    // A status edit must not replace the tapped card with a different order.
+    // Explicit filter/search changes restore the normal active-first sorting.
+    if (displayOrder) {
+      const rank = new Map(displayOrder.map((id, index) => [id, index]));
+      sorted.sort((a, b) => (rank.get(a.id) ?? -1) - (rank.get(b.id) ?? -1));
+    }
+    return sorted;
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orders, searchTerm, activeFilter, karigarFilter]);
+  }, [orders, searchTerm, activeFilter, karigarFilter, displayOrder]);
 
   const openReceipt = (o: Order) => { setReceiptOrderId(o.id); setReceiptOpen(true); };
   const openFull = (prefill?: Partial<Order>) => { setEditingOrder(undefined); setPrefilledData(prefill); setFormOpen(true); };
@@ -148,7 +156,21 @@ export default function Dashboard({ section = 'orders', phone }: { section?: Sec
     onEdit: (o: Order) => { setEditingOrder(o); setPrefilledData(undefined); setFormOpen(true); },
     onDelete: (id: string) => setPendingDelete(orders.find((o) => o.id === id) ?? null),
     onViewReceipt: openReceipt,
-    onStatusChange: updateOrderStatus,
+    onStatusChange: (id: string, status: Order['status']) => {
+      const selected = orders.find(o => o.id === id);
+      if (!selected || selected.status === status) return;
+      try {
+        updateOrderStatus(id, status);
+        if (activeFilter === 'all') setDisplayOrder(visible.map(o => o.id));
+        toast({
+          title: `${selected.serialNumber || selected.customerName}: ${label(`status_${status}`)}`,
+          description: selected.serialNumber ? selected.customerName : undefined,
+          duration: 2500,
+        });
+      } catch (error) {
+        toast({ title: label('status_change_failed'), description: error instanceof Error ? error.message : undefined, variant: 'destructive' });
+      }
+    },
     onCustomerClick: (p: string) => navigate(`/customers/${encodeURIComponent(p)}`),
     onChat: (o: Order) => setChatOrderId(o.id),
   };

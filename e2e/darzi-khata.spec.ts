@@ -149,6 +149,51 @@ test('partial cash then full Zindigi payment updates balance and digital share',
   await expect(page.getByText(/80(?:\.0)?%/).first()).toBeVisible();
 });
 
+for (const urdu of [false, true]) {
+  test(`delivering one order leaves every other order unchanged ${urdu ? 'ur' : 'en'}`, async ({ page }) => {
+    await seed(page, { urdu });
+    await expect(page.getByTestId('status-qa-order')).toBeVisible();
+    await page.evaluate(key => {
+      const [base] = JSON.parse(localStorage.getItem(key)!);
+      const records = ['ready', 'stitching', 'pending', 'delivered'].map((status, index) => ({
+        ...structuredClone(base), id: index ? `other-order-${index}` : base.id,
+        serialNumber: `DK-${String(7 + index).padStart(3,'0')}`, status,
+        customerId: index < 2 ? base.customerId : `other-customer-${index}`,
+        customerName: index < 2 ? base.customerName : `Other customer ${index}`,
+      }));
+      localStorage.setItem(key, JSON.stringify(records));
+    }, ordersKey);
+    await page.reload();
+    await expect(page.getByTestId('status-qa-order')).toContainText(urdu ? 'تیار' : 'Ready');
+    const before = await saved(page);
+    const cardIds = () => page.getByTestId(/^card-order-/).evaluateAll(cards => cards.map(card => card.getAttribute('data-testid')));
+    const beforeCards = await cardIds();
+    await page.getByTestId('status-qa-order').click();
+    await page.getByTestId('status-option-delivered').click();
+    await expect.poll(async () => (await saved(page)).find((o: any) => o.id === 'qa-order').status).toBe('delivered');
+    await expect.poll(cardIds).toEqual(beforeCards);
+    await expect(page.getByTestId('status-qa-order')).toContainText(urdu ? 'دے دیا' : 'Delivered');
+    for (const order of before.filter((o: any) => o.id !== 'qa-order')) {
+      expect((await saved(page)).find((o: any) => o.id === order.id)).toEqual(order);
+    }
+    await expect(page.getByTestId('status-other-order-1')).toContainText(urdu ? 'سلائی' : 'Stitching');
+    await expect(page.getByTestId('status-other-order-2')).toContainText(urdu ? 'زیرِ' : 'Pending');
+    const after = await saved(page);
+    await page.getByTestId('status-qa-order').click();
+    await page.getByTestId('status-option-delivered').click();
+    await expect(page.getByRole('menu')).toHaveCount(0);
+    expect(await saved(page)).toEqual(after);
+    await page.reload();
+    expect((await saved(page)).filter((o: any) => o.status === 'delivered')).toHaveLength(2);
+    for (const order of before.filter((o: any) => o.id !== 'qa-order')) {
+      expect((await saved(page)).find((o: any) => o.id === order.id)).toEqual(order);
+    }
+    await page.getByTestId('filter-delivered').click();
+    await expect(page.getByTestId(/^card-order-/)).toHaveCount(2);
+    expect(await saved(page)).toEqual(after);
+  });
+}
+
 test('receipt QR, thermal sizes and encoded Pakistani WhatsApp message', async ({ page }) => {
   await seed(page);
   await page.getByTestId('btn-receipt-qa-order').click();
