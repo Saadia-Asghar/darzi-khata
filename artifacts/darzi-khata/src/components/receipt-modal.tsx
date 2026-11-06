@@ -1,3 +1,4 @@
+import { fabricName, demoText } from '../lib/i18n';
 import { money, tl, shortDate } from '../lib/i18n';
 import { receiptMessage, receiptShopName, receiptStyle, receiptThanks } from '../lib/receipt-message';
 import { haptic } from '../lib/haptics';
@@ -132,7 +133,7 @@ export function ReceiptModal({ open, onOpenChange, order }: ReceiptModalProps) {
                 </div>
                 <div className="flex justify-between items-center border-b border-border pb-2 gap-2">
                   <span className="text-muted-foreground">{label('garments')}:</span>
-                  <span className="flex items-center gap-2"><FabricThumb id={order.fabricPhotoId} size={40} />{label('t_n_pcs', { suitCount: order.suitCount })} ({order.fabric})</span>
+                  <span className="flex items-center gap-2"><FabricThumb id={order.fabricPhotoId} size={40} />{label('t_n_pcs', { suitCount: order.suitCount })} ({fabricName(order.fabric)})</span>
                 </div>
                 {order.items && order.items.length > 0 && (
                   <ul className="border-b border-border pb-2 text-sm space-y-1" data-testid="receipt-items">
@@ -170,7 +171,7 @@ export function ReceiptModal({ open, onOpenChange, order }: ReceiptModalProps) {
 
               <div className="mt-4 text-sm">
                 <div className="flex gap-2 mb-1"><span className="font-bold">{label('style')}:</span> {[order.collarType, order.damanType, order.cuffType, order.pockets].map(value => receiptStyle(value, lang)).join(' · ')}</div>
-                {order.specialNotes && <div className="italic text-muted-foreground">"{order.specialNotes}"</div>}
+                {order.specialNotes && <div className="italic text-muted-foreground">"{order.id.startsWith('finance-demo-') ? demoText(order.specialNotes) : order.specialNotes}"</div>}
               </div>
 
               <div className="mt-4 pt-4 border-t-2 border-primary text-sm">

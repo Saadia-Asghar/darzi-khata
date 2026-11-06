@@ -22,6 +22,18 @@ if (import.meta.env.DEV && 'serviceWorker' in navigator) {
 // Precache the offline shell after fonts and first rendering have settled.
 // Installing a multi-megabyte cache during first paint stalls low-end phones.
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  const hadController = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!hadController) return;
+    sessionStorage.setItem('darzi-khata-update-ready', 'true');
+    window.dispatchEvent(new Event('darzi-khata-update-ready'));
+  });
+  // Check an existing installation even on the landing page, without installing
+  // the entire offline app for new marketing visitors.
+  window.addEventListener('load', () => {
+    void navigator.serviceWorker.getRegistration(import.meta.env.BASE_URL)
+      .then(registration => registration?.update()).catch(error => console.warn('Update check failed', error));
+  }, { once: true });
   let offlineRequested = false;
   const installOfflineApp = () => {
     const appBase = `${import.meta.env.BASE_URL}app`;
@@ -29,7 +41,7 @@ if (import.meta.env.PROD && 'serviceWorker' in navigator) {
     offlineRequested = true;
     void document.fonts.ready.then(() => {
       const register = () => {
-        void navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch(error => {
+        void navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`, { updateViaCache: 'none' }).catch(error => {
           console.error('Offline installation failed', error);
         });
       };

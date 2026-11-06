@@ -163,6 +163,7 @@ for (const width of [360, 390]) for (const lang of ['en', 'ur']) for (const dark
     await page.keyboard.press('Escape');
     await page.getByTestId('nav-new').click();
     await page.getByTestId('btn-new-quick').click();
+    await expect(page.getByTestId('input-quick-name')).toBeVisible();
     await check('quick order');
     await page.keyboard.press('Escape');
     await page.getByTestId('nav-new').click();

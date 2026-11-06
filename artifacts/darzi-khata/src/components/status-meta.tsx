@@ -18,8 +18,8 @@ export function startOfDay(d: Date | string) { const x = new Date(d); x.setHours
 export function isOverdue(o: Pick<Order, 'deliveryDate' | 'status'>, now = new Date()) {
   return o.status !== 'delivered' && startOfDay(o.deliveryDate) < startOfDay(now);
 }
-export function visualStatus(o: Pick<Order, 'deliveryDate' | 'status'>): OrderStatus | 'overdue' {
-  return isOverdue(o) ? 'overdue' : o.status;
+export function visualStatus(o: Pick<Order, 'deliveryDate' | 'status'>): OrderStatus {
+  return o.status;
 }
 
 /** Icon + colour status chip, readable without colour. */

@@ -1,3 +1,4 @@
+import { demoText } from '../lib/i18n';
 import { usePreferences } from '../hooks/use-preferences';
 import * as Dialog from '@radix-ui/react-dialog';
 import { X, Send, MessageCircle } from 'lucide-react';
@@ -92,13 +93,13 @@ export function OrderChatModal({ order, onClose, onAddComment }: OrderChatModalP
                     }`}>
                       {!isMe && (
                         <div className="flex items-center gap-1 mb-1">
-                          <span className="text-xs font-bold opacity-70">{c.authorName}</span>
+                          <span className="text-xs font-bold opacity-70">{order?.id.startsWith('finance-demo-') && c.authorName.startsWith('Shop Owner') ? label('owner') : c.authorName}</span>
                           <span className={`text-xs px-1.5 py-0.5 rounded-full font-semibold ${c.role === 'owner' ? 'bg-info-soft  text-info ' : 'bg-warning-soft  text-warning '}`}>
                             {c.role === 'owner' ? label('owner') : label('karigar')}
                           </span>
                         </div>
                       )}
-                      <p className="text-sm leading-relaxed whitespace-pre-wrap">{c.text}</p>
+                      <p className="text-sm leading-relaxed whitespace-pre-wrap">{order?.id.startsWith('finance-demo-') ? demoText(c.text) : c.text}</p>
                       <p className={`text-xs mt-1 ${isMe ? 'text-primary-foreground' : 'opacity-50'} text-end`}>{formatTime(c.createdAt, label)}</p>
                     </div>
                   </div>

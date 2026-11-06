@@ -80,7 +80,7 @@ describe('interpolation', () => {
   it('fills placeholders and uses Urdu digits in Urdu', () => {
     expect(fill('{n} pcs', { n: 3 }, 'en')).toBe('3 pcs');
     expect(fill('{n} جوڑے', { n: 3 }, 'ur')).toBe('۳ جوڑے');
-    expect(bi('when_late', { days: 2 })).toBe('2 din late');
+    expect(bi('when_late', { days: 2 })).toBe('2 days late');
   });
 });
 
@@ -102,13 +102,13 @@ describe('formatting', () => {
     expect(dayDiff(new Date(2025, 2, 30), new Date(2025, 2, 29, 12))).toBe(1);
     expect(dayDiff(new Date(2025, 9, 27), new Date(2025, 9, 25, 23))).toBe(2);
   });
-  it('words delivery as Today / Kal / N din late', () => {
+  it('words delivery in the selected language', () => {
     const now = new Date(2025, 5, 10, 18);
     expect(deliveryWords(new Date(2025, 5, 10, 1), now).en).toBe('Today');
-    expect(deliveryWords(new Date(2025, 5, 11), now).en).toBe('Kal');
+    expect(deliveryWords(new Date(2025, 5, 11), now).en).toBe('Tomorrow');
     const l = deliveryWords(new Date(2025, 5, 7), now);
     expect(l.late).toBe(true);
-    expect(l.en).toBe('3 din late');
+    expect(l.en).toBe('3 days late');
     expect(l.ur).toBe('۳ دن تاخیر');
   });
 });

@@ -10,6 +10,14 @@ sync, external database or bank integration in the approved offline-only upgrade
   earnings, backup/restore and dark mode; do not replace them.
 - Provide English and Urdu, but show only the selected language at a time.
   Preserve the emerald/gold identity and 360px mobile layout.
+- Keep the in-app language selector in More → Settings, not the phone header.
+  English uses English day/instruction words, not Roman Urdu. Baqi is an
+  intentional, consistently used domain term. Built-in fabric/demo text is
+  translated for display; never rewrite users' custom descriptions or notes.
+- The phone header has two single-line rows; keep its shop/owner text truncated
+  at 320px. Overdue is a warning, never a replacement for the real order status.
+- Onboarding dismissal belongs to each account, including demo, on both Skip
+  and completion. Offline upgrades must preserve saved data and open drafts.
 - Keep local email/password accounts. A separate OPTIONAL salted-hash PIN privacy
   lock can protect the local session, with five wrong tries locking for 30 seconds.
   It is not encryption or server authentication; never export account/PIN hashes.

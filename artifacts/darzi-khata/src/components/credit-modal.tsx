@@ -88,7 +88,7 @@ function Gauge({ score }: { score: number }) {
       <path d="M20 100 A80 80 0 0 1 180 100" fill="none" stroke="hsl(var(--muted))" strokeWidth="16" strokeLinecap="round" />
       <path d="M20 100 A80 80 0 0 1 180 100" fill="none" stroke={color} strokeWidth="16" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={off} style={{ transition: 'stroke-dashoffset 200ms ease-out' }} />
       <text x="100" y="92" textAnchor="middle" className="fill-foreground" style={{ fontSize: 40, fontWeight: 700 }}>{score}</text>
-      <text x="100" y="112" textAnchor="middle" className="fill-muted-foreground" style={{ fontSize: 12 }}>/ 100</text>
+      <text x="100" y="112" textAnchor="middle" className="fill-muted-foreground" style={{ fontSize: 12 }}>{tl('score_scale')}</text>
     </svg>
   );
 }
@@ -99,7 +99,7 @@ function ScoreView({ p, onApply }: { p: CreditProfile; onApply: () => void }) {
     <div className="space-y-5">
       <div className="text-center dk-rise">
         <Gauge score={p.score} />
-        <div className="inline-block mt-1 px-3 py-1 rounded-full bg-warning-soft  text-accent-foreground  text-sm font-bold" data-testid="text-credit-band">{p.band}</div>
+        <div className="inline-block mt-1 px-3 py-1 rounded-full bg-warning-soft text-warning text-sm font-bold" data-testid="text-credit-band">{p.band}</div>
         <div className="flex justify-center gap-3 mt-3 text-xs text-muted-foreground">
           <span>0–39 {label('starter')}</span><span>40–69 {label('growing')}</span><span>70+ {label('trusted')}</span>
         </div>
@@ -128,9 +128,9 @@ function ScoreView({ p, onApply }: { p: CreditProfile; onApply: () => void }) {
       <section className="rounded-lg bg-primary text-primary-foreground p-4">
         <div className="text-sm text-primary-foreground">{label('illustrative_loan_estimate')}</div>
         <div className="text-3xl font-bold mt-1" data-testid="text-loan-estimate">{p.enoughData ? pkr(p.eligibleLoan) : '—'}</div>
-        <p className="text-xs text-primary-foreground mt-1">{label('avg_monthly_revenue')} {pkr(p.averageMonthlyRevenue)} · 1.5 × revenue × score%, capped at Rs 300,000</p>
+        <p className="text-xs text-primary-foreground mt-1">{label('avg_monthly_revenue')} {pkr(p.averageMonthlyRevenue)} · {label('loan_formula')}</p>
         <p className="text-sm text-primary-foreground mt-2 flex gap-1.5"><Info size={20} className="shrink-0 mt-0.5" aria-hidden />{label('not_a_loan_offer_or_bank_decision_lender')}</p>
-        <button onClick={onApply} disabled={!p.enoughData} className="mt-3 w-full min-h-[48px] rounded-lg bg-accent hover:bg-accent disabled:opacity-40 text-primary font-bold flex items-center justify-center gap-2" data-testid="btn-apply-zindigi">
+        <button onClick={onApply} disabled={!p.enoughData} className="mt-3 w-full min-h-[48px] rounded-lg bg-accent hover:bg-accent disabled:opacity-40 text-accent-foreground font-bold flex items-center justify-center gap-2" data-testid="btn-apply-zindigi">
           <ShieldCheck size={18} aria-hidden /> {label('apply_via_zindigi')}
         </button>
       </section>

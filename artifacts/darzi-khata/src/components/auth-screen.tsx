@@ -106,7 +106,7 @@ export function AuthScreen({ onLogin, onSignup, initialTab = 'login' }: AuthScre
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
                 <label htmlFor="login-email" className={lab}>{L('auth_email')}</label>
-                <input id="login-email" type="email" required autoComplete="email" aria-label={L('auth_email')} placeholder="aapka@email.com" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} className={field} dir="ltr" data-testid="input-login-email" />
+                <input id="login-email" type="email" required autoComplete="email" aria-label={L('auth_email')} placeholder={L('auth_email_placeholder')} value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} className={field} dir="ltr" data-testid="input-login-email" />
               </div>
               <div>
                 <label htmlFor="login-password" className={lab}>{L('auth_password')}</label>

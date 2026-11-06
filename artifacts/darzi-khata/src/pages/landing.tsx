@@ -14,8 +14,8 @@ const WHATSAPP = (import.meta.env.VITE_CONTACT_WHATSAPP as string | undefined)?.
 const GITHUB = 'https://github.com/Saadia-Asghar/darzi-khata';
 
 const shot = (name: string, lang: Lang) => `${BASE}/screens/${name}-${lang}.webp`;
-// Captured at a 390 x 844 phone viewport.
-const SHOT_W = 390, SHOT_H = 844;
+// Captured at a 375 x 812 phone viewport.
+const SHOT_W = 375, SHOT_H = 812;
 
 function readLang(): Lang {
   try { return localStorage.getItem(LANG_KEY) === 'ur' ? 'ur' : 'en'; } catch { return 'en'; }

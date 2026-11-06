@@ -53,14 +53,28 @@ export function QuickOrderForm({ open, onOpenChange, initialCustomer, orders, on
 
   const choose = (c: Customer) => { setPicked(c); setName(c.name); setPhone(c.phone); setQ(''); setProfileId(c.profiles[0]?.id ?? ''); if (c.profiles[0]) setType(c.profiles[0].garmentType); };
 
+  const resolvedMeasurements = () => profile && profile.garmentType === type ? { ...profile.measurements }
+    : type === 'gents' && lastGents?.measurements ? { ...(lastGents.measurements as unknown as Record<string, number>) } : defaultMeasurements(type);
+  const expandToFull = () => {
+    const measurements = resolvedMeasurements();
+    const amount = Number(price);
+    // Promote this quick-order draft, not a new default-sized order. Other
+    // garment profiles remain available through customer history/reuse.
+    const item = { ...newItem(type), unitPrice: Number.isFinite(amount) ? amount : 0, measurements };
+    onOpenChange(false);
+    onOpenFull({
+      customerName: name, phone, customerId: picked?.id, items: [item], suitCount: 1,
+      measurements: { ...(type === 'gents' ? measurements as unknown as Measurements : lastGents?.measurements ?? LEGACY_MEASUREMENTS) },
+      totalAmount: item.unitPrice, ...(date ? { deliveryDate: new Date(date).toISOString() } : {}),
+    });
+  };
   const save = () => {
     const amount = Number(price);
     if (name.trim().length < 2) return setErr(label('name_is_required'));
     if (phone.replace(/\D/g, '').length < 10) return setErr(label('valid_phone_required'));
     if (!Number.isFinite(amount) || amount < 0) return setErr(label('enter_a_valid_price'));
     if (!date) return setErr(label('delivery_date_required'));
-    const measurements = profile && profile.garmentType === type ? { ...profile.measurements }
-      : type === 'gents' && lastGents?.measurements ? { ...(lastGents.measurements as unknown as Record<string, number>) } : defaultMeasurements(type);
+    const measurements = resolvedMeasurements();
     const item = { ...newItem(type), unitPrice: amount, measurements };
     let customerId = picked?.id;
     try {
@@ -131,7 +145,7 @@ export function QuickOrderForm({ open, onOpenChange, initialCustomer, orders, on
           </div>
           {err && <p role="alert" className="text-sm text-danger">{err}</p>}
           <button type="button" onClick={save} className="w-full min-h-[52px] rounded-lg bg-accent hover:bg-warning text-accent-foreground font-bold text-base" data-testid="btn-quick-save">{label('save_order')}</button>
-          <button type="button" onClick={() => { onOpenChange(false); onOpenFull(name || phone ? { customerName: name, phone, customerId: picked?.id } : undefined); }} className="w-full min-h-[44px] rounded-lg border border-border text-sm font-bold flex items-center justify-center gap-1.5" data-testid="btn-open-full-form"><ListChecks size={15} aria-hidden /> {label('full_4_step_form')}</button>
+          <button type="button" onClick={expandToFull} className="w-full min-h-[44px] rounded-lg border border-border text-sm font-bold flex items-center justify-center gap-1.5" data-testid="btn-open-full-form"><ListChecks size={15} aria-hidden /> {label('full_4_step_form')}</button>
         </div>
       </DialogContent>
     </Dialog>

@@ -1,3 +1,4 @@
+import { fabricName } from '../lib/i18n';
 import { usePreferences } from '../hooks/use-preferences';
 import { StatusBadge } from './status-meta';
 import { useState, useMemo } from 'react';
@@ -180,7 +181,7 @@ export function KarigarDashboard() {
                         <User size={14} className="text-muted-foreground" />
                         {order.customerName}
                       </p>
-                      <p className="text-sm text-muted-foreground">{label('t_n_pcs', { suitCount: order.suitCount })} · {order.fabric}</p>
+                      <p className="text-sm text-muted-foreground">{label('t_n_pcs', { suitCount: order.suitCount })} · {fabricName(order.fabric)}</p>
                     </div>
                     {/* Status badge */}
                     <StatusBadge order={order} />

@@ -9,7 +9,6 @@ import * as R from '@radix-ui/react-dialog';
 import { Slot } from '@radix-ui/react-slot';
 import { ArrowLeft } from 'lucide-react';
 import { usePreferences } from '../hooks/use-preferences';
-import { LanguageSwitch } from './language-switch';
 import {
   Dialog as UiDialog, DialogContent as UiDialogContent, DialogDescription as UiDialogDescription,
   DialogHeader as UiDialogHeader, DialogTitle as UiDialogTitle,
@@ -24,7 +23,7 @@ export function PageMode({ onBack, children }: { onBack: () => void; children: R
 export const usePageMode = () => useContext(Ctx);
 
 export function BackBar({ onBack, title }: { onBack: () => void; title?: ReactNode }) {
-  const { label, lang, setLanguage } = usePreferences();
+  const { label } = usePreferences();
   return (
     <div className="sticky top-0 z-20 bg-background border-b border-border print:hidden">
       <div className="max-w-2xl mx-auto flex items-center gap-2 px-2 min-h-[56px]">
@@ -32,7 +31,6 @@ export function BackBar({ onBack, title }: { onBack: () => void; title?: ReactNo
           <ArrowLeft size={20} aria-hidden className="rtl:rotate-180" /> {label('back')}
         </button>
         {title && <span className="min-w-0 truncate text-base font-semibold">{title}</span>}
-        <div className="ms-auto"><LanguageSwitch value={lang} onChange={setLanguage} /></div>
       </div>
     </div>
   );

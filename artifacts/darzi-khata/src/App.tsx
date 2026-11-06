@@ -1,5 +1,6 @@
 import { lazy, Suspense, useSyncExternalStore } from 'react';
 import { APP_PATH, BASE, isStandalone, routeOf } from './lib/app-paths';
+import { UpdateNotice } from './components/update-notice';
 
 // Three separate chunks: the landing page stays small, and nothing from auth,
 // storage or the signed-in shell loads until the visitor goes to /app.
@@ -32,11 +33,11 @@ function App() {
   const path = useSyncExternalStore(subscribe, getPath);
   const route = routeOf(path);
   return (
-    <Suspense fallback={<Blank />}>
+    <><UpdateNotice /><Suspense fallback={<Blank />}>
       {route.kind === 'app' ? <AppShell />
         : route.kind === 'public' ? <PublicPages kind={route.page} token={route.token} />
         : <Landing />}
-    </Suspense>
+    </Suspense></>
   );
 }
 

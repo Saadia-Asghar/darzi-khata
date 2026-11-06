@@ -1,3 +1,4 @@
+import { fabricName } from '../lib/i18n';
 import { StatusBadge } from './status-meta';
 import { usePreferences } from '../hooks/use-preferences';
 import { shortDate } from '../lib/i18n';
@@ -58,7 +59,7 @@ export function WorkSheetModal({ open, onOpenChange, orders }: WorkSheetModalPro
           <div className="text-sm text-muted-foreground font-mono">{order.phone}</div>
         </td>
         <td className="px-2 py-2 text-center text-sm font-bold">{order.suitCount}</td>
-        <td className="px-2 py-2 text-sm text-foreground">{order.fabric}</td>
+        <td className="px-2 py-2 text-sm text-foreground">{fabricName(order.fabric)}</td>
         <td className="px-2 py-2 text-sm text-center">
           <div className="font-semibold text-foreground">{formatDate(order.deliveryDate)}</div>
           <div className={`text-xs font-bold ${diff < 0 ? 'text-danger' : diff === 0 ? 'text-warning' : 'text-muted-foreground'}`}>
@@ -136,7 +137,7 @@ export function WorkSheetModal({ open, onOpenChange, orders }: WorkSheetModalPro
                       <strong className="text-lg">{o.customerName}</strong>
                       <span className="num text-sm text-muted-foreground">{o.serialNumber}</span>
                     </div>
-                    <p className="text-base">{o.suitCount} {label('pcs_2')} · {o.fabric}</p>
+                    <p className="text-base">{o.suitCount} {label('pcs_2')} · {fabricName(o.fabric)}</p>
                     <p className="text-sm">{label('delivery')}: {formatDate(o.deliveryDate)}</p>
                     <p className="text-sm">{label('karigar')}: {o.karigar || label('not_assigned')}</p>
                     <StatusBadge order={o} />

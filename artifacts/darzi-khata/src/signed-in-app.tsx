@@ -10,7 +10,7 @@ import { AppPreferences } from './hooks/use-preferences';
 import type { useAuth } from './hooks/use-auth';
 import { AuthContext } from './context/auth-context';
 import NotFound from './pages/not-found';
-import { bi } from './lib/i18n';
+import { tl } from './lib/i18n';
 import { APP_PATH } from './lib/app-paths';
 
 const queryClient = new QueryClient();
@@ -68,7 +68,7 @@ export default function SignedInApp({ currentUser, logout, updateCurrentUser }: 
           <AppPreferences>
             <AppLockGate key={currentUser.id}>
               <FirstRunIntro />
-              <Suspense fallback={<main className="min-h-[100dvh] p-6 bg-background text-foreground" role="status">{bi('loading')}</main>}>
+              <Suspense fallback={<main className="min-h-[100dvh] p-6 bg-background text-foreground" role="status">{tl('loading')}</main>}>
                 {currentUser.role === 'karigar' ? <KarigarDashboard /> : (
                   <WouterRouter base={APP_PATH}>
                     <Router />

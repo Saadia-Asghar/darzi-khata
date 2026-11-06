@@ -54,3 +54,4 @@ Thumbs.db
 .cache/
 .local/
 /generated-artifacts/
+/qa-screens/

@@ -64,7 +64,7 @@ function LenderView({ snapshot: s, t, lang }: { snapshot: LenderSnapshot; t: Tra
     <div className="flex flex-wrap gap-2 text-sm">{s.demo && <b className="rounded-md bg-warning-soft text-warning px-3 py-2">{t('demo_data')}</b>}{s.homeBased && <b className="rounded-md bg-primary-soft text-primary px-3 py-2">{t('feature_home_based')}</b>}</div>
     <p className="text-sm text-muted-foreground">{t('feature_self_reported')}</p>
     <dl className="grid grid-cols-2 gap-4">{([
-      ['months_active', p.monthsActive], ['score', `${p.score}/100`], ['m_on_time_delivery', `${p.onTimePercent.toFixed(1)}%`],
+      ['months_active', p.monthsActive], ['score', t('score_out_of', { score: p.score })], ['m_on_time_delivery', `${p.onTimePercent.toFixed(1)}%`],
       ['m_collection_rate', `${p.collectionPercent.toFixed(1)}%`], ['m_digital_payments', `${p.digitalPercent.toFixed(1)}%`],
       ['feature_income', money(p.collected)], ['feature_spending', money(s.expenses)], ['feature_profit', money(s.profit)],
     ] as const).map(([k, value]) => <div key={k}><dt className="text-sm text-muted-foreground">{t(k)}</dt><dd className="text-lg font-semibold num">{value}</dd></div>)}</dl>
@@ -81,7 +81,7 @@ function LenderView({ snapshot: s, t, lang }: { snapshot: LenderSnapshot; t: Tra
     <h2 className="font-semibold">{t('six_factors')}</h2>
     <ul className="space-y-2">{p.factors.map(f => <li key={f.key} className="flex justify-between gap-3 border-t border-border py-2 text-sm"><span>{t(({
       age: 'm_business_age', volume: 'm_volume_consistency', growth: 'm_revenue_trend', delivery: 'm_on_time_delivery', collection: 'm_collection_rate', digital: 'm_digital_payments', profit: 'feature_profit',
-    } as Record<string, DictKey>)[f.key] || 'score')}</span><span className="num">{Math.round(f.score)} / 100 · {f.weight}%</span></li>)}</ul>
+    } as Record<string, DictKey>)[f.key] || 'score')}</span><span className="num">{t('score_out_of', { score: Math.round(f.score) })} · {f.weight}%</span></li>)}</ul>
   </>;
 }
 function TrackingView({ snapshot: s, t, lang }: { snapshot: TrackingSnapshot; t: Translate; lang: Lang }) {

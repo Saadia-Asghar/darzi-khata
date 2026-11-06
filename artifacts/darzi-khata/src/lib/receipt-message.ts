@@ -1,4 +1,4 @@
-import { DICT, fill, money, shortDate, type DictKey, type Lang, type Vars } from './i18n';
+import { DICT, fill, money, shortDate, fabricName, demoText, type DictKey, type Lang, type Vars } from './i18n';
 import { garment } from './garments';
 import { balance, paymentDetailsText, type PaymentDetails } from './payments';
 import type { Order } from '../types/order';
@@ -45,11 +45,11 @@ export function receiptMessage(order: Order, settings: ReceiptSettings, lang: La
     date: shortDate(order.deliveryDate, lang),
     urgent: order.urgent ? t('urgent_chip') : '',
     garments: items.map(item => `${item.quantity} ${t(garment(item.garmentType).tk)}`).join(', '),
-    fabric: order.fabric,
+    fabric: fabricName(order.fabric, lang),
     measurements: items.map(item => `${t(garment(item.garmentType).tk)}\n${garment(item.garmentType).fields.map(field => `${t(field.tk)}: ${item.measurements[field.key] ?? 0}`).join(' · ')}`).join('\n'),
     style: [order.collarType, order.damanType, order.pockets, order.cuffType]
       .map(value => receiptStyle(value, lang)).join(' · '),
-    notes: order.specialNotes || '',
+    notes: (order.id.startsWith('finance-demo-') ? demoText(order.specialNotes, lang) : order.specialNotes) || '',
     total: money(order.totalAmount), collected: money(order.advanceAmount), balance: money(remaining),
     payment: details && remaining > 0 ? `${t('receipt_pay_online')}\n${details}\n${t('receipt_reference', { ref: order.serialNumber || order.id, amount: remaining })}\n${t('receipt_share_screenshot')}` : '',
     thanks: receiptThanks(settings, lang),

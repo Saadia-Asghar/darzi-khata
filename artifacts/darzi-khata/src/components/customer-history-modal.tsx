@@ -1,3 +1,4 @@
+import { fabricName } from '../lib/i18n';
 import { usePreferences } from '../hooks/use-preferences';
 import * as Dialog from './page-dialog';
 import { X, Scissors, Phone, Copy, ArrowRight } from 'lucide-react';
@@ -75,7 +76,7 @@ export function CustomerHistoryModal({ phone, onClose, orders, onCopyMeasurement
                   </div>
                   
                   <div className="text-sm text-muted-foreground mb-3">
-                    <span className="flex items-center gap-2"><FabricThumb id={order.fabricPhotoId} size={36} /><span>{order.items?.length ? order.items.map((i) => `${label(garment(i.garmentType).tk)} x${i.quantity}`).join(', ') : label('t_n_suits', { suitCount: order.suitCount })} · {order.fabric}</span></span>
+                    <span className="flex items-center gap-2"><FabricThumb id={order.fabricPhotoId} size={36} /><span>{order.items?.length ? order.items.map((i) => `${label(garment(i.garmentType).tk)} x${i.quantity}`).join(', ') : label('t_n_suits', { suitCount: order.suitCount })} · {fabricName(order.fabric)}</span></span>
                   </div>
                   
                   <div className="flex items-center justify-between pt-3 border-t border-border">

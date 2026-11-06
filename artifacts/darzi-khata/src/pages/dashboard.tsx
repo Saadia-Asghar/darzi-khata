@@ -31,8 +31,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Search, FlaskConical, Zap, ListChecks, HardDrive, BarChart2, ChevronRight } from 'lucide-react';
-import { LanguageSwitch } from '../components/language-switch';
+import { Search, FlaskConical, Zap, ListChecks, LockKeyhole, BarChart2, ChevronRight } from 'lucide-react';
 import { BackupReminder } from '../components/backup-reminder';
 import { ExpenseTools, ProfitSummary } from '../components/expense-tools';
 import { RushTools } from '../components/rush-tools';
@@ -55,7 +54,7 @@ export default function Dashboard({ section = 'orders', phone }: { section?: Sec
   const { orders: allOrders, isLoaded, addOrder, updateOrder, deleteOrder, updateOrderStatus, setAllOrders, addComment } = useOrders();
   const { currentUser, logout } = useAuthContext();
   const { demoMode, setDemoMode } = useDemoMode();
-  const { label, one, lang, setLanguage } = usePreferences();
+  const { label, one, lang } = usePreferences();
   const { settings } = useSettings();
   const homeBased = settings.shopType === 'women-home-tailor';
   const { toast } = useToast();
@@ -180,15 +179,15 @@ export default function Dashboard({ section = 'orders', phone }: { section?: Sec
     <div className="min-h-[100dvh] bg-background pb-28 text-foreground">
       {!isToolPage && (
         <header data-app-header className="bg-card border-b border-border px-4 sticky top-0 z-20 print:hidden">
-          <div className="max-w-2xl mx-auto flex items-center justify-between gap-3 min-h-[60px] py-2">
-            <div className="order-last"><LanguageSwitch value={lang} onChange={setLanguage} /></div>
-            <div className="min-w-0">
-              <h1 className="text-lg font-semibold [overflow-wrap:anywhere]" data-testid="text-shop-name">{shopLabel}</h1>
-              <p className="text-sm text-muted-foreground">{shortDate(new Date(), lang)} · {currentUser?.name}</p>
+          <div className="max-w-2xl mx-auto py-2">
+            <div className="flex items-center gap-2">
+              <h1 className="flex-1 min-w-0 truncate text-lg font-semibold" data-testid="text-shop-name" title={shopLabel}>{shopLabel}</h1>
+              <span className="shrink-0 inline-flex h-11 w-11 items-center justify-center rounded-md text-primary" role="img" aria-label={label('data_note')} title={label('data_note')}><LockKeyhole size={20} aria-hidden /></span>
             </div>
-            <div className="flex items-center gap-2 shrink-0">
-              {demoMode && <span className="inline-flex items-center gap-1 rounded-md bg-warning-soft text-warning border border-warning/30 text-sm font-medium px-2 py-1" data-testid="badge-demo"><FlaskConical size={16} aria-hidden /> {one('demo_badge')}</span>}
-              <span className="inline-flex h-11 w-11 items-center justify-center rounded-md text-primary" role="img" aria-label={label('data_note')} title={label('data_note')}><HardDrive size={20} aria-hidden /></span>
+            <div className="flex items-center gap-1.5 min-w-0 pb-1">
+              <span className="text-sm text-muted-foreground shrink-0">{shortDate(new Date(), lang)}</span>
+              {demoMode && <span className="shrink-0 rounded-md bg-warning-soft text-warning border border-warning/30 text-xs font-medium px-1.5 py-0.5" data-testid="badge-demo">{one('demo_badge')}</span>}
+              <span className="min-w-0 truncate text-sm text-muted-foreground" title={currentUser?.name}>· {currentUser?.name}</span>
             </div>
           </div>
         </header>

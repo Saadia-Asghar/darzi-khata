@@ -4,6 +4,23 @@
  * Sentences end with a full stop, never an em-dash.
  */
 export const DICT = {
+  score_scale: { en: 'out of 100', ur: '۱۰۰ میں سے' },
+  loan_formula: { en: '1.5 × revenue × score%, capped at Rs 300,000', ur: '۱٫۵ × آمدن × اسکور٪، زیادہ سے زیادہ ۳۰۰،۰۰۰ روپے' },
+  demo_instruction: { en: 'Please follow the measurements and delivery date', ur: 'ناپ اور تاریخ کا خیال رکھیں' },
+  demo_completed: { en: 'Completed and checked', ur: 'کام مکمل اور چیک ہو گیا' },
+  demo_working: { en: 'Working on this order', ur: 'اس آرڈر پر کام جاری ہے' },
+  demo_order_note: { en: 'Synthetic demo order', ur: 'نمائشی آرڈر' },
+  today_collect: { en: '{collect} to collect', ur: '{collect} وصول کرنے ہیں' },
+  auth_email_placeholder: { en: 'you@example.com', ur: 'آپ کا ای میل' },
+  today_nothing_due: { en: 'Nothing due today.', ur: 'آج کوئی ڈیلیوری نہیں۔' },
+  order_notes_count: { en: 'Notes ({n})', ur: 'نوٹس ({n})' },
+  score_out_of: { en: '{score} out of 100', ur: '۱۰۰ میں سے {score}' },
+  update_available: { en: 'An update is ready. Finish your work, then refresh.', ur: 'نئی اپ ڈیٹ تیار ہے۔ کام مکمل کر کے تازہ کریں۔' },
+  update_refresh: { en: 'Refresh app', ur: 'ایپ تازہ کریں' },
+  fabric_cotton: { en: 'Cotton', ur: 'کاٹن' },
+  fabric_wash_wear: { en: 'Wash & Wear', ur: 'واش اینڈ ویئر' },
+  fabric_boski: { en: 'Boski', ur: 'بوسکی' },
+  fabric_khaddar: { en: 'Khaddar', ur: 'کھدر' },
   feature_more_orders: { en: 'Show more orders ({shown} of {total})', ur: 'مزید آرڈر دکھائیں ({total} میں سے {shown})' },
   feature_pitch: { en: '60-second pitch demo', ur: '۶۰ سیکنڈ کا تعارفی ڈیمو' },
   feature_pitch_intro: { en: 'Resets only the demo register. Your real shop stays untouched. Payments and score changes are simulations, not bank activity.', ur: 'صرف ڈیمو رجسٹر دوبارہ بنتا ہے۔ آپ کی اصل دکان محفوظ رہتی ہے۔ ادائیگیاں اور اسکور کی تبدیلیاں مثالی ہیں، بینک کی کارروائی نہیں۔' },
@@ -187,10 +204,10 @@ export const DICT = {
   j_collection_rate: { en: 'Collection rate', ur: 'وصولی' },
   j_avg_monthly_revenue: { en: 'Avg monthly revenue', ur: 'اوسط آمدن' },
   when_today: { en: 'Today', ur: 'آج' },
-  when_tomorrow: { en: 'Kal', ur: 'کل' },
-  when_late: { en: '{days} din late', ur: '{days} دن تاخیر' },
+  when_tomorrow: { en: 'Tomorrow', ur: 'کل' },
+  when_late: { en: '{days} days late', ur: '{days} دن تاخیر' },
   when_in_days: { en: 'In {days} days', ur: '{days} دن میں' },
-  intro_body_1: { en: 'Naap, kapra, delivery date. Your khata lives on this phone.', ur: 'ناپ، کپڑا اور ترسیل کی تاریخ، سب ایک جگہ۔ آپ کا کھاتہ اسی فون پر ہے۔' },
+  intro_body_1: { en: 'Measurements, fabric and delivery date. Your khata lives on this phone.', ur: 'ناپ، کپڑا اور ترسیل کی تاریخ، سب ایک جگہ۔ آپ کا کھاتہ اسی فون پر ہے۔' },
   intro_body_2: { en: 'Log each payment with its method. Send WhatsApp reminders for balances.', ur: 'ہر ادائیگی کا طریقہ لکھیں اور بقایا کی یاد دہانی بھیجیں۔' },
   intro_body_3: { en: 'Steady records turn into a business profile you can show a lender.', ur: 'باقاعدہ ریکارڈ سے کاروباری پروفائل بنتی ہے جو آپ قرض دینے والے کو دکھا سکتے ہیں۔' },
   intro_skip: { en: 'Skip', ur: 'چھوڑیں' },
@@ -488,7 +505,7 @@ export const DICT = {
   status_delivered: { en: 'Delivered', ur: 'دے دیا' },
   status_overdue: { en: 'Overdue', ur: 'تاخیر' },
   date_today: { en: 'Today', ur: 'آج' },
-  date_tomorrow: { en: 'Kal', ur: 'کل' },
+  date_tomorrow: { en: 'Tomorrow', ur: 'کل' },
   order_deleted: { en: 'Order deleted', ur: 'آرڈر حذف ہو گیا' },
   order_restored: { en: 'Order restored', ur: 'آرڈر واپس آ گیا' },
   undo: { en: 'Undo', ur: 'واپس' },
@@ -1038,6 +1055,27 @@ export function money(n: number) {
 const UR_MONTHS = ['جنوری', 'فروری', 'مارچ', 'اپریل', 'مئی', 'جون', 'جولائی', 'اگست', 'ستمبر', 'اکتوبر', 'نومبر', 'دسمبر'];
 const UR_DIGITS = '۰۱۲۳۴۵۶۷۸۹';
 export const toUrduDigits = (s: string | number) => String(s).replace(/[0-9]/g, (d) => UR_DIGITS[+d]);
+/** Translate known built-in fabric values, including old bilingual demo records.
+ * Custom descriptions are never changed in storage or machine-translated. */
+export function fabricName(value: string, lang: Lang = getCurrentLang()): string {
+  const aliases: [DictKey, string[]][] = [
+    ['fabric_cotton', ['Cotton / کاٹن']],
+    ['fabric_wash_wear', []],
+    ['fabric_boski', ['Boski / بوسکی']],
+    ['fabric_khaddar', ['Khaddar / کھدر']],
+  ];
+  const key = aliases.find(([key, old]) => [...old, DICT[key].en, DICT[key].ur].includes(value))?.[0];
+  return key ? DICT[key][lang] : value;
+}
+
+/** Only use for identified synthetic demo records, never general user notes. */
+export function demoText(value: string, lang: Lang = getCurrentLang()): string {
+  for (const key of ['demo_instruction', 'demo_completed', 'demo_working', 'demo_order_note'] as const) {
+    const pair = DICT[key];
+    if ([pair.en, pair.ur, `${pair.en} / ${pair.ur}`].includes(value)) return pair[lang];
+  }
+  return value;
+}
 const EN_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 /** "6 Nov" or "۶ نومبر" */
@@ -1055,7 +1093,7 @@ export function dayDiff(target: Date | string, now: Date = new Date()) {
   return Math.round((a - b) / 86400000);
 }
 
-/** Delivery wording: Today / Kal / 3 din late / in 4 days. tk + vars feed label(). */
+/** Single-language delivery wording. tk + vars feed label(). */
 export function deliveryWords(target: Date | string, now: Date = new Date()) {
   const n = dayDiff(target, now);
   const tk: DictKey = n === 0 ? 'when_today' : n === 1 ? 'when_tomorrow' : n < 0 ? 'when_late' : 'when_in_days';

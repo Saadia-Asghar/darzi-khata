@@ -10,7 +10,7 @@ export default defineConfig({
   fullyParallel: false,
   use: {
     baseURL: process.env.E2E_BASE_URL || 'http://localhost:80',
-    viewport: { width: 390, height: 844 },
+    viewport: { width: 375, height: 812 },
     isMobile: true,
     hasTouch: true,
     locale: 'en-PK',

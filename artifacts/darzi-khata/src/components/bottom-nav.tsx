@@ -26,7 +26,6 @@ export function BottomNav({ tab, onNew, badge }: { tab: NavTab | null; onNew: ()
         {on && <span className="absolute top-0 inset-x-5 h-[3px] rounded-b-sm bg-primary" aria-hidden />}
         <Icon size={20} aria-hidden strokeWidth={on ? 2.25 : 1.75} />
         <Label k={k} />
-        {id === 'more' && !!badge && <span className="num absolute top-1.5 end-[22%] min-w-5 h-5 px-1 rounded-full bg-danger text-danger-foreground text-xs leading-5 text-center" aria-hidden>{badge}</span>}
       </Link>
     );
   };

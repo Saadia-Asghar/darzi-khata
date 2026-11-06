@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
-import { bi } from './lib/i18n';
+import { tl } from './lib/i18n';
 import { AuthScreen } from './components/auth-screen';
 import { useAuth } from './hooks/use-auth';
 import { APP_PATH, LOGIN_PATH } from './lib/app-paths';
@@ -12,7 +12,7 @@ const DEMO_EMAIL = 'demo@darzikhata.com';
 const DEMO_PASSWORD = 'demo1234';
 
 function ScreenLoading() {
-  return <main className="min-h-[100dvh] p-6 bg-background text-foreground" role="status">{bi('loading')}</main>;
+  return <main className="min-h-[100dvh] p-6 bg-background text-foreground" role="status">{tl('loading')}</main>;
 }
 
 /** Everything under /app: sign-in at /app/login, the shop register after it. */
@@ -31,13 +31,10 @@ export default function AppShell() {
     void login(DEMO_EMAIL, DEMO_PASSWORD).finally(() => setDemoPending(false));
   }, [wantsDemo, currentUser?.id, login]);
 
-  // Apply dark mode from user-specific settings on login.
+  // Signed-in theme belongs to AppPreferences, which uses the correct
+  // real/demo and owner scope. A second reader here overwrote demo dark mode.
   useEffect(() => {
-    if (!currentUser) { document.documentElement.classList.remove('dark'); return; }
-    try {
-      const stored = localStorage.getItem(`darzi-khata-settings-${currentUser.id}`);
-      document.documentElement.classList.toggle('dark', stored ? !!JSON.parse(stored).darkMode : false);
-    } catch { /* ignore */ }
+    if (!currentUser) document.documentElement.classList.remove('dark');
   }, [currentUser?.id]);
 
   // Keep the address bar honest before the routed shell reads it.

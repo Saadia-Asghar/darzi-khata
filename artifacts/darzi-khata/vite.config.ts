@@ -1,5 +1,6 @@
 import path from 'path';
 import { readFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vite';
@@ -29,10 +30,16 @@ if (!basePath) {
   );
 }
 
+// Production releases identify their source, not just the build clock.
+const revision = (() => {
+  // Library/checkpoint metadata-only commits do not identify app source.
+  try { return execFileSync('git', ['log', '-1', '--format=%h', '--abbrev=8', '--', '.'], { cwd: import.meta.dirname, encoding: 'utf8' }).trim(); }
+  catch { return 'source-unknown'; }
+})();
 export default defineConfig({
   base: basePath,
   define: {
-    __DARZI_BUILD__: JSON.stringify(`1.4.0+${new Date().toISOString().replace(/\D/g, '').slice(0, 14)}Z`),
+    __DARZI_BUILD__: JSON.stringify(`1.5.0+${revision}.${new Date().toISOString().replace(/\D/g, '').slice(0, 14)}Z`),
   },
   plugins: [
     {
@@ -80,6 +87,8 @@ export default defineConfig({
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         navigateFallback: `${basePath}index.html`,
         cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true,
         runtimeCaching: [
           { urlPattern: /^https:\/\/fonts\.googleapis\.com\//, handler: 'StaleWhileRevalidate', options: { cacheName: 'darzi-font-css' } },
           { urlPattern: /^https:\/\/fonts\.gstatic\.com\//, handler: 'CacheFirst', options: { cacheName: 'darzi-fonts', expiration: { maxEntries: 15, maxAgeSeconds: 31536000 }, cacheableResponse: { statuses: [0, 200] } } },

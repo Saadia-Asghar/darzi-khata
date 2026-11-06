@@ -1,4 +1,33 @@
-# Local accounts
+# Darzi Khata — درزی کھاتہ
+
+**Live:** https://darzi-khata.replit.app
+
+**Demo owner:** `demo@darzikhata.com` / `demo1234`
+
+Demo records and payments are synthetic; no real money is moved.
+
+| Orders | Parchi | Credit profile |
+|---|---|---|
+| ![Order list](artifacts/darzi-khata/public/screens/orders-en.webp) | ![Parchi](artifacts/darzi-khata/public/screens/parchi-en.webp) | ![Credit profile](artifacts/darzi-khata/public/screens/credit-en.webp) |
+
+### 60-second demo
+1. Open the live link → **Try demo shop**. Skip onboarding once.
+2. **More → 60-second pitch demo → Reset demo and begin**.
+3. Follow **Next** to add an order and inspect the real parchi/WhatsApp draft.
+4. Simulate its Zindigi collection; baqi becomes zero. No bank is contacted.
+5. Continue to the actual credit profile and its before/after score.
+
+**Team:** GIKI × Zindigi Prize project context. Public team-member names are
+awaiting confirmation; no names have been invented.
+
+### Release checks
+The More-page version contains the source commit SHA and build timestamp.
+GitHub pushes do **not** republish the live site. After clicking Publish in
+Replit, check `/`, `/app`, the screenshots and the More version in a fresh
+browser, then check an already-installed PWA. Update notifications never erase
+localStorage or fabric photos, and do not force-reload an unfinished form.
+
+## Local accounts
 
 Darzi Khata accounts are device-only: registration and sign-in work offline on
 this browser, not through a server identity service. A different device needs an
@@ -8,7 +37,7 @@ iterations. Older unsalted password hashes remain readable and are upgraded
 only after a successful password check. Passwords are never saved as plaintext.
 The optional PIN is a local privacy lock, not encryption of the shop register.
 
-# Darzi Khata — درزی کھاتہ
+## Product overview
 
 An offline-first, bilingual Pakistani tailor-shop khata with order management,
 payment records and an illustrative business credit profile. Built for the

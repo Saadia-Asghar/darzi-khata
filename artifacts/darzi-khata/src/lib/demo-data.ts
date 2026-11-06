@@ -43,17 +43,17 @@ export function createFinancialDemo(now = new Date(), ownerId = 'demo-account'):
       const actualStatus = status === 'delivered' && delivered > now ? 'stitching' : status;
       const readyDate = new Date(Math.max(date.getTime(), now.getTime() - 4 * 86400000));
       const comments: OrderComment[] = [
-        { id: `${id}-c1`, authorId: ownerId, authorName: 'Shop Owner / مالک', role: 'owner', text: 'Please follow the measurements and delivery date / ناپ اور تاریخ کا خیال رکھیں', createdAt: date.toISOString() },
-        { id: `${id}-c2`, authorId: worker.id, authorName: worker.name, role: 'karigar', text: actualStatus === 'delivered' ? 'Completed and checked / کام مکمل اور چیک ہو گیا' : 'Working on this order / اس آرڈر پر کام جاری ہے', createdAt: paidAt.toISOString() },
+        { id: `${id}-c1`, authorId: ownerId, authorName: 'Shop Owner', role: 'owner', text: 'Please follow the measurements and delivery date', createdAt: date.toISOString() },
+        { id: `${id}-c2`, authorId: worker.id, authorName: worker.name, role: 'karigar', text: actualStatus === 'delivered' ? 'Completed and checked' : 'Working on this order', createdAt: paidAt.toISOString() },
       ];
       result.push({
         id, serialNumber: `DK-${String(serial).padStart(3, '0')}`, customerName: `${names[serial % names.length]} ${['Ali', 'Shah', 'Ahmed'][serial % 3]}`,
         // Reserved synthetic phone values for demo only; do not send reminders automatically.
         phone: `0300${String(1000000 + serial % 48).padStart(7, '0')}`,
         orderDate: date.toISOString(), deliveryDate: due.toISOString(), urgent: recent && i % 2 === 0,
-        suitCount: 1 + serial % 2, fabric: ['Cotton / کاٹن', 'Wash & Wear', 'Boski / بوسکی', 'Khaddar / کھدر'][serial % 4],
+        suitCount: 1 + serial % 2, fabric: ['Cotton', 'Wash & Wear', 'Boski', 'Khaddar'][serial % 4],
         measurements: { ...measurements }, collarType: 'Normal Collar', damanType: 'Choras (Square)',
-        pockets: '2 Side Pockets', cuffType: 'Button Cuff', specialNotes: 'Synthetic demo order / نمائشی آرڈر',
+        pockets: '2 Side Pockets', cuffType: 'Button Cuff', specialNotes: 'Synthetic demo order',
         totalAmount, advanceAmount: advance, status: actualStatus,
         ...(serial % 19 ? { karigar: worker.name, karigarId: worker.id } : {}),
         payments, comments, createdAt: date.toISOString(),

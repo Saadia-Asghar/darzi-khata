@@ -1,3 +1,4 @@
+import { fabricName } from '../lib/i18n';
 import { tl } from '../lib/i18n';
 import { usePreferences } from '../hooks/use-preferences';
 import * as Dialog from './page-dialog';
@@ -74,7 +75,7 @@ export function DueTodayModal({ open, onOpenChange, orders, onViewReceipt }: Due
         </div>
         
         <div className="text-sm font-medium text-foreground bg-muted px-2 py-1.5 rounded-lg mb-3 inline-block">
-          {label('t_n_suits', { suitCount: order.suitCount })} · {order.fabric}
+          {label('t_n_suits', { suitCount: order.suitCount })} · {fabricName(order.fabric)}
         </div>
         
  <div className="mb-2"><ReminderButtons order={order} compact /></div>

@@ -45,7 +45,7 @@ export function PaymentsPanel({ orders, onViewReceipt }: { orders: Order[]; onVi
                 </button>
                 <div className="text-end shrink-0">
                   <div className="font-bold font-mono text-danger" dir="ltr">{rs(balance(o))}</div>
-                  <button onClick={() => setPayingId(o.id)} className="mt-1 min-h-[44px] px-3 rounded-lg bg-accent text-primary text-sm font-bold inline-flex items-center gap-1" data-testid={`btn-receive-${o.id}`}><Wallet size={13} aria-hidden /> {label('receive')}</button>
+                  <button onClick={() => setPayingId(o.id)} className="mt-1 min-h-[44px] px-3 rounded-lg bg-accent text-accent-foreground text-sm font-bold inline-flex items-center gap-1" data-testid={`btn-receive-${o.id}`}><Wallet size={13} aria-hidden /> {label('receive')}</button>
                 </div>
               </li>
             ))}
