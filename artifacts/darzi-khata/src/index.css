@@ -347,3 +347,18 @@
     inset: -1px;
   }
 }
+
+/* ---- Darzi Khata upgrade additions ---- */
+#dk-print-root { display: none; }
+@media print {
+  body.dk-printing > *:not(#dk-print-root) { display: none !important; }
+  body.dk-printing #dk-print-root { display: block !important; }
+  body.dk-printing { background: white !important; }
+  #dk-print-root, #dk-print-root * { color: #111 !important; }
+  #dk-print-root article { background: white; break-inside: avoid; }
+  @page { size: A4; margin: 14mm; }
+}
+@keyframes dk-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.dk-rise { animation: dk-rise .35s cubic-bezier(.2,.7,.2,1) both; }
+.dk-stitch { background-image: repeating-linear-gradient(90deg, hsl(38 92% 50%) 0 6px, transparent 6px 11px); height: 2px; }
+@media (prefers-reduced-motion: reduce) { .dk-rise { animation: none; } }

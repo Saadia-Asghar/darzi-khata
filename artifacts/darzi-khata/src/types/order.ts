@@ -6,40 +6,61 @@ export type PocketType = "Front Pocket" | "1 Side Pocket" | "2 Side Pockets" | "
 export type CuffType = "Simple" | "Button Cuff" | "Cut Cuff";
 
 export interface Measurements {
-  // Kameez/Kurta
-  kameezLambai: number;  // Length
-  teera: number;         // Shoulder
-  bazu: number;          // Sleeves
-  gala: number;          // Neck/Collar
-  chhaati: number;       // Chest
-  kamar: number;         // Waist
-  ghera: number;         // Daman width
-  // Shalwar/Pajama
-  shalwarLambai: number; // Shalwar length
-  paincha: number;       // Bottom opening
-  asan: number;          // Crotch
-  shalwarGhera: number;  // Shalwar width
+  kameezLambai: number;
+  teera: number;
+  bazu: number;
+  gala: number;
+  chhaati: number;
+  kamar: number;
+  ghera: number;
+  shalwarLambai: number;
+  paincha: number;
+  asan: number;
+  shalwarGhera: number;
+}
+
+export interface OrderComment {
+  id: string;
+  authorId: string;
+  authorName: string;
+  role: 'owner' | 'karigar';
+  text: string;
+  createdAt: string;
+}
+
+export type PaymentMethod = 'cash' | 'zindigi' | 'raast' | 'bank';
+export interface Payment {
+  id: string;
+  amount: number;
+  method: PaymentMethod;
+  date: string;
+  demo?: boolean;
 }
 
 export interface Order {
   id: string;
   serialNumber?: string;
   customerName: string;
-  phone: string;           
-  orderDate: string;       
-  deliveryDate: string;    
+  phone: string;
+  orderDate: string;
+  deliveryDate: string;
   urgent: boolean;
-  suitCount: number;       
-  fabric: string;          
+  suitCount: number;
+  fabric: string;
   measurements: Measurements;
   collarType: CollarType;
   damanType: DamanType;
   pockets: PocketType;
   cuffType: CuffType;
   specialNotes: string;
-  totalAmount: number;     
-  advanceAmount: number;   
+  totalAmount: number;
+  advanceAmount: number;
   status: OrderStatus;
   karigar?: string;
-  createdAt: string;       
+  karigarId?: string;   // linked karigar account ID
+  comments?: OrderComment[];
+  createdAt: string;
+  payments?: Payment[];
+  deliveredAt?: string;
+  readyAt?: string;
 }

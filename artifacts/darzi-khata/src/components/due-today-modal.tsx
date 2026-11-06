@@ -1,6 +1,9 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import { X, CalendarClock, MessageCircle, ReceiptText, Phone, AlertCircle } from 'lucide-react';
 import { Order } from '../types/order';
+import { ReminderButtons } from './reminder-buttons';
+import { useSettings } from '../hooks/use-settings';
+import { normalizePakistaniPhone, reminderText } from '../lib/reminders';
 
 interface DueTodayModalProps {
   open: boolean;
@@ -10,6 +13,7 @@ interface DueTodayModalProps {
 }
 
 export function DueTodayModal({ open, onOpenChange, orders, onViewReceipt }: DueTodayModalProps) {
+  const { settings } = useSettings();
   
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -41,7 +45,11 @@ export function DueTodayModal({ open, onOpenChange, orders, onViewReceipt }: Due
     const baqi = order.totalAmount - order.advanceAmount;
     
     const generateReminderMessage = () => {
-      return encodeURIComponent(`Assalam o Alaikum ${order.customerName} bhai,\nAapka ${order.suitCount} suit (${order.fabric}) ready hai.\nBaqi rakam: Rs. ${baqi}\nShukriya! - Al-Madina Tailors`);
+      const isTomorrow = new Date(order.deliveryDate).toDateString() === tomorrow.toDateString();
+      return encodeURIComponent(order.status === 'ready'
+        ? reminderText(order, 'ready', settings)
+        : isTomorrow ? reminderText(order, 'tomorrow', settings)
+        : `Assalam o Alaikum ${order.customerName}\nOrder / آرڈر: ${order.serialNumber || ''}\nDelivery / ترسیل: ${new Date(order.deliveryDate).toLocaleDateString()}\nBalance / بقایا: Rs ${baqi}\n${settings.shopName}`);
     };
 
     return (
@@ -65,9 +73,10 @@ export function DueTodayModal({ open, onOpenChange, orders, onViewReceipt }: Due
           {order.suitCount} Jora — {order.fabric}
         </div>
         
+ <div className="mb-2"><ReminderButtons order={order} compact /></div>
         <div className="flex gap-2">
           <a 
-            href={`https://wa.me/${order.phone.replace(/^0/, '92')}?text=${generateReminderMessage()}`}
+            href={`https://wa.me/${normalizePakistaniPhone(order.phone)}?text=${generateReminderMessage()}`}
             target="_blank" rel="noreferrer"
             className="flex-1 flex items-center justify-center gap-1.5 bg-[#E7F6EC] text-[#128C7E] py-2 rounded-lg text-xs font-bold hover:bg-[#D1F0DA] transition-colors"
           >

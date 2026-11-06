@@ -1,10 +1,18 @@
 import * as Dialog from '@radix-ui/react-dialog';
-import { X, Save, Download, Upload, Trash2, Scissors, Moon, Plus, UserX, Lock, Eye, EyeOff } from 'lucide-react';
+import { X, Save, Download, Upload, Trash2, Scissors, Moon, Plus, UserX } from 'lucide-react';
 import { useSettings, ShopSettings } from '../hooks/use-settings';
 import { useTemplates } from '../hooks/use-templates';
 import { useKarigars } from '../hooks/use-karigars';
 import { useToast } from '@/hooks/use-toast';
 import { useRef, useState, useEffect } from 'react';
+import { Wallet, FlaskConical } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
+  AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { useDemoMode } from '../hooks/use-demo-mode';
+import { SHOP_TYPES } from './shop-type';
 import { Order } from '../types/order';
 
 interface SettingsModalProps {
@@ -22,18 +30,16 @@ export function SettingsModal({ open, onOpenChange, orders, setAllOrders }: Sett
 
   const [formData, setFormData] = useState<ShopSettings>(settings);
   const [newKarigarName, setNewKarigarName] = useState('');
-  const [showPin, setShowPin] = useState(false);
-  const [pinInput, setPinInput] = useState('');
-  const [confirmPin, setConfirmPin] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { demoMode, setDemoMode, clearDemoData } = useDemoMode();
+  const [clearOpen, setClearOpen] = useState(false);
 
+  // Initialise form only when the dialog opens, so unrelated re-renders never wipe typed input.
+  const settingsRef = useRef(settings);
+  settingsRef.current = settings;
   useEffect(() => {
-    if (open) {
-      setFormData(settings);
-      setPinInput(settings.pin || '');
-      setConfirmPin(settings.pin || '');
-    }
-  }, [open, settings]);
+    if (open) setFormData(settingsRef.current);
+  }, [open, demoMode]);
 
   const handleChange = (field: keyof ShopSettings, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -47,22 +53,7 @@ export function SettingsModal({ open, onOpenChange, orders, setAllOrders }: Sett
   };
 
   const handleSave = () => {
-    // Validate PIN if enabled
-    if (formData.pinEnabled) {
-      if (pinInput.length !== 4 || !/^\d{4}$/.test(pinInput)) {
-        toast({ title: 'Invalid PIN', description: 'PIN 4 digits ka hona chahiye.', variant: 'destructive' });
-        return;
-      }
-      if (pinInput !== confirmPin) {
-        toast({ title: 'PIN Match Nahi Kiya', description: 'Dono PIN ek jaise hone chahiye.', variant: 'destructive' });
-        return;
-      }
-    }
-    const finalData: ShopSettings = {
-      ...formData,
-      pin: formData.pinEnabled ? pinInput : '',
-    };
-    saveSettings(finalData);
+    saveSettings(formData);
     toast({ title: 'Settings saved', description: 'Shop settings have been updated.' });
     onOpenChange(false);
   };
@@ -153,71 +144,6 @@ export function SettingsModal({ open, onOpenChange, orders, setAllOrders }: Sett
               </div>
             </section>
 
-            {/* PIN Lock */}
-            <section className="bg-card p-4 rounded-xl border border-card-border space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Lock size={18} className="text-muted-foreground" />
-                  <div>
-                    <div className="font-bold text-foreground text-sm">PIN Lock / لاک</div>
-                    <div className="text-xs text-muted-foreground">App khulne par PIN maanga jaye</div>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => handleChange('pinEnabled', !formData.pinEnabled)}
-                  className={`w-12 h-6 rounded-full relative transition-colors duration-200 ${formData.pinEnabled ? 'bg-emerald-600' : 'bg-gray-300'}`}
-                  data-testid="toggle-pin"
-                >
-                  <span className={`block w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform duration-200 shadow-sm ${formData.pinEnabled ? 'translate-x-6' : 'translate-x-0.5'}`} />
-                </button>
-              </div>
-
-              {formData.pinEnabled && (
-                <div className="space-y-3 pt-1">
-                  <div>
-                    <label className="block text-xs font-semibold text-muted-foreground mb-1">4-Digit PIN set karein</label>
-                    <div className="relative">
-                      <input
-                        type={showPin ? 'text' : 'password'}
-                        inputMode="numeric"
-                        maxLength={4}
-                        value={pinInput}
-                        onChange={(e) => setPinInput(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                        placeholder="••••"
-                        className="w-full bg-muted border border-input rounded-lg px-3 py-2 text-foreground text-lg font-bold font-mono tracking-widest outline-none focus:border-emerald-500 pr-10"
-                        data-testid="input-pin"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPin(!showPin)}
-                        className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground"
-                      >
-                        {showPin ? <EyeOff size={16} /> : <Eye size={16} />}
-                      </button>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-muted-foreground mb-1">PIN confirm karein</label>
-                    <input
-                      type={showPin ? 'text' : 'password'}
-                      inputMode="numeric"
-                      maxLength={4}
-                      value={confirmPin}
-                      onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                      placeholder="••••"
-                      className={`w-full bg-muted border rounded-lg px-3 py-2 text-foreground text-lg font-bold font-mono tracking-widest outline-none focus:border-emerald-500 ${confirmPin && confirmPin !== pinInput ? 'border-red-400' : 'border-input'}`}
-                      data-testid="input-pin-confirm"
-                    />
-                    {confirmPin && confirmPin !== pinInput && (
-                      <p className="text-xs text-red-500 mt-1">PIN match nahi kiya</p>
-                    )}
-                  </div>
-                  <p className="text-[10px] text-muted-foreground">⚠️ PIN bhool gaye? App ka data clear karna parey ga. PIN yaad rakhein!</p>
-                </div>
-              )}
-            </section>
-
             {/* Shop Details */}
             <section className="bg-card p-4 rounded-xl border border-card-border space-y-3">
               <h3 className="font-bold text-foreground border-b border-border pb-2 text-sm uppercase tracking-wider">Shop Details</h3>
@@ -250,6 +176,57 @@ export function SettingsModal({ open, onOpenChange, orders, setAllOrders }: Sett
                   <div className="font-urdu text-sm text-foreground">{formData.shopNameUrdu || 'دکان کا نام'}</div>
                 </div>
               </div>
+            </section>
+
+            {/* Payment details */}
+            <section className="bg-card p-4 rounded-xl border border-card-border space-y-3">
+              <h3 className="font-bold text-foreground border-b border-border pb-2 text-sm flex items-center gap-2"><Wallet size={16} /> Payment details <span className="font-urdu font-normal text-muted-foreground">ادائیگی کی تفصیل</span></h3>
+              <p className="text-[11px] text-muted-foreground">Shown on receipts and WhatsApp messages. Stored only on this phone. / صرف اس فون پر محفوظ</p>
+              <div>
+                <label htmlFor="set-title" className="block text-xs font-semibold text-muted-foreground mb-1">Account title / اکاؤنٹ کا نام</label>
+                <input id="set-title" value={formData.accountTitle || ''} onChange={(e) => handleChange('accountTitle', e.target.value)} className="w-full h-11 bg-muted border border-input rounded-lg px-3 outline-none focus:border-emerald-500 text-sm text-foreground" data-testid="input-account-title" />
+              </div>
+              <div>
+                <label htmlFor="set-zindigi" className="block text-xs font-semibold text-muted-foreground mb-1">Zindigi wallet number / زندگی والٹ نمبر</label>
+                <input id="set-zindigi" inputMode="tel" placeholder="03xx xxxxxxx" value={formData.zindigiWallet || ''} onChange={(e) => handleChange('zindigiWallet', e.target.value)} className="w-full h-11 bg-muted border border-input rounded-lg px-3 outline-none focus:border-emerald-500 text-sm font-mono text-foreground" data-testid="input-zindigi" />
+              </div>
+              <div>
+                <label htmlFor="set-raast" className="block text-xs font-semibold text-muted-foreground mb-1">Raast ID or IBAN / راست آئی ڈی</label>
+                <input id="set-raast" value={formData.raastId || ''} onChange={(e) => handleChange('raastId', e.target.value)} className="w-full h-11 bg-muted border border-input rounded-lg px-3 outline-none focus:border-emerald-500 text-sm font-mono text-foreground" data-testid="input-raast" />
+              </div>
+              <fieldset>
+                <legend className="block text-xs font-semibold text-muted-foreground mb-1.5">Business type / کاروبار کی قسم</legend>
+                <div className="grid grid-cols-3 gap-1.5">
+                  {SHOP_TYPES.map((t) => {
+                    const on = (formData.shopType || 'shop') === t.value;
+                    return (
+                      <button key={t.value} type="button" aria-pressed={on} onClick={() => setFormData((prev) => ({ ...prev, shopType: t.value }))}
+                        className={`min-h-[52px] rounded-lg border px-1 text-[11px] font-bold leading-tight transition ${on ? 'bg-emerald-800 text-white border-emerald-800' : 'bg-muted border-border text-foreground'}`} data-testid={`btn-shoptype-${t.value}`}>
+                        {t.en}<span className="block font-urdu font-normal">{t.ur}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </fieldset>
+            </section>
+
+            {/* Demo mode */}
+            <section className={`p-4 rounded-xl border space-y-3 ${demoMode ? 'bg-amber-50 dark:bg-amber-900/10 border-amber-300 dark:border-amber-700' : 'bg-card border-card-border'}`}>
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-start gap-2">
+                  <FlaskConical size={18} className="text-amber-600 mt-0.5 shrink-0" />
+                  <div>
+                    <div className="font-bold text-sm">Demo mode <span className="font-urdu font-normal">ڈیمو موڈ</span></div>
+                    <div className="text-[11px] text-muted-foreground">Sample shop with about 150 orders. Your real orders are kept separately and return when you switch off. / اصل آرڈر محفوظ رہتے ہیں</div>
+                  </div>
+                </div>
+                <Switch checked={demoMode} onCheckedChange={(v) => { setDemoMode(v); toast({ title: v ? 'Demo data on / ڈیمو آن' : 'Real data restored / اصل ڈیٹا واپس' }); }} className="shrink-0 scale-125" aria-label="Demo mode / ڈیمو موڈ" data-testid="switch-demo-mode" />
+              </div>
+              {demoMode && (
+                <button type="button" onClick={() => setClearOpen(true)} className="w-full min-h-[44px] rounded-lg border border-red-300 text-red-700 dark:text-red-400 text-sm font-bold hover:bg-red-50 dark:hover:bg-red-900/20" data-testid="btn-clear-demo">
+                  Clear demo data / ڈیمو ڈیٹا ختم کریں
+                </button>
+              )}
             </section>
 
             {/* Karigars */}
@@ -331,6 +308,18 @@ export function SettingsModal({ open, onOpenChange, orders, setAllOrders }: Sett
           </div>
         </Dialog.Content>
       </Dialog.Portal>
+      <AlertDialog open={clearOpen} onOpenChange={setClearOpen}>
+        <AlertDialogContent className="w-[calc(100%-1.5rem)] max-w-sm rounded-2xl z-[70]">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Clear demo data? <span className="font-urdu font-normal">ڈیمو ڈیٹا ختم؟</span></AlertDialogTitle>
+            <AlertDialogDescription>Deletes only the sample demo orders and turns demo mode off. Your real orders are not touched. / صرف ڈیمو آرڈر حذف ہوں گے</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="min-h-[44px]">Cancel / منسوخ</AlertDialogCancel>
+            <AlertDialogAction className="min-h-[44px] bg-red-600 hover:bg-red-700" onClick={() => { clearDemoData(); toast({ title: 'Demo data cleared / ڈیمو ڈیٹا ختم' }); }} data-testid="btn-confirm-clear-demo">Clear / ختم کریں</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog.Root>
   );
 }

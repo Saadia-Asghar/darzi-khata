@@ -1,7 +1,14 @@
 import * as Dialog from '@radix-ui/react-dialog';
-import { X, Printer, Copy, MessageCircle, Scissors } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { X, Printer, Copy, MessageCircle, Scissors, FlaskConical } from 'lucide-react';
+import QRCode from 'qrcode';
 import { Order } from '../types/order';
 import { useSettings } from '../hooks/use-settings';
+import { useOrders } from '../hooks/use-orders';
+import { useDemoMode } from '../hooks/use-demo-mode';
+import { useToast } from '@/hooks/use-toast';
+import { balance, buildPaymentPayload, paymentDetailsText } from '../lib/payments';
+import { normalizePakistaniPhone } from '../lib/reminders';
 
 interface ReceiptModalProps {
   open: boolean;
@@ -11,9 +18,26 @@ interface ReceiptModalProps {
 
 export function ReceiptModal({ open, onOpenChange, order }: ReceiptModalProps) {
   const { settings } = useSettings();
+  const { recordPayment } = useOrders();
+  const { demoMode } = useDemoMode();
+  const { toast } = useToast();
+  const [qr, setQr] = useState<string>('');
+  const hasAccount = !!(settings.zindigiWallet || settings.raastId);
+  const payload = useMemo(() => (order && hasAccount && balance(order) > 0 ? buildPaymentPayload(order, settings) : ''), [order, settings, hasAccount]);
+
+  useEffect(() => {
+    let alive = true;
+    if (!payload) { setQr(''); return; }
+    QRCode.toDataURL(payload, { margin: 1, width: 220, color: { dark: '#064e3b', light: '#ffffff' } })
+      .then((url) => { if (alive) setQr(url); })
+      .catch(() => { if (alive) setQr(''); });
+    return () => { alive = false; };
+  }, [payload]);
+
   if (!order) return null;
 
-  const baqi = order.totalAmount - order.advanceAmount;
+  const baqi = balance(order);
+  const details = paymentDetailsText(settings);
 
   const generateWhatsAppMessage = () => {
     const text = `✂️ *${settings.shopName.toUpperCase()} — DUKAN RASEED* ✂️
@@ -42,15 +66,29 @@ ${order.serialNumber ? `🔖 *Raseed No:* ${order.serialNumber}\n` : ''}👤 *Ga
 • Advance Ada: Rs. ${order.advanceAmount}
 • *BAQI RAKAM (Payable): Rs. ${baqi}*
 ━━━━━━━━━━━━━━━━━━━━━━
-_${settings.thankYouMessage}_
+${details && baqi > 0 ? `\n*PAY ONLINE / آن لائن ادائیگی:*\n${details}\nReference / حوالہ: ${order.serialNumber || order.id} · Rs ${baqi}\n(Please share payment screenshot / ادائیگی کا اسکرین شاٹ بھیجیں)\n` : ''}_${settings.thankYouMessage}_
 _Dukan: ${settings.address}. Rabta: ${settings.phone}_`;
     return encodeURIComponent(text);
   };
 
-  const copyToClipboard = () => {
+  const copyToClipboard = async () => {
     const text = decodeURIComponent(generateWhatsAppMessage());
-    navigator.clipboard.writeText(text);
-    alert('Naqal Ho Gaya! (Copied)');
+    try {
+      await navigator.clipboard.writeText(text);
+      toast({ title: 'Copied / کاپی ہو گیا' });
+    } catch {
+      toast({ title: 'Copy failed / کاپی نہیں ہوا', description: 'Use WhatsApp button instead. / واٹس ایپ بٹن استعمال کریں', variant: 'destructive' });
+    }
+  };
+
+  const demoMarkPaid = () => {
+    if (!demoMode || baqi <= 0) return;
+    try {
+      recordPayment(order.id, baqi, 'zindigi', new Date().toISOString(), true);
+      toast({ title: 'Demo: marked paid via Zindigi / ڈیمو ادائیگی', description: 'Simulation only. No bank or wallet was contacted. / صرف نمونہ' });
+    } catch (e) {
+      toast({ title: 'Could not record / درج نہ ہو سکا', description: e instanceof Error ? e.message : '', variant: 'destructive' });
+    }
   };
 
   return (
@@ -146,17 +184,40 @@ _Dukan: ${settings.address}. Rabta: ${settings.phone}_`;
                 </div>
               </div>
               
+              {baqi > 0 && (details || qr) && (
+                <div className="mt-4 pt-4 border-t-2 border-dashed border-gray-200 text-center" data-testid="receipt-payment-block">
+                  <div className="text-xs font-bold tracking-widest uppercase text-emerald-900">Pay Rs {baqi.toLocaleString()} <span className="font-urdu normal-case tracking-normal">ادائیگی کریں</span></div>
+                  {details && <pre className="mt-2 text-[11px] leading-relaxed whitespace-pre-wrap font-sans text-gray-700">{details}</pre>}
+                  <div className="text-[11px] text-gray-600">Reference / حوالہ: <b className="font-mono">{order.serialNumber || order.id}</b></div>
+                  {qr && (
+                    <div className="mt-3 inline-block relative">
+                      <img src={qr} alt="Demo payment QR, not bank-scannable" className="w-36 h-36 mx-auto opacity-90" />
+                      <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 bg-red-600/90 text-white text-[10px] font-black py-1 -rotate-6">DEMO QR · NOT BANK SCANNABLE</div>
+                    </div>
+                  )}
+                  {qr && <p className="mt-1 text-[10px] text-gray-500 leading-snug">Future merchant integration: scan with Zindigi/Raast. This placeholder will not work in banking apps today.<br /><span className="font-urdu">یہ نمونہ کیو آر ہے، بینک ایپ میں کام نہیں کرے گا</span></p>}
+                  {!hasAccount && <p className="text-[10px] text-gray-500">Add wallet details in Settings for QR / سیٹنگز میں اکاؤنٹ درج کریں</p>}
+                </div>
+              )}
+
               <div className="mt-4 text-center text-[10px] text-gray-400 uppercase tracking-widest border-t border-gray-100 pt-3">
                 Powered by Darzi Khata
               </div>
             </div>
           </div>
 
+          {demoMode && baqi > 0 && (
+            <div className="px-4 pb-3 print:hidden">
+              <button onClick={demoMarkPaid} className="w-full min-h-[44px] rounded-xl border-2 border-dashed border-amber-400 bg-amber-50 text-amber-900 text-sm font-bold flex items-center justify-center gap-2" data-testid="btn-demo-mark-paid">
+                <FlaskConical size={16} /> Demo: mark paid via Zindigi / ڈیمو ادائیگی
+              </button>
+            </div>
+          )}
           {/* Action Buttons - Hidden in Print */}
           <div className="bg-white p-4 border-t rounded-b-2xl flex gap-2 print:hidden sticky bottom-0">
             <button 
               onClick={() => window.print()}
-              className="flex-1 flex flex-col items-center justify-center py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"
+              className="flex-1 flex flex-col items-center justify-center min-h-[48px] py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"
               data-testid="btn-print-receipt"
             >
               <Printer size={18} className="mb-1" />
@@ -164,14 +225,14 @@ _Dukan: ${settings.address}. Rabta: ${settings.phone}_`;
             </button>
             <button 
               onClick={copyToClipboard}
-              className="flex-1 flex flex-col items-center justify-center py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"
+              className="flex-1 flex flex-col items-center justify-center min-h-[48px] py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"
               data-testid="btn-copy-receipt"
             >
               <Copy size={18} className="mb-1" />
               <span className="text-xs font-bold">Copy</span>
             </button>
             <a 
-              href={`https://wa.me/${order.phone.replace(/^0/, '92')}?text=${generateWhatsAppMessage()}`}
+              href={`https://wa.me/${normalizePakistaniPhone(order.phone)}?text=${generateWhatsAppMessage()}`}
               target="_blank" rel="noreferrer"
               className="flex-[2] flex flex-col items-center justify-center py-2 bg-[#25D366] hover:bg-[#128C7E] text-white rounded-lg transition-colors"
               data-testid="btn-wa-receipt"

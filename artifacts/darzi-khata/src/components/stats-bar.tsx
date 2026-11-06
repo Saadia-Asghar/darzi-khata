@@ -47,7 +47,8 @@ export function StatsBar({ orders, onDueTodayClick }: StatsBarProps) {
       
       <div className="bg-amber-500 text-amber-950 rounded-xl p-3 shadow-md">
         <div className="text-[10px] text-amber-900 uppercase font-semibold tracking-wider mb-1">Total Baqi</div>
-        <div className="text-lg font-bold font-sans truncate">Rs.{totalBaqi.toLocaleString()}</div>
+        <div className="text-[10px] font-semibold">PKR / روپے</div>
+        <div className="text-base sm:text-lg font-bold font-sans break-all leading-tight">{totalBaqi.toLocaleString()}</div>
         <div className="text-xs text-amber-800 font-urdu mt-0.5">باقی رقم</div>
       </div>
     </div>

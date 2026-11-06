@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Order, OrderStatus } from '../types/order';
 import { Phone, ReceiptText, MessageCircle, Edit, Trash2, CalendarClock, AlertCircle, User, Wallet } from 'lucide-react';
 import { PaymentUpdateDialog } from './payment-update-dialog';
+import { ReminderButtons } from './reminder-buttons';
+import { normalizePakistaniPhone } from '../lib/reminders';
 
 interface OrderCardProps {
   order: Order;
@@ -10,7 +12,8 @@ interface OrderCardProps {
   onViewReceipt: (order: Order) => void;
   onStatusChange: (id: string, status: OrderStatus) => void;
   onCustomerClick: (phone: string) => void;
-  onUpdatePayment: (id: string, newAdvance: number) => void;
+  onUpdatePayment?: (id: string, newAdvance: number) => void;
+  onChat?: (order: Order) => void;
 }
 
 const statusColors: Record<OrderStatus, string> = {
@@ -27,7 +30,7 @@ const statusUrdu: Record<OrderStatus, string> = {
   delivered: 'دے دیا',
 };
 
-export function OrderCard({ order, onEdit, onDelete, onViewReceipt, onStatusChange, onCustomerClick, onUpdatePayment }: OrderCardProps) {
+export function OrderCard({ order, onEdit, onDelete, onViewReceipt, onStatusChange, onCustomerClick, onUpdatePayment, onChat }: OrderCardProps) {
   const [paymentOpen, setPaymentOpen] = useState(false);
   const baqi = order.totalAmount - order.advanceAmount;
   
@@ -122,27 +125,47 @@ export function OrderCard({ order, onEdit, onDelete, onViewReceipt, onStatusChan
           </div>
         </div>
 
+        {order.status !== 'pending' || order.totalAmount > order.advanceAmount ? (
+          <ReminderButtons order={order} />
+        ) : null}
+
         {/* Action Buttons */}
-        <div className="flex items-center gap-2 mt-2 pt-3 border-t border-border">
+        <div className="grid grid-cols-4 items-center gap-2 mt-2 pt-3 border-t border-border">
           <button 
             onClick={() => onViewReceipt(order)}
-            className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-300 py-2 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors"
+            className="col-span-2 flex items-center justify-center gap-1.5 text-xs font-medium bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-300 min-h-[44px] py-2 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors"
             data-testid={`btn-receipt-${order.id}`}
           >
             <ReceiptText size={14} /> Parchi
           </button>
           <a 
-            href={`https://wa.me/${order.phone.replace(/^0/, '92')}`}
+            href={`https://wa.me/${normalizePakistaniPhone(order.phone)}`}
             target="_blank" rel="noreferrer"
-            className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium bg-[#E7F6EC] text-[#128C7E] py-2 rounded-lg hover:bg-[#D1F0DA] transition-colors"
+            className="col-span-2 flex items-center justify-center gap-1.5 text-xs font-medium bg-[#E7F6EC] text-[#128C7E] min-h-[44px] py-2 rounded-lg hover:bg-[#D1F0DA] transition-colors"
             data-testid={`btn-wa-${order.id}`}
           >
             <MessageCircle size={14} /> WhatsApp
           </a>
+          {onChat && (
+            <button
+              onClick={() => onChat(order)}
+              className="relative min-h-[44px] min-w-[44px] flex items-center justify-center p-2 text-muted-foreground hover:text-emerald-700 dark:hover:text-emerald-400 bg-muted hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors"
+              aria-label="Chat"
+              title="Karigar se baat karein"
+              data-testid={`btn-chat-${order.id}`}
+            >
+              <MessageCircle size={16} />
+              {(order.comments?.length ?? 0) > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-600 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                  {order.comments!.length}
+                </span>
+              )}
+            </button>
+          )}
           {baqi > 0 && (
             <button
               onClick={() => setPaymentOpen(true)}
-              className="p-2 text-amber-600 hover:text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/40 rounded-lg transition-colors"
+              className="min-h-[44px] min-w-[44px] flex items-center justify-center p-2 text-amber-600 hover:text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/40 rounded-lg transition-colors"
               aria-label="Update Payment"
               title="Advance Ada Karein"
               data-testid={`btn-payment-${order.id}`}
@@ -152,7 +175,7 @@ export function OrderCard({ order, onEdit, onDelete, onViewReceipt, onStatusChan
           )}
           <button 
             onClick={() => onEdit(order)}
-            className="p-2 text-muted-foreground hover:text-emerald-700 dark:hover:text-emerald-400 bg-muted hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors"
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center p-2 text-muted-foreground hover:text-emerald-700 dark:hover:text-emerald-400 bg-muted hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors"
             aria-label="Edit"
             data-testid={`btn-edit-${order.id}`}
           >
@@ -164,7 +187,7 @@ export function OrderCard({ order, onEdit, onDelete, onViewReceipt, onStatusChan
                 onDelete(order.id);
               }
             }}
-            className="p-2 text-muted-foreground hover:text-red-600 bg-muted hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center p-2 text-muted-foreground hover:text-red-600 bg-muted hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
             aria-label="Delete"
             data-testid={`btn-delete-${order.id}`}
           >

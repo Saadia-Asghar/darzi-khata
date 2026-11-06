@@ -1,4 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useMemo } from 'react';
+import { useAuthContext } from '../context/auth-context';
+import { claimLegacyShop, useStoredValue, writeStorage } from '../lib/local-store';
+import { useDemoMode } from './use-demo-mode';
 
 export interface ShopSettings {
   shopName: string;
@@ -7,43 +10,47 @@ export interface ShopSettings {
   phone: string;
   thankYouMessage: string;
   darkMode: boolean;
-  pinEnabled: boolean;
-  pin: string;
+  zindigiWallet?: string;
+  raastId?: string;
+  accountTitle?: string;
+  shopType?: 'shop' | 'home-based' | 'women-home-tailor';
 }
 
-const DEFAULT_SETTINGS: ShopSettings = {
-  shopName: "Al-Madina Tailors",
-  shopNameUrdu: "المدینہ ٹیلرز",
-  address: "Shop #4, Main Bazar",
-  phone: "0300-0000000",
-  thankYouMessage: "Shukriya! Delivery ki tareekh par rabta farmaiye ga.",
+const getDefaultSettings = (shopName?: string): ShopSettings => ({
+  shopName: shopName || 'Meri Dukan',
+  shopNameUrdu: 'میری دوکان',
+  address: '',
+  phone: '',
+  thankYouMessage: 'Shukriya! Delivery ki tareekh par rabta farmaiye ga.',
   darkMode: false,
-  pinEnabled: false,
-  pin: '',
-};
-
-const STORAGE_KEY = 'darzi-khata-settings';
+});
 
 export function useSettings() {
-  const [settings, setSettings] = useState<ShopSettings>(DEFAULT_SETTINGS);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const { currentUser, userId, dataOwnerId } = useAuthContext();
+  const { demoMode } = useDemoMode();
+  // Settings are personal per user (not shared with team)
+  const STORAGE_KEY = `darzi-khata-settings-${demoMode ? 'financial-demo-' : ''}${dataOwnerId}`;
+  const defaults = useMemo(() => ({
+    ...getDefaultSettings(currentUser?.shopName),
+    ...(demoMode ? { zindigiWallet: '03000000000', raastId: '03000000000', accountTitle: 'Al-Madina Tailors (DEMO)', shopType: 'shop' as const } : {}),
+  }), [currentUser?.shopName, demoMode]);
+  const stored = useStoredValue<ShopSettings>(STORAGE_KEY, defaults);
+  const settings = useMemo(() => ({ ...defaults, ...stored }), [stored, defaults]);
 
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      try {
-        setSettings({ ...DEFAULT_SETTINGS, ...JSON.parse(stored) });
-      } catch (e) {
-        console.error('Failed to parse settings', e);
-      }
-    }
-    setIsLoaded(true);
-  }, []);
+    if (!demoMode) claimLegacyShop(dataOwnerId);
+    if (localStorage.getItem(STORAGE_KEY) !== null) return;
+    const legacy = !demoMode && localStorage.getItem('darzi-khata-legacy-claimed') === JSON.stringify(dataOwnerId)
+      ? localStorage.getItem('darzi-khata-settings') : null;
+    writeStorage(STORAGE_KEY, legacy ? { ...defaults, ...JSON.parse(legacy) } : defaults);
+  }, [STORAGE_KEY, defaults, demoMode, dataOwnerId]);
 
   const saveSettings = useCallback((newSettings: ShopSettings) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newSettings));
-    setSettings(newSettings);
-  }, []);
+    writeStorage(STORAGE_KEY, { ...defaults, ...newSettings });
+    document.documentElement.classList.toggle('dark', !!newSettings.darkMode);
+    // Keep personal display preference without mixing demonstration payment details.
+    if (demoMode) localStorage.setItem(`darzi-khata-dark-${userId}`, String(!!newSettings.darkMode));
+  }, [STORAGE_KEY, defaults, demoMode, userId]);
 
-  return { settings, isLoaded, saveSettings };
+  return { settings, isLoaded: true, saveSettings };
 }

@@ -1,0 +1,89 @@
+import { useMemo } from 'react';
+import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
+import { Order } from '../types/order';
+import { computeCreditScore } from '../lib/credit-score';
+import { paymentShare } from '../lib/payments';
+import { useSettings } from '../hooks/use-settings';
+import { useDemoMode } from '../hooks/use-demo-mode';
+import { pkr, shopTypeLabel } from './shop-type';
+
+interface Props { open: boolean; onOpenChange: (o: boolean) => void; orders: Order[] }
+
+export function ImpactModal({ open, onOpenChange, orders }: Props) {
+  const { settings } = useSettings();
+  const { demoMode } = useDemoMode();
+  const p = useMemo(() => computeCreditScore(orders), [orders]);
+  const months = useMemo(() => {
+    const now = new Date();
+    return Array.from({ length: 6 }, (_, i) => {
+      const d = new Date(now.getFullYear(), now.getMonth() - 5 + i, 1);
+      const s = paymentShare(orders, d);
+      return { label: d.toLocaleDateString('en-PK', { month: 'short', year: '2-digit' }), cash: s.cash, digital: s.digital, total: s.total, pct: s.digitalPercent };
+    });
+  }, [orders]);
+  const all = useMemo(() => paymentShare(orders), [orders]);
+  const range = `${months[0].label} – ${months[5].label}`;
+
+  const metrics = [
+    { en: 'Orders recorded', ur: 'درج آرڈر', v: p.totalOrders.toLocaleString() },
+    { en: 'Customers served', ur: 'گاہک', v: p.customers.toLocaleString() },
+    { en: 'Karigars engaged', ur: 'کاریگر', v: p.karigars.toLocaleString() },
+    { en: 'Revenue recorded', ur: 'کل آمدن', v: pkr(p.totalRevenue) },
+    { en: 'Collected', ur: 'وصول', v: pkr(p.collected) },
+    { en: 'Digital share (all time)', ur: 'ڈیجیٹل حصہ', v: `${all.digitalPercent.toFixed(1)}%` },
+    { en: 'On-time delivery', ur: 'بروقت ترسیل', v: p.observedDeliveries ? `${p.onTimePercent.toFixed(1)}%` : 'No dated deliveries / تاریخ موجود نہیں' },
+  ];
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-lg w-[calc(100%-1rem)] p-0 overflow-hidden rounded-2xl gap-0 max-h-[92dvh] flex flex-col">
+        <div className="bg-amber-500 text-emerald-950 px-5 py-4 shrink-0">
+          <DialogTitle className="text-lg font-black">Financial inclusion impact</DialogTitle>
+          <DialogDescription className="text-emerald-900 text-xs"><span className="font-urdu">مالی شمولیت کا اثر</span> · {shopTypeLabel(settings.shopType)}{demoMode && ' · DEMO DATA'}</DialogDescription>
+        </div>
+        <div className="overflow-y-auto p-5 space-y-5">
+          <div className="grid grid-cols-2 gap-2">
+            {metrics.map((m, i) => (
+              <div key={m.en} className="rounded-xl border border-border bg-card p-3 dk-rise" style={{ animationDelay: `${i * 50}ms` }} data-testid={`metric-${i}`}>
+                <div className="text-[11px] text-muted-foreground leading-tight">{m.en} / <span className="font-urdu">{m.ur}</span></div>
+                <div className="text-lg font-black mt-0.5 font-mono">{m.v}</div>
+              </div>
+            ))}
+          </div>
+          {settings.shopType === 'women-home-tailor' && (
+            <p className="text-xs rounded-lg bg-emerald-50 dark:bg-emerald-900/20 p-3">Woman-led home business: each recorded order adds to a documented income history. <span className="font-urdu">خاتون کاروبار کی آمدن کا ریکارڈ</span></p>
+          )}
+          <section>
+            <h3 className="text-sm font-bold">Digital vs cash collections <span className="font-urdu font-normal text-muted-foreground">ڈیجیٹل بمقابلہ نقد</span></h3>
+            <p className="text-[11px] text-muted-foreground mb-2">By payment date / ادائیگی کی تاریخ · {range} · PKR</p>
+            {all.total === 0 ? (
+              <div className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">No payments recorded yet. / ابھی کوئی ادائیگی درج نہیں</div>
+            ) : (
+              <div className="h-52" role="img" aria-label={`Monthly collections ${range}: ${months.map((m) => `${m.label} cash ${pkr(m.cash)}, digital ${pkr(m.digital)}`).join('; ')}`}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={months} margin={{ left: -10, right: 4, top: 4 }}>
+                    <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="label" tick={{ fontSize: 10 }} />
+                    <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `${Math.round(v / 1000)}k`} />
+                    <Tooltip formatter={(v: number) => pkr(v)} />
+                    <Legend wrapperStyle={{ fontSize: 11 }} />
+                    <Bar dataKey="cash" stackId="a" name="Cash / نقد" fill="hsl(38 80% 55%)" />
+                    <Bar dataKey="digital" stackId="a" name="Digital / ڈیجیٹل" fill="hsl(160 84% 25%)" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+            <table className="w-full text-xs mt-3">
+              <thead><tr className="text-muted-foreground text-left"><th className="py-1 font-semibold">Month / ماہ</th><th className="text-right font-semibold">Cash / نقد</th><th className="text-right font-semibold">Digital / ڈیجیٹل</th><th className="text-right font-semibold">Digital % / شرح</th></tr></thead>
+              <tbody>{months.map((m) => (
+                <tr key={m.label} className="border-t border-border"><td className="py-1.5">{m.label}</td><td className="text-right font-mono">{pkr(m.cash)}</td><td className="text-right font-mono">{pkr(m.digital)}</td><td className="text-right font-mono font-bold">{m.total ? `${m.pct.toFixed(1)}%` : '—'}</td></tr>
+              ))}</tbody>
+            </table>
+          </section>
+          <p className="text-[11px] text-muted-foreground">Computed on this phone from your own records. Older orders without a payment ledger count as cash. / پرانے آرڈر نقد شمار</p>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}

@@ -1,5 +1,8 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useMemo, useEffect, useCallback } from 'react';
 import { Measurements, CollarType, DamanType, PocketType, CuffType } from '../types/order';
+import { useAuthContext } from '../context/auth-context';
+import { useDemoMode } from './use-demo-mode';
+import { claimLegacyShop, useStoredValue, writeStorage } from '../lib/local-store';
 
 export interface MeasurementTemplate {
   id: string;
@@ -12,46 +15,33 @@ export interface MeasurementTemplate {
   createdAt: string;
 }
 
-const STORAGE_KEY = 'darzi-khata-templates';
-
 export function useTemplates() {
-  const [templates, setTemplates] = useState<MeasurementTemplate[]>([]);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const { dataOwnerId } = useAuthContext();
+  const { demoMode } = useDemoMode();
+  const STORAGE_KEY = `darzi-khata-templates-${demoMode ? 'financial-demo-' : ''}${dataOwnerId}`;
+  const fallback = useMemo<MeasurementTemplate[]>(() => [], []);
+  const templates = useStoredValue<MeasurementTemplate[]>(STORAGE_KEY, fallback);
 
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      try {
-        setTemplates(JSON.parse(stored));
-      } catch (e) {
-        console.error('Failed to parse templates', e);
-      }
+    if (!demoMode) claimLegacyShop(dataOwnerId);
+    if (localStorage.getItem(STORAGE_KEY) === null) {
+      const legacy = !demoMode && localStorage.getItem('darzi-khata-legacy-claimed') === JSON.stringify(dataOwnerId)
+        ? localStorage.getItem('darzi-khata-templates') : null;
+      writeStorage(STORAGE_KEY, legacy ? JSON.parse(legacy) : []);
     }
-    setIsLoaded(true);
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [STORAGE_KEY, dataOwnerId, demoMode]);
 
   const saveTemplates = useCallback((newTemplates: MeasurementTemplate[]) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newTemplates));
-    setTemplates(newTemplates);
-  }, []);
+    writeStorage(STORAGE_KEY, newTemplates);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [STORAGE_KEY]);
 
   const addTemplate = useCallback((template: Omit<MeasurementTemplate, 'id' | 'createdAt'>) => {
-    const newTemplate = {
-      ...template,
-      id: crypto.randomUUID(),
-      createdAt: new Date().toISOString()
-    };
-    saveTemplates([newTemplate, ...templates]);
+    saveTemplates([{ ...template, id: crypto.randomUUID(), createdAt: new Date().toISOString() }, ...templates]);
   }, [templates, saveTemplates]);
 
-  const deleteTemplate = useCallback((id: string) => {
-    saveTemplates(templates.filter(t => t.id !== id));
-  }, [templates, saveTemplates]);
+  const deleteTemplate = useCallback((id: string) => { saveTemplates(templates.filter((t) => t.id !== id)); }, [templates, saveTemplates]);
 
-  return {
-    templates,
-    isLoaded,
-    addTemplate,
-    deleteTemplate
-  };
+  return { templates, isLoaded: true, addTemplate, deleteTemplate };
 }

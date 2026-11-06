@@ -8,6 +8,9 @@ import { Order, Measurements, CollarType, DamanType, PocketType, CuffType } from
 import { useTemplates } from '../hooks/use-templates';
 import { useKarigars } from '../hooks/use-karigars';
 import { useToast } from '@/hooks/use-toast';
+import { VoiceMeasurements } from './voice-measurements';
+import { getAccounts } from '../hooks/use-auth';
+import { useAuthContext } from '../context/auth-context';
 
 const measurementSchema = z.object({
   kameezLambai: z.coerce.number().min(1),
@@ -61,8 +64,9 @@ export function OrderForm({ open, onOpenChange, order, prefill, onSave }: OrderF
   const { templates, addTemplate } = useTemplates();
   const { karigars } = useKarigars();
   const { toast } = useToast();
+  const { dataOwnerId } = useAuthContext();
   
-  const { register, handleSubmit, control, reset, watch, setValue, getValues, formState: { errors } } = useForm<FormValues>({
+  const { register, handleSubmit, control, reset, watch, setValue, getValues, setError, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: getInitialValues(order, prefill),
   });
@@ -139,7 +143,25 @@ export function OrderForm({ open, onOpenChange, order, prefill, onSave }: OrderF
   };
 
   const onSubmit = (data: FormValues) => {
+    if (data.advanceAmount > data.totalAmount) {
+      setError('advanceAmount', { message: 'Advance cannot exceed total / ایڈوانس کل سے زیادہ نہیں' });
+      return;
+    }
+    if (order && data.advanceAmount < order.advanceAmount) {
+      setError('advanceAmount', { message: `Already collected Rs ${order.advanceAmount}. Cannot reduce. / پہلے سے وصول رقم کم نہیں ہو سکتی` });
+      return;
+    }
+    if (order && data.totalAmount < order.advanceAmount) {
+      setError('totalAmount', { message: `Total cannot be below collected Rs ${order.advanceAmount} / کل وصول رقم سے کم نہیں` });
+      return;
+    }
+    const linked = data.karigar
+      ? getAccounts().find((a) => a.role === 'karigar' && a.ownerId === dataOwnerId && a.name.trim().toLowerCase() === data.karigar!.trim().toLowerCase())
+      : undefined;
+    const karigarId = linked?.id ?? (order && order.karigar === data.karigar ? order.karigarId : undefined);
     onSave({
+      ...(order?.payments ? { payments: order.payments } : {}),
+      karigarId,
       ...data,
       orderDate: new Date(data.orderDate).toISOString(),
       deliveryDate: new Date(data.deliveryDate).toISOString(),
@@ -323,6 +345,11 @@ export function OrderForm({ open, onOpenChange, order, prefill, onSave }: OrderF
                   </button>
                 </div>
                 
+                <VoiceMeasurements onConfirm={(vals) => {
+                  (Object.entries(vals) as [keyof Measurements, number][]).forEach(([k, v]) => setValue(`measurements.${k}`, v, { shouldDirty: true }));
+                  toast({ title: 'Measurements applied / ناپ لگ گئے', description: `${Object.keys(vals).length} fields. Check before saving. / محفوظ کرنے سے پہلے دیکھ لیں` });
+                }} />
+
                 <div className="mb-4">
                   <h4 className="text-xs font-bold text-emerald-700 uppercase tracking-wider mb-2 bg-emerald-50 px-2 py-1 inline-block rounded">Kameez / Kurta</h4>
                   <MeasurementStepper name="kameezLambai" labelEn="Length" labelUr="لمبائی" />
@@ -406,9 +433,12 @@ export function OrderForm({ open, onOpenChange, order, prefill, onSave }: OrderF
                   </div>
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-1">Advance Ada (Rs.)</label>
-                    <input type="number" {...register('advanceAmount')} className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-3 outline-none focus:border-emerald-500 text-lg font-bold font-mono text-emerald-700" />
+                    <input type="number" {...register('advanceAmount')} min={order?.advanceAmount ?? 0} className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-3 outline-none focus:border-emerald-500 text-lg font-bold font-mono text-emerald-700" />
+                    {errors.advanceAmount && <p className="text-red-600 text-xs mt-1" role="alert">{errors.advanceAmount.message}</p>}
+                    {order && order.advanceAmount > 0 && <p className="text-[11px] text-gray-500 mt-1">Use Receive payment for new money / نئی رقم کے لیے ادائیگی بٹن</p>}
                   </div>
                 </div>
+                {errors.totalAmount && <p className="text-red-600 text-xs" role="alert">{errors.totalAmount.message}</p>}
 
                 <div className={`p-4 rounded-xl border flex justify-between items-center ${baqi > 0 ? 'bg-red-50 border-red-100' : 'bg-emerald-50 border-emerald-100'}`}>
                   <span className="font-bold font-urdu text-lg {baqi > 0 ? 'text-red-800' : 'text-emerald-800'}">باقی رقم (Baqi)</span>
