@@ -1,3 +1,5 @@
+import { usePreferences } from '../hooks/use-preferences';
+import { StatusBadge } from './status-meta';
 import { useState, useMemo } from 'react';
 import { useOrders } from '../hooks/use-orders';
 import { useAuthContext } from '../context/auth-context';
@@ -9,28 +11,15 @@ import {
   CalendarClock, User, Package, Search,
 } from 'lucide-react';
 
-const statusColors: Record<OrderStatus, string> = {
-  pending: 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-800 dark:text-gray-300',
-  stitching: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300',
-  ready: 'bg-green-50 text-emerald-700 border-green-200 dark:bg-green-900/30 dark:text-emerald-300',
-  delivered: 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400',
-};
-
-const statusLabel: Record<OrderStatus, string> = {
-  pending: 'Pending / زیرِ التوا',
-  stitching: 'Sil raha hun ✂️',
-  ready: 'Tayar ✅',
-  delivered: 'De Diya ✓',
-};
-
 export function KarigarDashboard() {
   const { currentUser, logout } = useAuthContext();
+  const { label } = usePreferences();
   const { orders, isLoaded, updateOrderStatus, addComment } = useOrders();
   const [search, setSearch] = useState('');
   const [chatOrder, setChatOrder] = useState<Order | null>(null);
 
   const handleLogout = () => {
-    if (window.confirm('Logout karna chahte hain?')) logout();
+    if (window.confirm(label('Log out?', 'لاگ آؤٹ کریں؟'))) logout();
   };
 
   // Only show orders assigned to this karigar (match by name)
@@ -66,10 +55,10 @@ export function KarigarDashboard() {
     const today = new Date(); today.setHours(0, 0, 0, 0);
     const d = new Date(order.deliveryDate); d.setHours(0, 0, 0, 0);
     const diff = Math.ceil((d.getTime() - today.getTime()) / 86400000);
-    if (diff < 0) return { text: `${Math.abs(diff)} din deri`, overdue: true };
-    if (diff === 0) return { text: 'Aaj deliver karein', overdue: false };
-    if (diff === 1) return { text: 'Kal deliver karein', overdue: false };
-    return { text: `${diff} din baqi`, overdue: false };
+    if (diff < 0) return { text: label(`${Math.abs(diff)} days late`, `${Math.abs(diff)} دن دیر`), overdue: true };
+    if (diff === 0) return { text: label('Deliver today', 'آج دینا ہے'), overdue: false };
+    if (diff === 1) return { text: label('Deliver tomorrow', 'کل دینا ہے'), overdue: false };
+    return { text: label(`${diff} days left`, `${diff} دن باقی`), overdue: false };
   };
 
   const nextStatus: Partial<Record<OrderStatus, OrderStatus>> = {
@@ -78,8 +67,8 @@ export function KarigarDashboard() {
   };
 
   const nextStatusLabel: Partial<Record<OrderStatus, string>> = {
-    pending: 'Silai Shuru ✂️',
-    stitching: 'Tayar Mark Karein ✅',
+    pending: label('Start stitching', 'سلائی شروع'),
+    stitching: label('Mark ready', 'تیار کریں'),
   };
 
   if (!isLoaded) {
@@ -102,11 +91,11 @@ export function KarigarDashboard() {
               {currentUser?.name}
             </h1>
             <p className="text-amber-100 text-xs mt-0.5">
-              Karigar · {currentUser?.ownerShopName || currentUser?.shopName}
+              {label('Karigar', 'کاریگر')} · {currentUser?.ownerShopName || currentUser?.shopName}
             </p>
           </div>
-          <button onClick={handleLogout} className="p-2 bg-amber-700 hover:bg-amber-800 rounded-full transition-colors" title="Logout">
-            <LogOut size={18} />
+          <button onClick={handleLogout} className="h-11 w-11 flex items-center justify-center bg-amber-700 hover:bg-amber-800 rounded-full transition-colors" title={label('Log out', 'لاگ آؤٹ')} aria-label={label('Log out', 'لاگ آؤٹ')}>
+            <LogOut size={18} className="rtl:rotate-180" aria-hidden />
           </button>
         </div>
       </header>
@@ -118,17 +107,17 @@ export function KarigarDashboard() {
           <div className="bg-card border border-border rounded-xl p-3 text-center">
             <Clock size={18} className="mx-auto text-gray-500 mb-1" />
             <p className="text-2xl font-black text-foreground">{pending}</p>
-            <p className="text-[10px] font-semibold text-muted-foreground uppercase">Pending</p>
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase">{label('Pending', 'زیرِ التوا')}</p>
           </div>
           <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-3 text-center">
             <Scissors size={18} className="mx-auto text-blue-600 mb-1" />
             <p className="text-2xl font-black text-blue-700 dark:text-blue-300">{stitching}</p>
-            <p className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 uppercase">Sil raha hun</p>
+            <p className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 uppercase">{label('Stitching', 'سلائی جاری')}</p>
           </div>
           <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl p-3 text-center">
             <CheckCircle2 size={18} className="mx-auto text-emerald-600 mb-1" />
             <p className="text-2xl font-black text-emerald-700 dark:text-emerald-300">{ready}</p>
-            <p className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 uppercase">Tayar</p>
+            <p className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 uppercase">{label('Ready', 'تیار')}</p>
           </div>
         </div>
 
@@ -137,7 +126,7 @@ export function KarigarDashboard() {
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input
             type="text"
-            placeholder="Customer ka naam ya serial number..."
+            placeholder={label('Customer name or serial number', 'گاہک کا نام یا نمبر')} aria-label={label('Search orders', 'آرڈر تلاش')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-border bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 placeholder-muted-foreground"
@@ -149,10 +138,10 @@ export function KarigarDashboard() {
           <div className="text-center py-16 bg-card rounded-xl border border-dashed border-border">
             <Package size={36} className="mx-auto text-muted-foreground mb-3 opacity-40" />
             <p className="text-muted-foreground font-medium">
-              {search ? 'Koi order nahi mila' : 'Aapke liye koi order assign nahi hua'}
+              {search ? label('No order found', 'کوئی آرڈر نہیں ملا') : label('No orders assigned to you', 'آپ کو کوئی آرڈر نہیں ملا')}
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              {!search && 'Owner aapko orders assign karega'}
+              {!search && label('The owner will assign orders to you', 'مالک آپ کو آرڈر دے گا')}
             </p>
           </div>
         ) : (
@@ -183,7 +172,7 @@ export function KarigarDashboard() {
                         )}
                         {order.urgent && (
                           <span className="text-[10px] font-bold bg-red-600 text-white px-2 py-0.5 rounded-full flex items-center gap-1">
-                            <AlertCircle size={9} /> URGENT
+                            <AlertCircle size={9} aria-hidden /> {label('Urgent', 'ہنگامی')}
                           </span>
                         )}
                       </div>
@@ -191,12 +180,10 @@ export function KarigarDashboard() {
                         <User size={14} className="text-muted-foreground" />
                         {order.customerName}
                       </p>
-                      <p className="text-xs text-muted-foreground">{order.suitCount} jora · {order.fabric}</p>
+                      <p className="text-xs text-muted-foreground">{label(`${order.suitCount} pcs`, `${order.suitCount} جوڑے`)} · {order.fabric}</p>
                     </div>
                     {/* Status badge */}
-                    <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full border shrink-0 ${statusColors[order.status]}`}>
-                      {statusLabel[order.status]}
-                    </span>
+                    <StatusBadge order={order} />
                   </div>
 
                   {/* Delivery */}
@@ -204,7 +191,7 @@ export function KarigarDashboard() {
                     <CalendarClock size={13} />
                     {dayInfo.text}
                     {order.specialNotes && (
-                      <span className="ml-2 text-amber-600 dark:text-amber-400">· Note: {order.specialNotes}</span>
+                      <span className="ms-2 text-amber-600 dark:text-amber-400">· {label('Note', 'نوٹ')}: {order.specialNotes}</span>
                     )}
                   </div>
 
@@ -214,22 +201,22 @@ export function KarigarDashboard() {
                     {next && order.status !== 'delivered' && (
                       <button
                         onClick={() => updateOrderStatus(order.id, next)}
-                        className="flex-1 py-2 bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-colors"
+                        className="flex-1 min-h-[44px] bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-colors"
                       >
                         <CheckCircle2 size={14} />
                         {nextStatusLabel[order.status]}
                       </button>
                     )}
                     {order.status === 'delivered' && (
-                      <div className="flex-1 py-2 bg-slate-100 dark:bg-slate-800 text-slate-500 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5">
-                        <CheckCircle2 size={14} /> Deliver Ho Gaya
+                      <div className="flex-1 min-h-[44px] bg-slate-100 dark:bg-slate-800 text-slate-500 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5">
+                        <CheckCircle2 size={14} aria-hidden /> {label('Delivered', 'دے دیا')}
                       </div>
                     )}
 
                     {/* Chat */}
                     <button
                       onClick={() => setChatOrder(order)}
-                      className="relative px-3 py-2 bg-card border border-border hover:bg-muted text-foreground text-xs font-semibold rounded-xl flex items-center gap-1.5 transition-colors"
+                      aria-label={label(`Chat, ${commentCount} messages`, `بات چیت، ${commentCount} پیغام`)} className="relative px-3 min-h-[44px] min-w-[44px] justify-center bg-card border border-border hover:bg-muted text-foreground text-xs font-semibold rounded-xl flex items-center gap-1.5 transition-colors"
                     >
                       <MessageCircle size={15} className={unread ? 'text-emerald-600' : 'text-muted-foreground'} />
                       <span>{commentCount > 0 ? commentCount : ''}</span>

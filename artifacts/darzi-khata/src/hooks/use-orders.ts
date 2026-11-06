@@ -1,10 +1,13 @@
 import { useMemo, useEffect, useCallback } from 'react';
-import { Order, OrderStatus, OrderComment, PaymentMethod } from '../types/order';
+import { Order, OrderStatus, OrderComment, PaymentMethod, Customer } from '../types/order';
 import { useAuthContext } from '../context/auth-context';
 import { useDemoMode, scopedOrdersKey } from './use-demo-mode';
 import { createFinancialDemo } from '../lib/demo-data';
-import { claimLegacyShop, useStoredValue, writeStorage } from '../lib/local-store';
-import { appendPayment, migrateOrder, paymentHistory, PAYMENT_METHODS } from '../lib/payments';
+import { claimLegacyShop, useStoredValue, writeStorage, writeStorageBatch } from '../lib/local-store';
+import { appendPayment, migrateOrder } from '../lib/payments';
+import { storage as localStorage, readJSON, noteSchema } from '../lib/storage';
+import { migrateRegister, highestSerial } from '../lib/migrations';
+import { validateOrders } from '../lib/order-validation';
 
 const ago = (days: number, hours = 0) => {
   const d = new Date();
@@ -166,9 +169,21 @@ export function useOrders() {
   const { demoMode } = useDemoMode();
   const STORAGE_KEY = scopedOrdersKey(dataOwnerId, demoMode);
   const SERIAL_KEY = `darzi-khata-serial-${demoMode ? 'financial-demo-' : ''}${dataOwnerId}`;
+  const scope = `${demoMode ? 'financial-demo-' : ''}${dataOwnerId}`;
+  const CUSTOMER_KEY = `darzi-khata-customers-${scope}`;
   const fallback = useMemo(() => [], []) as Order[];
+  const customerFallback = useMemo<Customer[]>(() => [], []);
   const savedOrders = useStoredValue<Order[]>(STORAGE_KEY, fallback);
-  const orders = useMemo(() => savedOrders.map(migrateOrder), [savedOrders]);
+  const savedCustomers = useStoredValue<Customer[]>(CUSTOMER_KEY, customerFallback);
+  const migrated = useMemo(() => migrateRegister(savedOrders, savedCustomers), [savedOrders,savedCustomers]);
+  const orders = migrated.orders;
+
+  useEffect(() => {
+    if (localStorage.getItem(STORAGE_KEY) === null) return;
+    noteSchema(scope);
+    if (JSON.stringify(savedOrders) !== JSON.stringify(migrated.orders)) writeStorage(STORAGE_KEY,migrated.orders);
+    if (JSON.stringify(savedCustomers) !== JSON.stringify(migrated.customers)) writeStorage(CUSTOMER_KEY,migrated.customers);
+  }, [STORAGE_KEY,CUSTOMER_KEY,scope,savedOrders,savedCustomers,migrated]);
 
   useEffect(() => {
     if (!demoMode) claimLegacyShop(dataOwnerId);
@@ -192,23 +207,17 @@ export function useOrders() {
   }, [STORAGE_KEY, dataOwnerId, demoMode]);
 
   const readOrders = useCallback((): Order[] =>
-    JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]').map(migrateOrder), [STORAGE_KEY]);
+    migrateRegister(readJSON<Order[]>(STORAGE_KEY, []),readJSON<Customer[]>(CUSTOMER_KEY,[])).orders, [STORAGE_KEY,CUSTOMER_KEY]);
 
   const saveOrders = useCallback((newOrders: Order[]) => {
-    const numeric = (v: unknown) => typeof v === 'number' && Number.isFinite(v) && v >= 0;
-    if (!Array.isArray(newOrders) || newOrders.some(o => !o || typeof o.id !== 'string'
-      || typeof o.customerName !== 'string' || typeof o.phone !== 'string'
-      || !o.measurements || Object.values(o.measurements).some(v => !numeric(v))
-      || !numeric(o.totalAmount) || !numeric(o.advanceAmount) || o.advanceAmount > o.totalAmount
-      || !['pending', 'stitching', 'ready', 'delivered'].includes(o.status)
-      || !Number.isFinite(Date.parse(o.orderDate)) || !Number.isFinite(Date.parse(o.deliveryDate))
-      || !Array.isArray(paymentHistory(o))
-      || paymentHistory(o).some(p => !numeric(p.amount) || !PAYMENT_METHODS.includes(p.method) || !Number.isFinite(Date.parse(p.date)))
-      || Math.abs(paymentHistory(o).reduce((sum, p) => sum + p.amount, 0) - o.advanceAmount) > 0.01)) {
-      throw new Error('Invalid order backup / بیک اپ میں غلط آرڈر ہے');
-    }
-    writeStorage(STORAGE_KEY, newOrders.map(migrateOrder));
-  }, [STORAGE_KEY]);
+    validateOrders(newOrders);
+    noteSchema(scope);
+    const next = migrateRegister(newOrders,readJSON<Customer[]>(CUSTOMER_KEY,[]));
+    writeStorageBatch([
+      [CUSTOMER_KEY,next.customers],[STORAGE_KEY,next.orders],
+      [SERIAL_KEY,Math.max(highestSerial(next.orders),readJSON<number>(SERIAL_KEY,0))],
+    ]);
+  }, [STORAGE_KEY,CUSTOMER_KEY,SERIAL_KEY,scope]);
 
   const getNextSerial = useCallback((): string => {
     const maxSerial = Math.max(0, ...readOrders().map(o => Number(o.serialNumber?.replace(/^DK-/, '')) || 0));
@@ -250,6 +259,10 @@ export function useOrders() {
   const deleteOrder = useCallback((id: string) => {
     saveOrders(readOrders().filter(o => o.id !== id));
   }, [saveOrders, readOrders]);
+  const restoreOrder = useCallback((order: Order) => {
+    const current = readOrders();
+    if (!current.some(o => o.id === order.id)) saveOrders([order,...current]);
+  }, [saveOrders,readOrders]);
 
   const updateOrderStatus = useCallback((id: string, status: OrderStatus) => { updateOrder(id, { status }); }, [updateOrder]);
 
@@ -258,5 +271,5 @@ export function useOrders() {
     saveOrders(readOrders().map(o => o.id === orderId ? { ...o, comments: [...(o.comments ?? []), newComment] } : o));
   }, [saveOrders, readOrders]);
 
-  return { orders, isLoaded: localStorage.getItem(STORAGE_KEY) !== null, addOrder, updateOrder, deleteOrder, updateOrderStatus, setAllOrders: saveOrders, addComment, recordPayment };
+  return { orders, isLoaded: localStorage.getItem(STORAGE_KEY) !== null, addOrder, updateOrder, deleteOrder, restoreOrder, updateOrderStatus, setAllOrders: saveOrders, addComment, recordPayment };
 }

@@ -2,6 +2,7 @@ import { useMemo, useEffect, useCallback } from 'react';
 import { Measurements, CollarType, DamanType, PocketType, CuffType } from '../types/order';
 import { useAuthContext } from '../context/auth-context';
 import { useDemoMode } from './use-demo-mode';
+import { storage as localStorage } from '../lib/storage';
 import { claimLegacyShop, useStoredValue, writeStorage } from '../lib/local-store';
 
 export interface MeasurementTemplate {

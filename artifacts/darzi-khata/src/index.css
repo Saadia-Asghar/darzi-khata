@@ -1,9 +1,19 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
+
+/* Offline Urdu font, served from public/ (Vite rebases the URL). */
+@font-face {
+  font-family: 'Noto Nastaliq Urdu';
+  src: url('/noto-nastaliq-urdu.woff2') format('woff2');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF, U+200C-200F;
+}
 
 @theme inline {
   --color-background: hsl(var(--background));
@@ -362,3 +372,18 @@
 .dk-rise { animation: dk-rise .35s cubic-bezier(.2,.7,.2,1) both; }
 .dk-stitch { background-image: repeating-linear-gradient(90deg, hsl(38 92% 50%) 0 6px, transparent 6px 11px); height: 2px; }
 @media (prefers-reduced-motion: reduce) { .dk-rise { animation: none; } }
+
+/* Large text: root rem scaling is applied by preferences; also lift fixed pixel labels. */
+.large-font .text-\[8px\] { font-size: 11px; }
+.large-font .text-\[9px\] { font-size: 12px; }
+.large-font .text-\[10px\] { font-size: 13px; }
+.large-font .text-\[11px\] { font-size: 14px; }
+.large-font .text-\[12px\] { font-size: 15px; }
+/* Urdu body text uses Nastaliq which needs taller lines. */
+[dir='rtl'] body { font-family: 'Noto Nastaliq Urdu', var(--app-font-sans); line-height: 1.9; }
+[dir='rtl'] .font-mono, [dir='rtl'] input[type='number'], [dir='rtl'] input[type='tel'] { font-family: var(--app-font-mono); }
+@media (prefers-reduced-motion: reduce) {
+  .animate-pulse, .animate-ping, .animate-spin, .animate-bounce { animation: none !important; }
+  .animate-ping { opacity: 0 !important; }
+  *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
+}

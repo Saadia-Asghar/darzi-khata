@@ -1,3 +1,4 @@
+import { usePreferences } from '../hooks/use-preferences';
 import * as Dialog from '@radix-ui/react-dialog';
 import { X, Send, MessageCircle } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
@@ -10,19 +11,20 @@ interface OrderChatModalProps {
   onAddComment: (orderId: string, comment: Omit<OrderComment, 'id' | 'createdAt'>) => void;
 }
 
-function formatTime(iso: string) {
+function formatTime(iso: string, label: (en: string, ur: string) => string) {
   const d = new Date(iso);
   const now = new Date();
   const diffMs = now.getTime() - d.getTime();
   const diffMins = Math.floor(diffMs / 60000);
-  if (diffMins < 1) return 'Abhi';
-  if (diffMins < 60) return `${diffMins} min pehle`;
-  if (diffMins < 1440) return `${Math.floor(diffMins / 60)} ghante pehle`;
+  if (diffMins < 1) return label('Now', 'ابھی');
+  if (diffMins < 60) return label(`${diffMins} min ago`, `${diffMins} منٹ پہلے`);
+  if (diffMins < 1440) return label(`${Math.floor(diffMins / 60)} h ago`, `${Math.floor(diffMins / 60)} گھنٹے پہلے`);
   return d.toLocaleDateString('ur-PK', { day: 'numeric', month: 'short' });
 }
 
 export function OrderChatModal({ order, onClose, onAddComment }: OrderChatModalProps) {
   const { currentUser } = useAuthContext();
+  const { label } = usePreferences();
   const [text, setText] = useState('');
   const bottomRef = useRef<HTMLDivElement>(null);
   const comments = order?.comments ?? [];
@@ -57,14 +59,14 @@ export function OrderChatModal({ order, onClose, onAddComment }: OrderChatModalP
             <div>
               <Dialog.Title className="font-bold flex items-center gap-2">
                 <MessageCircle size={16} className="text-amber-400" />
-                Chat — {order?.customerName}
+                {label('Chat', 'بات چیت')} — {order?.customerName}
               </Dialog.Title>
               <Dialog.Description className="text-emerald-300 text-xs mt-0.5">
-                {order?.serialNumber} · {order?.karigar ? `Karigar: ${order.karigar}` : 'Karigar assigned nahi'}
+                {order?.serialNumber} · {order?.karigar ? `${label('Karigar', 'کاریگر')}: ${order.karigar}` : label('No karigar assigned', 'کاریگر مقرر نہیں')}
               </Dialog.Description>
             </div>
             <Dialog.Close asChild>
-              <button className="p-1.5 rounded-full hover:bg-emerald-700" aria-label="Close"><X size={18} /></button>
+              <button className="h-11 w-11 flex items-center justify-center rounded-full hover:bg-emerald-700" aria-label={label('Close', 'بند کریں')}><X size={18} /></button>
             </Dialog.Close>
           </div>
 
@@ -73,8 +75,8 @@ export function OrderChatModal({ order, onClose, onAddComment }: OrderChatModalP
             {comments.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full py-12 text-center">
                 <MessageCircle size={36} className="text-muted-foreground mb-3 opacity-40" />
-                <p className="text-muted-foreground text-sm">Koi message nahi abhi tak</p>
-                <p className="text-muted-foreground text-xs mt-1">Owner aur karigar yahaan baat kar sakte hain</p>
+                <p className="text-muted-foreground text-sm">{label('No messages yet', 'ابھی کوئی پیغام نہیں')}</p>
+                <p className="text-muted-foreground text-xs mt-1">{label('Owner and karigar can talk here', 'مالک اور کاریگر یہاں بات کر سکتے ہیں')}</p>
               </div>
             ) : (
               comments.map((c) => {
@@ -92,12 +94,12 @@ export function OrderChatModal({ order, onClose, onAddComment }: OrderChatModalP
                         <div className="flex items-center gap-1 mb-1">
                           <span className="text-[10px] font-bold opacity-70">{c.authorName}</span>
                           <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-semibold ${c.role === 'owner' ? 'bg-blue-200 dark:bg-blue-800 text-blue-700 dark:text-blue-300' : 'bg-amber-200 dark:bg-amber-800 text-amber-700 dark:text-amber-300'}`}>
-                            {c.role === 'owner' ? 'Malik' : 'Karigar'}
+                            {c.role === 'owner' ? label('Owner', 'مالک') : label('Karigar', 'کاریگر')}
                           </span>
                         </div>
                       )}
                       <p className="text-sm leading-relaxed whitespace-pre-wrap">{c.text}</p>
-                      <p className={`text-[10px] mt-1 ${isMe ? 'text-emerald-200' : 'opacity-50'} text-right`}>{formatTime(c.createdAt)}</p>
+                      <p className={`text-[10px] mt-1 ${isMe ? 'text-emerald-200' : 'opacity-50'} text-end`}>{formatTime(c.createdAt, label)}</p>
                     </div>
                   </div>
                 );
@@ -112,7 +114,7 @@ export function OrderChatModal({ order, onClose, onAddComment }: OrderChatModalP
               value={text}
               onChange={(e) => setText(e.target.value)}
               onKeyDown={handleKey}
-              placeholder="Apna message type karein..."
+              placeholder={label('Type a message', 'پیغام لکھیں')} aria-label={label('Message', 'پیغام')}
               rows={1}
               className="flex-1 px-3 py-2.5 rounded-xl border border-border bg-muted text-foreground text-sm resize-none focus:outline-none focus:ring-2 focus:ring-emerald-500 max-h-28"
               style={{ fieldSizing: 'content' } as React.CSSProperties}
@@ -120,9 +122,9 @@ export function OrderChatModal({ order, onClose, onAddComment }: OrderChatModalP
             <button
               onClick={handleSend}
               disabled={!text.trim()}
-              className="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-600 disabled:opacity-40 text-white rounded-xl flex items-center gap-1.5 font-semibold text-sm transition-colors shrink-0"
+              className="px-4 min-h-[44px] bg-emerald-700 hover:bg-emerald-600 disabled:opacity-40 text-white rounded-xl flex items-center gap-1.5 font-semibold text-sm transition-colors shrink-0"
             >
-              <Send size={16} />
+              <Send size={16} aria-hidden /><span className="sr-only">{label('Send', 'بھیجیں')}</span>
             </button>
           </div>
         </Dialog.Content>

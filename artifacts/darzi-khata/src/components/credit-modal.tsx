@@ -1,3 +1,4 @@
+import { usePreferences } from '../hooks/use-preferences';
 import { useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ShieldCheck, Info, Printer, ArrowLeft, Lock, FileText } from 'lucide-react';
@@ -15,6 +16,7 @@ type View = 'score' | 'consent' | 'profile';
 
 export function CreditModal({ open, onOpenChange, orders }: Props) {
   const p = useMemo(() => computeCreditScore(orders), [orders]);
+  const { label } = usePreferences();
   const { settings } = useSettings();
   const { demoMode } = useDemoMode();
   const [view, setView] = useState<View>('score');
@@ -35,10 +37,10 @@ export function CreditModal({ open, onOpenChange, orders }: Props) {
       <DialogContent className="max-w-lg w-[calc(100%-1rem)] p-0 overflow-hidden rounded-2xl gap-0 max-h-[92dvh] flex flex-col">
         <div className="bg-emerald-900 text-white px-5 py-4 shrink-0">
           <div className="flex items-center gap-2">
-            {view !== 'score' && <button onClick={() => setView(view === 'profile' ? 'consent' : 'score')} className="-ml-2 h-11 w-11 flex items-center justify-center rounded-full hover:bg-emerald-800" aria-label="Back / واپس"><ArrowLeft size={18} /></button>}
+            {view !== 'score' && <button onClick={() => setView(view === 'profile' ? 'consent' : 'score')} className="-ml-2 h-11 w-11 flex items-center justify-center rounded-full hover:bg-emerald-800" aria-label={label('Back', 'واپس')}><ArrowLeft size={18} className="rtl:rotate-180" aria-hidden /></button>}
             <div>
-              <DialogTitle className="text-lg font-black">{view === 'score' ? 'Business Credit Score' : view === 'consent' ? 'Share consent' : 'Business profile'}</DialogTitle>
-              <DialogDescription className="text-emerald-200 text-xs"><span className="font-urdu">{view === 'score' ? 'کاروباری کریڈٹ اسکور' : view === 'consent' ? 'اجازت نامہ' : 'کاروباری پروفائل'}</span> · on-device estimate / فون پر حساب{demoMode && ' · DEMO DATA'}</DialogDescription>
+              <DialogTitle className="text-lg font-black">{view === 'score' ? label('Business credit score', 'کاروباری کریڈٹ اسکور') : view === 'consent' ? label('Share consent', 'اجازت نامہ') : label('Business profile', 'کاروباری پروفائل')}</DialogTitle>
+              <DialogDescription className="text-emerald-200 text-xs">{label('On-device estimate', 'فون پر حساب')}{demoMode && ` · ${label('Demo data', 'ڈیمو ڈیٹا')}`}</DialogDescription>
             </div>
           </div>
         </div>
@@ -46,33 +48,33 @@ export function CreditModal({ open, onOpenChange, orders }: Props) {
           {view === 'score' && <ScoreView p={p} onApply={() => setView('consent')} />}
           {view === 'consent' && (
             <div className="space-y-4 dk-rise">
-              <p className="text-sm">Only this summary goes into the profile. <span className="font-urdu text-muted-foreground">صرف یہ خلاصہ شامل ہوگا</span></p>
+              <p className="text-sm">{label('Only this summary goes into the profile.', 'صرف یہ خلاصہ شامل ہوگا')}</p>
               <ul className="rounded-xl border border-border divide-y divide-border text-sm">
                 {[
-                  ['Shop name & type / دکان کا نام و قسم', `${settings.shopName} · ${shopTypeLabel(settings.shopType)}`],
-                  ['Months active / مہینے', String(p.monthsActive)],
-                  ['Monthly revenue series / ماہانہ آمدن', `${p.monthly.length} months`],
-                  ['Order count / آرڈر', String(p.totalOrders)],
-                  ['On-time & collection % / بروقت و وصولی', `${p.onTimePercent.toFixed(1)}% · ${p.collectionPercent.toFixed(1)}%`],
-                  ['Score / اسکور', String(p.score)],
-                ].map(([k, v]) => <li key={k} className="flex justify-between gap-3 px-3 py-2.5"><span className="text-muted-foreground">{k}</span><b className="text-right">{v}</b></li>)}
+                  [label('Shop name & type', 'دکان کا نام و قسم'), `${settings.shopName} · ${shopTypeLabel(settings.shopType)}`],
+                  [label('Months active', 'مہینے'), String(p.monthsActive)],
+                  [label('Monthly revenue series', 'ماہانہ آمدن'), label(`${p.monthly.length} months`, `${p.monthly.length} مہینے`)],
+                  [label('Order count', 'آرڈر'), String(p.totalOrders)],
+                  [label('On-time & collection %', 'بروقت و وصولی'), `${p.onTimePercent.toFixed(1)}% · ${p.collectionPercent.toFixed(1)}%`],
+                  [label('Score', 'اسکور'), String(p.score)],
+                ].map(([k, v]) => <li key={k} className="flex justify-between gap-3 px-3 py-2.5"><span className="text-muted-foreground">{k}</span><b className="text-end">{v}</b></li>)}
               </ul>
               <div className="rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 p-3 text-xs flex gap-2">
                 <Lock size={16} className="shrink-0 text-emerald-700 mt-0.5" />
-                <span>Never included: customer names, phone numbers, measurements. Nothing is sent anywhere. This creates a printable page on your phone only; you decide whom to show. <span className="font-urdu block mt-1 leading-loose">گاہکوں کے نام، نمبر اور ناپ شامل نہیں۔ کچھ بھی کہیں نہیں بھیجا جاتا۔</span></span>
+                <span className="leading-relaxed">{label('Never included: customer names, phone numbers, measurements. Nothing is sent anywhere. This creates a printable page on your phone only; you decide whom to show.', 'گاہکوں کے نام، نمبر اور ناپ شامل نہیں۔ کچھ بھی کہیں نہیں بھیجا جاتا۔ صرف آپ کے فون پر پرنٹ ہونے والا صفحہ بنتا ہے')}</span>
               </div>
               <label className="flex items-start gap-3 min-h-[44px] cursor-pointer">
                 <Checkbox checked={agree} onCheckedChange={(c) => setAgree(c === true)} className="mt-1 h-5 w-5" data-testid="checkbox-consent" />
-                <span className="text-sm">I agree to create this business profile. <span className="font-urdu text-muted-foreground">میں پروفائل بنانے پر رضامند ہوں</span></span>
+                <span className="text-sm">{label('I agree to create this business profile.', 'میں پروفائل بنانے پر رضامند ہوں')}</span>
               </label>
-              <button disabled={!agree} onClick={() => setView('profile')} className="w-full min-h-[48px] rounded-xl bg-emerald-700 disabled:opacity-40 text-white font-bold flex items-center justify-center gap-2" data-testid="btn-create-profile"><FileText size={16} /> Create profile / پروفائل بنائیں</button>
+              <button disabled={!agree} onClick={() => setView('profile')} className="w-full min-h-[48px] rounded-xl bg-emerald-700 disabled:opacity-40 text-white font-bold flex items-center justify-center gap-2" data-testid="btn-create-profile"><FileText size={16} aria-hidden /> {label('Create profile', 'پروفائل بنائیں')}</button>
             </div>
           )}
           {view === 'profile' && (
             <div className="space-y-4 dk-rise">
               <div className="rounded-xl border border-border bg-[#fdfbf7] dark:bg-card p-4"><ProfileSheet p={p} shopName={settings.shopName} shopType={settings.shopType} at={generatedAt} demo={demoMode} /></div>
-              <p className="text-xs text-muted-foreground">Not submitted to Zindigi or any lender. Future integration would send only this summary after your consent. <span className="font-urdu">کہیں جمع نہیں کرایا گیا</span></p>
-              <button onClick={print} className="w-full min-h-[48px] rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold flex items-center justify-center gap-2" data-testid="btn-print-profile"><Printer size={16} /> Print / PDF محفوظ کریں</button>
+              <p className="text-xs text-muted-foreground">{label('Not submitted to Zindigi or any lender. Future integration would send only this summary after your consent.', 'زندگی یا کسی قرض دینے والے کو جمع نہیں کرایا گیا')}</p>
+              <button onClick={print} className="w-full min-h-[48px] rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold flex items-center justify-center gap-2" data-testid="btn-print-profile"><Printer size={16} aria-hidden /> {label('Print / save PDF', 'پرنٹ / PDF محفوظ کریں')}</button>
             </div>
           )}
         </div>
@@ -99,23 +101,24 @@ function Gauge({ score }: { score: number }) {
 }
 
 function ScoreView({ p, onApply }: { p: CreditProfile; onApply: () => void }) {
+  const { label } = usePreferences();
   return (
     <div className="space-y-5">
       <div className="text-center dk-rise">
         <Gauge score={p.score} />
         <div className="inline-block mt-1 px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-900 dark:text-amber-200 text-sm font-bold" data-testid="text-credit-band">{p.band}</div>
         <div className="flex justify-center gap-3 mt-3 text-[11px] text-muted-foreground">
-          <span>0–39 Starter / بنیادی</span><span>40–69 Growing / ترقی پذیر</span><span>70+ Trusted / قابلِ اعتماد</span>
+          <span>0–39 {label('Starter', 'بنیادی')}</span><span>40–69 {label('Growing', 'ترقی پذیر')}</span><span>70+ {label('Trusted', 'قابلِ اعتماد')}</span>
         </div>
       </div>
       {!p.enoughData && (
         <div className="rounded-xl border border-dashed border-amber-400 bg-amber-50 dark:bg-amber-900/10 p-4 text-sm" data-testid="credit-empty">
-          <b>Not enough history yet / ابھی ریکارڈ کم ہے</b>
-          <p className="text-muted-foreground mt-1">Needs at least 5 orders across 2 months. You have {p.totalOrders} orders in {p.monthsActive} month(s). <span className="font-urdu">کم از کم ۵ آرڈر اور ۲ مہینے درکار</span></p>
+          <b>{label('Not enough data yet', 'ابھی ریکارڈ کم ہے')}</b>
+          <p className="text-muted-foreground mt-1">{label(`Needs at least 5 orders across 2 months. You have ${p.totalOrders} orders in ${p.monthsActive} month(s).`, `کم از کم 5 آرڈر اور 2 مہینے درکار۔ آپ کے ${p.totalOrders} آرڈر، ${p.monthsActive} مہینے`)}</p>
         </div>
       )}
       <section>
-        <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Six factors / چھ عوامل</h3>
+        <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">{label('Six factors', 'چھ عوامل')}</h3>
         <ul className="space-y-3">
           {p.factors.map((f) => (
             <li key={f.key} className="rounded-xl border border-border p-3 bg-card">
@@ -123,19 +126,19 @@ function ScoreView({ p, onApply }: { p: CreditProfile; onApply: () => void }) {
               <div className="h-2 rounded-full bg-muted mt-2 overflow-hidden" role="progressbar" aria-valuenow={Math.round(f.score)} aria-valuemin={0} aria-valuemax={100} aria-label={f.label}>
                 <div className="h-full bg-emerald-600 rounded-full origin-left transition-transform duration-700" style={{ transform: `scaleX(${f.score / 100})` }} />
               </div>
-              <p className="text-[11px] text-muted-foreground mt-1.5">Tip / مشورہ: {f.tip}</p>
-              {f.key === 'delivery' && <p className="text-[11px] text-muted-foreground mt-1">Based on {p.observedDeliveries} deliveries with a recorded date / ریکارڈ شدہ ترسیل</p>}
+              <p className="text-[11px] text-muted-foreground mt-1.5">{label('Tip', 'مشورہ')}: {f.tip}</p>
+              {f.key === 'delivery' && <p className="text-[11px] text-muted-foreground mt-1">{label(`Based on ${p.observedDeliveries} deliveries with a recorded date`, `${p.observedDeliveries} ریکارڈ شدہ ترسیل پر مبنی`)}</p>}
             </li>
           ))}
         </ul>
       </section>
       <section className="rounded-2xl bg-emerald-900 text-white p-4">
-        <div className="text-xs text-emerald-200">Illustrative loan estimate / اندازاً قرض</div>
+        <div className="text-xs text-emerald-200">{label('Illustrative loan estimate', 'اندازاً قرض')}</div>
         <div className="text-3xl font-black mt-1" data-testid="text-loan-estimate">{p.enoughData ? pkr(p.eligibleLoan) : '—'}</div>
-        <p className="text-[11px] text-emerald-200 mt-1">Avg monthly revenue {pkr(p.averageMonthlyRevenue)} · 1.5 × revenue × score%, capped at Rs 300,000</p>
-        <p className="text-[11px] text-amber-200 mt-2 flex gap-1.5"><Info size={13} className="shrink-0 mt-0.5" />Not a loan offer or bank decision. Lenders use their own checks. <span className="font-urdu">یہ قرض کی پیشکش نہیں</span></p>
+        <p className="text-[11px] text-emerald-200 mt-1">{label('Avg monthly revenue', 'اوسط ماہانہ آمدن')} {pkr(p.averageMonthlyRevenue)} · 1.5 × revenue × score%, capped at Rs 300,000</p>
+        <p className="text-[11px] text-amber-200 mt-2 flex gap-1.5"><Info size={13} className="shrink-0 mt-0.5" aria-hidden />{label('Not a loan offer or bank decision. Lenders use their own checks.', 'یہ قرض کی پیشکش یا بینک کا فیصلہ نہیں')}</p>
         <button onClick={onApply} disabled={!p.enoughData} className="mt-3 w-full min-h-[48px] rounded-xl bg-amber-500 hover:bg-amber-400 disabled:opacity-40 text-emerald-950 font-black flex items-center justify-center gap-2" data-testid="btn-apply-zindigi">
-          <ShieldCheck size={18} /> Apply via Zindigi / زندگی کے ذریعے
+          <ShieldCheck size={18} aria-hidden /> {label('Apply via Zindigi', 'زندگی کے ذریعے درخواست')}
         </button>
       </section>
     </div>

@@ -1,6 +1,7 @@
 import { useMemo, useEffect, useCallback } from 'react';
 import { useAuthContext } from '../context/auth-context';
 import { useDemoMode } from './use-demo-mode';
+import { storage as localStorage } from '../lib/storage';
 import { claimLegacyShop, useStoredValue, writeStorage } from '../lib/local-store';
 import { getAccounts } from './use-auth';
 import type { UserAccount } from '../context/auth-context';

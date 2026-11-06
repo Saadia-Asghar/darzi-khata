@@ -72,12 +72,35 @@ not customers or verified financial transactions. Do not send messages to demo n
   management and shareable invitation instructions.
 - Customer directory/history, filters, overdue and due-today views, earnings,
   printable worksheets, parchi/WhatsApp receipt, dark mode, JSON backup/restore.
-- Local email/password accounts replaced the old PIN screen; no PIN lock is restored.
+- Local email/password accounts remain; an optional hashed PIN can lock the local
+  session without replacing account login.
+
+## Offline tailor-workflow upgrade
+
+- Bottom navigation: Orders, New, Customers, Payments and More. Full four-step
+  entry remains, with a Quick Order shortcut using saved customer measurements.
+- Saved customers have stable IDs, notes and garment-specific measurement
+  profiles. Search matches names, formatted numbers and the last four digits.
+- Mixed-garment orders: gents shalwar kameez, ladies kameez, ladies trousers,
+  waistcoats, pant-shirt and kids. Each line has independent measurements,
+  quantity, price and notes. Totals derive from those lines.
+- Fabric/design photo capture and upload: compressed below 200,000 bytes and
+  stored in IndexedDB, never as localStorage base64. Photos appear on cards and
+  receipts and are included in JSON backups.
+- Urdu-first RTL or English-first labels, normal/large text, status icons,
+  daily delivery/collection summary, delete confirmation and undo.
+- Optional 4–8 digit PIN uses a random salt plus SHA-256; five wrong attempts
+  lock for 30 seconds. Owned legacy plaintext PINs migrate without changing the
+  PIN. The PIN is not data encryption or a replacement for secure cloud login.
+- Versioned, idempotent migrations preserve old orders and link customers by
+  normalized phone. Restore validates first, imports photos into the current
+  namespace, restores templates/manual karigars and repairs the DK counter.
+  LocalStorage batches roll back if a quota/write error occurs.
 
 ## Offline and data safety
 
-**No backend or cloud sync.** All accounts and data live in this browser's
-`localStorage`; the session uses `sessionStorage`. Accounts are a local access
+**No backend or cloud sync.** Accounts and business records live in this browser's
+`localStorage`; fabric photos use IndexedDB and the session uses `sessionStorage`. Accounts are a local access
 convenience, not secure server-enforced authentication. Hashing alone does not
 make localStorage accounts production-grade identity management.
 
@@ -85,7 +108,7 @@ Owner and karigar accounts can demonstrate shared tasks on the **same browser**.
 Invitations do not create cross-device team sync. Clearing browser storage loses
 the khata: export a backup regularly. Publishing does not upload local records.
 
-Demo mode isolates orders, serials, payment settings, templates and karigar lists
+Demo mode isolates orders, customers, photos, serials, payment settings, templates and karigar lists
 in separate keys; switching off returns to original records. Clear Demo removes
 only that demonstration area. Team account membership itself remains local to
 the shared accounts list.
@@ -98,12 +121,16 @@ the shared accounts list.
 | `darzi-khata-templates-{ownerId}` | Measurement templates |
 | `darzi-khata-karigars-{ownerId}` | Karigar name list |
 | `darzi-khata-serial-{ownerId}` | Original serial counter |
+| `darzi-khata-customers-{ownerId}` | Saved customers and measurement profiles |
+| `darzi-khata-schema-{ownerId}` | Additive storage schema version |
+| `darzi-khata-lock-{userId}` | Optional salted PIN hash and lockout state |
 | `darzi-khata-demo-mode-{ownerId}` | Active data-area selection |
 | `darzi-khata-*-financial-demo-{ownerId}` | Isolated demonstration records |
 
 Old unscoped keys are preserved. The first non-demo shop claims a copy of the
 pre-account orders/settings/templates/karigars/counter once; originals remain
-available for recovery. Old order advances become cash ledger entries without
+available for recovery, except legacy plaintext PINs are removed after successful
+owned-PIN migration. Old order advances become cash ledger entries without
 changing the collected total. Legacy delivered orders without `deliveredAt`
 are excluded from the observed on-time denominator rather than assumed on-time.
 
@@ -115,10 +142,10 @@ recorded order. All results are self-reported and illustrative.
 ## PWA
 
 Production builds generate a manifest, real 192/512px icons and a Workbox
-service worker. The app shell, JS, CSS and icons are precached. Install through
+service worker. The app shell, JS, CSS, icons and bundled Urdu Nastaliq font are precached. Install through
 your browser's Install/Add to Home Screen after one successful online visit.
 App data entry works offline; WhatsApp and browser-hosted speech recognition
-do not. Fonts cached after loading have system-font fallbacks.
+do not. The Urdu font is local; online Inter font requests have system-font fallbacks.
 The service worker is disabled during Vite development.
 
 ## Develop and verify
@@ -133,7 +160,7 @@ pnpm --filter @workspace/darzi-khata run dev
 # Outside managed workflows:
 PORT=24310 BASE_PATH=/ pnpm --filter @workspace/darzi-khata run dev
 
-pnpm --filter @workspace/darzi-khata test
+pnpm --filter @workspace/darzi-khata test # Node financial tests + Vitest offline suites
 pnpm --filter @workspace/darzi-khata typecheck
 PORT=24310 BASE_PATH=/ pnpm --filter @workspace/darzi-khata build
 ```

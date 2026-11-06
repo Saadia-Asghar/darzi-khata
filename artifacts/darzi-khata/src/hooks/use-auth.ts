@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { UserAccount } from '../context/auth-context';
 import { notifyStorage } from '../lib/local-store';
+import { storage as localStorage } from '../lib/storage';
 
 const ACCOUNTS_KEY = 'darzi-khata-accounts';
 const SESSION_KEY = 'darzi-khata-session';

@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useSyncExternalStore } from 'react';
+import { storage as localStorage } from './storage';
 const EVENT = 'darzi-khata-local-update';
 export function notifyStorage(key: string) {
   window.dispatchEvent(new CustomEvent(EVENT, { detail: key }));
@@ -7,6 +8,19 @@ export function writeStorage(key: string, value: unknown) {
   // Do not swallow quota errors: callers must know their data was not persisted.
   localStorage.setItem(key, JSON.stringify(value));
   notifyStorage(key);
+}
+export function writeStorageBatch(entries: [string,unknown][]) {
+  const next = entries.map(([key,value])=>({key,raw:JSON.stringify(value),previous:localStorage.getItem(key)}));
+  try {
+    for(const entry of next)localStorage.setItem(entry.key,entry.raw);
+  } catch(error) {
+    // Free the entire partial batch before restoring it, so quota cannot prevent
+    // recovery of the exact previous register. Never notify readers halfway.
+    for(const entry of next)localStorage.removeItem(entry.key);
+    for(const entry of next)if(entry.previous!==null)localStorage.setItem(entry.key,entry.previous);
+    throw error;
+  }
+  for(const entry of next)notifyStorage(entry.key);
 }
 export function removeStorage(key: string) {
   localStorage.removeItem(key);

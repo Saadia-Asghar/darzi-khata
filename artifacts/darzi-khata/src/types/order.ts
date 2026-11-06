@@ -29,6 +29,30 @@ export interface OrderComment {
 }
 
 export type PaymentMethod = 'cash' | 'zindigi' | 'raast' | 'bank';
+export type GarmentType = 'gents' | 'ladies-shirt' | 'ladies-trouser' | 'waistcoat' | 'pant-shirt' | 'kids';
+export interface OrderItem {
+  id: string;
+  garmentType: GarmentType;
+  quantity: number;
+  unitPrice: number;
+  measurements: Record<string, number>;
+  notes?: string;
+}
+export interface MeasurementProfile {
+  id: string;
+  name: string;
+  garmentType: GarmentType;
+  measurements: Record<string, number>;
+}
+export interface Customer {
+  id: string;
+  name: string;
+  phone: string;
+  profiles: MeasurementProfile[];
+  notes: string;
+  createdAt: string;
+  updatedAt: string;
+}
 export interface Payment {
   id: string;
   amount: number;
@@ -63,4 +87,7 @@ export interface Order {
   payments?: Payment[];
   deliveredAt?: string;
   readyAt?: string;
+  customerId?: string;
+  items?: OrderItem[];
+  fabricPhotoId?: string;
 }

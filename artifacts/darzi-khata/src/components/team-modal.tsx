@@ -1,3 +1,4 @@
+import { usePreferences } from '../hooks/use-preferences';
 import * as Dialog from '@radix-ui/react-dialog';
 import { X, Users, UserPlus, UserX, Search, Copy, CheckCircle, Share2, BarChart2, CheckCircle2, Clock, Scissors } from 'lucide-react';
 import { useState, useMemo } from 'react';
@@ -5,6 +6,10 @@ import { useAuthContext } from '../context/auth-context';
 import { useOrders } from '../hooks/use-orders';
 import { getAccounts } from '../hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
+  AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface TeamModalProps {
   open: boolean;
@@ -15,6 +20,7 @@ export function TeamModal({ open, onOpenChange }: TeamModalProps) {
   const { currentUser, userId } = useAuthContext();
   const { orders } = useOrders();
   const { toast } = useToast();
+  const { label } = usePreferences();
   const [searchEmail, setSearchEmail] = useState('');
   const [searchResult, setSearchResult] = useState<{ name: string; email: string; id: string } | null | 'not_found' | 'already_member' | 'self'>(null);
   const [copied, setCopied] = useState(false);
@@ -64,32 +70,33 @@ export function TeamModal({ open, onOpenChange }: TeamModalProps) {
       a.id === searchResult.id ? { ...a, ownerId: userId, ownerShopName: currentUser?.shopName } : a
     );
     localStorage.setItem('darzi-khata-accounts', JSON.stringify(updated));
-    toast({ title: `${searchResult.name} team mein shamil ho gaya!` });
+    toast({ title: label(`${searchResult.name} added to team`, `${searchResult.name} ٹیم میں شامل`) });
     setSearchEmail('');
     setSearchResult(null);
     onOpenChange(false);
     setTimeout(() => onOpenChange(true), 50);
   };
 
-  const handleRemoveMember = (memberId: string, memberName: string) => {
-    if (!window.confirm(`${memberName} ko team se hatayen?`)) return;
+  const [removeTarget, setRemoveTarget] = useState<{ id: string; name: string } | null>(null);
+  const handleRemoveMember = (memberId: string, memberName: string) => setRemoveTarget({ id: memberId, name: memberName });
+  const confirmRemoveMember = (memberId: string, memberName: string) => {
     const accounts = getAccounts();
     const updated = accounts.map((a) =>
       a.id === memberId ? { ...a, ownerId: undefined, ownerShopName: undefined } : a
     );
     localStorage.setItem('darzi-khata-accounts', JSON.stringify(updated));
-    toast({ title: `${memberName} team se hataya gaya` });
+    toast({ title: label(`${memberName} removed from team`, `${memberName} ٹیم سے ہٹا دیا`) });
     onOpenChange(false);
     setTimeout(() => onOpenChange(true), 50);
   };
 
-  const inviteText = `Assalamu Alaikum!\n\nMujhe apni dukan "${currentUser?.shopName}" ke liye Darzi Khata app par join karein.\n\n📲 Steps:\n1. App kholen\n2. Sign Up → "Karigar" select karein\n3. Owner Email mein yeh likhein:\n   ${currentUser?.email}\n4. Apna naam aur password set karein\n\nApp link: ${window.location.origin}\n\nShukria! 🙏`;
+  const inviteText = `Assalamu Alaikum!\n\nMujhe apni dukan "${currentUser?.shopName}" ke liye Darzi Khata app par join karein.\n\nSteps:\n1. App kholen\n2. Sign Up → "Karigar" select karein\n3. Owner Email mein yeh likhein:\n   ${currentUser?.email}\n4. Apna naam aur password set karein\n\nApp link: ${window.location.origin}\n\nShukria!`;
 
   const handleCopyInvite = () => {
     navigator.clipboard.writeText(inviteText).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-      toast({ title: 'Invite message copy ho gaya!' });
+      toast({ title: label('Invite message copied', 'دعوتی پیغام کاپی ہو گیا') });
     });
   };
 
@@ -101,9 +108,9 @@ export function TeamModal({ open, onOpenChange }: TeamModalProps) {
 
   function timeAgo(iso: string) {
     const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
-    if (mins < 60) return `${mins} min pehle`;
-    if (mins < 1440) return `${Math.floor(mins / 60)} ghante pehle`;
-    return `${Math.floor(mins / 1440)} din pehle`;
+    if (mins < 60) return label(`${mins} min ago`, `${mins} منٹ پہلے`);
+    if (mins < 1440) return label(`${Math.floor(mins / 60)} h ago`, `${Math.floor(mins / 60)} گھنٹے پہلے`);
+    return label(`${Math.floor(mins / 1440)} days ago`, `${Math.floor(mins / 1440)} دن پہلے`);
   }
 
   return (
@@ -116,27 +123,27 @@ export function TeamModal({ open, onOpenChange }: TeamModalProps) {
           <div className="px-5 py-4 border-b bg-emerald-800 text-white shrink-0 flex justify-between items-center">
             <div>
               <Dialog.Title className="text-lg font-bold flex items-center gap-2">
-                <Users size={18} className="text-amber-400" /> Team Management
+                <Users size={18} className="text-amber-400" aria-hidden /> {label('Team', 'ٹیم')}
               </Dialog.Title>
               <Dialog.Description className="text-emerald-300 text-xs mt-0.5">
-                {currentUser?.shopName} · {teamMembers.length} karigar
-                {unassigned > 0 && <span className="ml-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{unassigned} unassigned</span>}
+                {currentUser?.shopName} · {label(`${teamMembers.length} karigar`, `${teamMembers.length} کاریگر`)}
+                {unassigned > 0 && <span className="ms-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{label(`${unassigned} unassigned`, `${unassigned} بغیر کاریگر`)}</span>}
               </Dialog.Description>
-              <p className="text-amber-200 text-[10px] mt-1 leading-snug">Same browser/device only, no cloud sync. Karigars must log in on this device. / صرف اسی ڈیوائس پر</p>
+              <p className="text-amber-200 text-[10px] mt-1 leading-snug">{label('Same browser/device only, no cloud sync. Karigars must log in on this device.', 'صرف اسی ڈیوائس پر، کوئی کلاؤڈ نہیں۔ کاریگر اسی ڈیوائس پر لاگ ان کریں')}</p>
             </div>
             <Dialog.Close asChild>
-              <button className="h-8 w-8 flex items-center justify-center rounded-full hover:bg-emerald-700 text-white" aria-label="Close"><X size={20} /></button>
+              <button className="h-11 w-11 flex items-center justify-center rounded-full hover:bg-emerald-700 text-white" aria-label={label('Close', 'بند کریں')}><X size={20} /></button>
             </Dialog.Close>
           </div>
 
           {/* Sub-tabs */}
           <div className="flex border-b border-border shrink-0 bg-muted">
             {([
-              { id: 'activity', label: '📊 Activity', },
-              { id: 'add', label: '➕ Add Karigar', },
-              { id: 'invite', label: '📨 Invite', },
-            ] as const).map((t) => (
-              <button key={t.id} onClick={() => setActiveTab(t.id)} className={`flex-1 py-2.5 text-xs font-bold transition-colors ${activeTab === t.id ? 'bg-background text-emerald-700 dark:text-emerald-400 border-b-2 border-emerald-600' : 'text-muted-foreground hover:text-foreground'}`}>
+              { id: 'activity' as const, label: label('Activity', 'کارکردگی'), },
+              { id: 'add' as const, label: label('Add karigar', 'کاریگر شامل'), },
+              { id: 'invite' as const, label: label('Invite', 'دعوت'), },
+            ]).map((t) => (
+              <button key={t.id} onClick={() => setActiveTab(t.id)} className={`flex-1 min-h-[44px] text-xs font-bold transition-colors ${activeTab === t.id ? 'bg-background text-emerald-700 dark:text-emerald-400 border-b-2 border-emerald-600' : 'text-muted-foreground hover:text-foreground'}`}>
                 {t.label}
               </button>
             ))}
@@ -150,8 +157,8 @@ export function TeamModal({ open, onOpenChange }: TeamModalProps) {
                 {teamMembers.length === 0 ? (
                   <div className="text-center py-12 bg-muted rounded-xl border border-dashed border-border">
                     <Users size={28} className="mx-auto text-muted-foreground mb-2 opacity-40" />
-                    <p className="text-sm text-muted-foreground font-medium">Koi team member nahi</p>
-                    <p className="text-xs text-muted-foreground mt-1">Add Karigar ya Invite tab se shuru karein</p>
+                    <p className="text-sm text-muted-foreground font-medium">{label('No team members', 'کوئی ٹیم ممبر نہیں')}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{label('Start from Add karigar or Invite', 'کاریگر شامل یا دعوت سے شروع کریں')}</p>
                   </div>
                 ) : (
                   karigarStats.map(({ member, pending, stitching, ready, delivered, active, urgentCount, lastMessage }) => (
@@ -169,19 +176,19 @@ export function TeamModal({ open, onOpenChange }: TeamModalProps) {
                         </div>
                         <div className="flex items-center gap-2">
                           {urgentCount > 0 && (
-                            <span className="text-[10px] bg-red-600 text-white font-bold px-2 py-0.5 rounded-full">{urgentCount} urgent</span>
+                            <span className="text-[10px] bg-red-600 text-white font-bold px-2 py-0.5 rounded-full">{label(`${urgentCount} urgent`, `${urgentCount} ہنگامی`)}</span>
                           )}
-                          <button onClick={() => handleRemoveMember(member.id, member.name)} className="p-1 text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"><UserX size={13} /></button>
+                          <button onClick={() => handleRemoveMember(member.id, member.name)} aria-label={label(`Remove ${member.name}`, `${member.name} کو ہٹائیں`)} className="h-11 w-11 flex items-center justify-center text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"><UserX size={16} aria-hidden /></button>
                         </div>
                       </div>
 
                       {/* Stats row */}
                       <div className="grid grid-cols-4 divide-x divide-border border-b border-border">
                         {[
-                          { label: 'Pending', count: pending, color: 'text-gray-600 dark:text-gray-400' },
-                          { label: 'Silai', count: stitching, color: 'text-blue-600 dark:text-blue-400' },
-                          { label: 'Tayar', count: ready, color: 'text-emerald-600 dark:text-emerald-400' },
-                          { label: 'Diya', count: delivered, color: 'text-slate-500' },
+                          { label: label('Pending', 'زیرِ التوا'), count: pending, color: 'text-gray-600 dark:text-gray-400' },
+                          { label: label('Stitching', 'سلائی'), count: stitching, color: 'text-blue-600 dark:text-blue-400' },
+                          { label: label('Ready', 'تیار'), count: ready, color: 'text-emerald-600 dark:text-emerald-400' },
+                          { label: label('Delivered', 'دے دیا'), count: delivered, color: 'text-slate-500' },
                         ].map((s) => (
                           <div key={s.label} className="py-2.5 text-center">
                             <p className={`text-xl font-black ${s.color}`}>{s.count}</p>
@@ -193,8 +200,8 @@ export function TeamModal({ open, onOpenChange }: TeamModalProps) {
                       {/* Progress bar */}
                       <div className="px-4 py-2">
                         <div className="flex justify-between text-[10px] text-muted-foreground mb-1">
-                          <span>{active} active · {delivered} complete</span>
-                          <span>{active + delivered > 0 ? Math.round((delivered / (active + delivered)) * 100) : 0}% done</span>
+                          <span>{label(`${active} active · ${delivered} complete`, `${active} جاری · ${delivered} مکمل`)}</span>
+                          <span>{active + delivered > 0 ? Math.round((delivered / (active + delivered)) * 100) : 0}% {label('done', 'مکمل')}</span>
                         </div>
                         <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                           <div
@@ -208,7 +215,7 @@ export function TeamModal({ open, onOpenChange }: TeamModalProps) {
                       {lastMessage && (
                         <div className="px-4 pb-3">
                           <p className="text-[10px] text-muted-foreground">
-                            💬 <span className="italic">"{lastMessage.text.slice(0, 60)}{lastMessage.text.length > 60 ? '…' : ''}"</span>
+                            <span className="italic">"{lastMessage.text.slice(0, 60)}{lastMessage.text.length > 60 ? '…' : ''}"</span>
                             {' · '}{timeAgo(lastMessage.createdAt)}
                           </p>
                         </div>
@@ -221,8 +228,8 @@ export function TeamModal({ open, onOpenChange }: TeamModalProps) {
                   <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-xl p-3 flex items-center gap-3">
                     <Clock size={18} className="text-orange-500 shrink-0" />
                     <div>
-                      <p className="text-sm font-bold text-orange-700 dark:text-orange-400">{unassigned} orders unassigned hain</p>
-                      <p className="text-xs text-orange-600 dark:text-orange-500">Inhe karigaron ko assign karein dashboard se</p>
+                      <p className="text-sm font-bold text-orange-700 dark:text-orange-400">{label(`${unassigned} orders unassigned`, `${unassigned} آرڈر بغیر کاریگر`)}</p>
+                      <p className="text-xs text-orange-600 dark:text-orange-500">{label('Assign them to karigars from the order form', 'آرڈر فارم سے کاریگر مقرر کریں')}</p>
                     </div>
                   </div>
                 )}
@@ -233,34 +240,34 @@ export function TeamModal({ open, onOpenChange }: TeamModalProps) {
             {activeTab === 'add' && (
               <div className="space-y-4">
                 <div className="bg-card p-4 rounded-xl border border-border space-y-3">
-                  <p className="text-xs text-muted-foreground">Agar karigar pehle se app par registered hai to uski email se add karein:</p>
+                  <p className="text-xs text-muted-foreground">{label('If the karigar already has an account, add them by email:', 'اگر کاریگر کا اکاؤنٹ ہے تو ای میل سے شامل کریں:')}</p>
                   <div className="flex gap-2">
                     <input
                       type="email"
                       value={searchEmail}
                       onChange={(e) => { setSearchEmail(e.target.value); setSearchResult(null); }}
                       onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                      placeholder="karigar@email.com"
+                      placeholder="karigar@email.com" aria-label={label('Karigar email', 'کاریگر ای میل')}
                       className="flex-1 px-3 py-2 rounded-xl border border-border bg-muted text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 placeholder-muted-foreground"
                     />
-                    <button onClick={handleSearch} className="px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-white rounded-xl transition-colors flex items-center gap-1.5 text-sm font-semibold">
-                      <Search size={15} /> Dhundein
+                    <button onClick={handleSearch} className="px-4 min-h-[44px] bg-emerald-700 hover:bg-emerald-600 text-white rounded-xl transition-colors flex items-center gap-1.5 text-sm font-semibold">
+                      <Search size={15} aria-hidden /> {label('Search', 'تلاش')}
                     </button>
                   </div>
 
                   {searchResult && (
                     <div className={`rounded-xl p-3 text-sm ${typeof searchResult === 'object' ? 'bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800' : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'}`}>
-                      {searchResult === 'not_found' && <p className="text-red-600 dark:text-red-400">❌ Koi account is email par nahi mila. "Invite" tab se message bhejein.</p>}
-                      {searchResult === 'already_member' && <p className="text-amber-600 dark:text-amber-400">⚠️ Yeh user aapki team mein pehle se hai.</p>}
-                      {searchResult === 'self' && <p className="text-gray-500">🙂 Yeh aapki apni email hai!</p>}
+                      {searchResult === 'not_found' && <p className="text-red-600 dark:text-red-400">{label('No account with this email. Send a message from the Invite tab.', 'اس ای میل کا اکاؤنٹ نہیں ملا۔ دعوت ٹیب سے پیغام بھیجیں')}</p>}
+                      {searchResult === 'already_member' && <p className="text-amber-600 dark:text-amber-400">{label('This user is already in your team.', 'یہ پہلے سے آپ کی ٹیم میں ہے')}</p>}
+                      {searchResult === 'self' && <p className="text-gray-500">{label('This is your own email.', 'یہ آپ کی اپنی ای میل ہے')}</p>}
                       {typeof searchResult === 'object' && (
                         <div className="flex items-center justify-between">
                           <div>
-                            <p className="font-bold text-emerald-800 dark:text-emerald-300">✓ {searchResult.name}</p>
+                            <p className="font-bold text-emerald-800 dark:text-emerald-300">{searchResult.name}</p>
                             <p className="text-xs text-emerald-600 dark:text-emerald-400">{searchResult.email}</p>
                           </div>
-                          <button onClick={handleAddMember} className="px-3 py-1.5 bg-emerald-700 text-white text-xs font-bold rounded-lg hover:bg-emerald-600 transition-colors">
-                            Add Karein
+                          <button onClick={handleAddMember} className="px-3 min-h-[44px] bg-emerald-700 text-white text-xs font-bold rounded-lg hover:bg-emerald-600 transition-colors">
+                            {label('Add', 'شامل کریں')}
                           </button>
                         </div>
                       )}
@@ -270,7 +277,7 @@ export function TeamModal({ open, onOpenChange }: TeamModalProps) {
 
                 <div className="bg-muted rounded-xl p-3 border border-border">
                   <p className="text-xs text-muted-foreground">
-                    <strong className="text-foreground">Demo accounts:</strong> bashir@darzikhata.com, ahmed@darzikhata.com, rustam@darzikhata.com — sab demo1234 se login kar sakte hain.
+                    <strong className="text-foreground">{label('Demo accounts', 'ڈیمو اکاؤنٹ')}:</strong> bashir@darzikhata.com, ahmed@darzikhata.com, rustam@darzikhata.com — {label('all use password demo1234', 'سب کا پاس ورڈ demo1234')}
                   </p>
                 </div>
               </div>
@@ -279,17 +286,17 @@ export function TeamModal({ open, onOpenChange }: TeamModalProps) {
             {/* ── INVITE TAB ── */}
             {activeTab === 'invite' && (
               <div className="space-y-4">
-                <p className="text-xs text-muted-foreground">Agar karigar app par abhi nahi hai — yeh message share karein. Woh sign up karke aapki team mein shamil ho jayenge:</p>
+                <p className="text-xs text-muted-foreground">{label('If the karigar is not on the app yet, share this message. They sign up and join your team:', 'اگر کاریگر ایپ پر نہیں تو یہ پیغام بھیجیں۔ سائن اپ کر کے ٹیم میں شامل ہوں گے')}</p>
                 <div className="bg-muted rounded-xl p-3.5 text-xs text-foreground whitespace-pre-wrap leading-relaxed border border-border font-mono">
                   {inviteText}
                 </div>
                 <div className="grid grid-cols-2 gap-2">
-                  <button onClick={handleCopyInvite} className="flex items-center justify-center gap-1.5 py-2.5 bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold rounded-xl transition-colors">
+                  <button onClick={handleCopyInvite} className="flex items-center justify-center gap-1.5 min-h-[44px] bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold rounded-xl transition-colors">
                     {copied ? <CheckCircle size={14} /> : <Copy size={14} />}
-                    {copied ? 'Copied!' : 'Copy Karein'}
+                    {copied ? label('Copied', 'کاپی ہو گیا') : label('Copy', 'کاپی کریں')}
                   </button>
-                  <button onClick={handleShareInvite} className="flex items-center justify-center gap-1.5 py-2.5 bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold rounded-xl transition-colors">
-                    <Share2 size={14} /> WhatsApp/Share
+                  <button onClick={handleShareInvite} className="flex items-center justify-center gap-1.5 min-h-[44px] bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold rounded-xl transition-colors">
+                    <Share2 size={14} aria-hidden /> {label('WhatsApp / Share', 'واٹس ایپ / شیئر')}
                   </button>
                 </div>
               </div>
@@ -297,6 +304,18 @@ export function TeamModal({ open, onOpenChange }: TeamModalProps) {
           </div>
         </Dialog.Content>
       </Dialog.Portal>
+      <AlertDialog open={!!removeTarget} onOpenChange={(v) => { if (!v) setRemoveTarget(null); }}>
+        <AlertDialogContent className="w-[calc(100%-1.5rem)] max-w-sm rounded-2xl z-[70]">
+          <AlertDialogHeader>
+            <AlertDialogTitle>{label(`Remove ${removeTarget?.name ?? ''} from team?`, `${removeTarget?.name ?? ''} کو ٹیم سے ہٹائیں؟`)}</AlertDialogTitle>
+            <AlertDialogDescription>{label('Their account stays, but they lose access to your shop orders.', 'اکاؤنٹ رہے گا لیکن آپ کے آرڈر نہیں دیکھ سکیں گے')}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="min-h-[44px]">{label('Cancel', 'منسوخ')}</AlertDialogCancel>
+            <AlertDialogAction className="min-h-[44px] bg-red-600 hover:bg-red-700" onClick={() => { if (removeTarget) confirmRemoveMember(removeTarget.id, removeTarget.name); setRemoveTarget(null); }} data-testid="btn-confirm-remove-member">{label('Remove', 'ہٹائیں')}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog.Root>
   );
 }

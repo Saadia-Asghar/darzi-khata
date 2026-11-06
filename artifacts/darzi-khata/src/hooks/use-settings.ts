@@ -2,6 +2,7 @@ import { useEffect, useCallback, useMemo } from 'react';
 import { useAuthContext } from '../context/auth-context';
 import { claimLegacyShop, useStoredValue, writeStorage } from '../lib/local-store';
 import { useDemoMode } from './use-demo-mode';
+import { storage as localStorage } from '../lib/storage';
 
 export interface ShopSettings {
   shopName: string;
@@ -14,6 +15,8 @@ export interface ShopSettings {
   raastId?: string;
   accountTitle?: string;
   shopType?: 'shop' | 'home-based' | 'women-home-tailor';
+  language?: 'en' | 'ur';
+  fontSize?: 'normal' | 'large';
 }
 
 const getDefaultSettings = (shopName?: string): ShopSettings => ({

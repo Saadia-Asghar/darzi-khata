@@ -10,6 +10,8 @@ import { AuthScreen } from './components/auth-screen';
 import { useAuth } from './hooks/use-auth';
 import { AuthContext } from './context/auth-context';
 import { FirstRunIntro } from './components/first-run-intro';
+import { AppLockGate } from './components/app-lock';
+import { AppPreferences } from './hooks/use-preferences';
 import {
   Route,
   Switch,
@@ -68,6 +70,7 @@ function AppShell() {
     <AuthContext.Provider
       value={{ currentUser, userId: currentUser.id, dataOwnerId, logout, updateCurrentUser }}
     >
+      <AppPreferences><AppLockGate key={currentUser.id}>
       <FirstRunIntro />
       {currentUser.role === 'karigar' ? (
         // Karigar sees a simplified task view
@@ -78,6 +81,7 @@ function AppShell() {
           <Router />
         </WouterRouter>
       )}
+      </AppLockGate></AppPreferences>
     </AuthContext.Provider>
   );
 }

@@ -1,7 +1,9 @@
+import { usePreferences } from '../hooks/use-preferences';
 import * as Dialog from '@radix-ui/react-dialog';
 import { X, CalendarClock, MessageCircle, ReceiptText, Phone, AlertCircle } from 'lucide-react';
 import { Order } from '../types/order';
 import { ReminderButtons } from './reminder-buttons';
+import { StatusBadge } from './status-meta';
 import { useSettings } from '../hooks/use-settings';
 import { normalizePakistaniPhone, reminderText } from '../lib/reminders';
 
@@ -14,6 +16,7 @@ interface DueTodayModalProps {
 
 export function DueTodayModal({ open, onOpenChange, orders, onViewReceipt }: DueTodayModalProps) {
   const { settings } = useSettings();
+  const { label } = usePreferences();
   
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -53,24 +56,24 @@ export function DueTodayModal({ open, onOpenChange, orders, onViewReceipt }: Due
     };
 
     return (
-      <div key={order.id} className="bg-white border border-gray-200 rounded-xl p-3 shadow-sm relative">
-        {order.urgent && <div className="absolute top-2 right-2 text-red-500"><AlertCircle size={16} /></div>}
+      <div key={order.id} className="bg-card border border-border rounded-xl p-3 shadow-sm relative">
+        {order.urgent && <div className="absolute top-2 end-2 text-red-500"><AlertCircle size={16} aria-label={label('Urgent', 'ہنگامی')} /></div>}
         
-        <div className="flex justify-between items-start mb-2 pr-6">
+        <div className="flex justify-between items-start mb-2 pe-6">
           <div>
-            <h4 className="font-bold text-gray-900 leading-tight">{order.customerName}</h4>
-            <a href={`tel:${order.phone}`} className="flex items-center text-xs text-gray-500 mt-0.5 gap-1 hover:text-emerald-600">
+            <h4 className="font-bold text-foreground leading-tight flex items-center gap-1.5"><StatusBadge order={order} compact />{order.customerName}</h4>
+            <a href={`tel:${order.phone}`} className="flex items-center text-xs text-muted-foreground mt-0.5 gap-1 hover:text-emerald-600">
               <Phone size={12} /> {order.phone}
             </a>
           </div>
-          <div className="text-right flex flex-col items-end">
-            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Baqi</span>
-            <span className={`text-sm font-bold ${baqi > 0 ? 'text-red-600' : 'text-emerald-600'}`}>Rs. {baqi}</span>
+          <div className="text-end flex flex-col items-end">
+            <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">{label('Balance', 'باقی')}</span>
+            <span className={`text-sm font-bold ${baqi > 0 ? 'text-red-600' : 'text-emerald-600'}`}>Rs {baqi}</span>
           </div>
         </div>
         
-        <div className="text-xs font-medium text-gray-700 bg-gray-50 px-2 py-1.5 rounded-lg mb-3 inline-block">
-          {order.suitCount} Jora — {order.fabric}
+        <div className="text-xs font-medium text-foreground bg-muted px-2 py-1.5 rounded-lg mb-3 inline-block">
+          {label(`${order.suitCount} suits`, `${order.suitCount} جوڑے`)} — {order.fabric}
         </div>
         
  <div className="mb-2"><ReminderButtons order={order} compact /></div>
@@ -78,15 +81,15 @@ export function DueTodayModal({ open, onOpenChange, orders, onViewReceipt }: Due
           <a 
             href={`https://wa.me/${normalizePakistaniPhone(order.phone)}?text=${generateReminderMessage()}`}
             target="_blank" rel="noreferrer"
-            className="flex-1 flex items-center justify-center gap-1.5 bg-[#E7F6EC] text-[#128C7E] py-2 rounded-lg text-xs font-bold hover:bg-[#D1F0DA] transition-colors"
+            className="flex-1 flex items-center justify-center gap-1.5 bg-[#E7F6EC] text-[#128C7E] min-h-[44px] rounded-lg text-xs font-bold hover:bg-[#D1F0DA] transition-colors"
           >
             <MessageCircle size={14} /> WhatsApp
           </a>
           <button 
             onClick={() => onViewReceipt(order)}
-            className="flex-1 flex items-center justify-center gap-1.5 bg-gray-100 text-gray-700 py-2 rounded-lg text-xs font-bold hover:bg-gray-200 transition-colors"
+            className="flex-1 flex items-center justify-center gap-1.5 bg-muted text-foreground min-h-[44px] rounded-lg text-xs font-bold hover:bg-accent transition-colors"
           >
-            <ReceiptText size={14} /> Parchi
+            <ReceiptText size={14} aria-hidden /> {label('Receipt', 'پرچی')}
           </button>
         </div>
       </div>
@@ -97,20 +100,20 @@ export function DueTodayModal({ open, onOpenChange, orders, onViewReceipt }: Due
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/60 z-50 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-        <Dialog.Content className="fixed inset-x-0 bottom-0 z-50 mt-24 h-[85dvh] flex flex-col rounded-t-[20px] bg-slate-50 border-t overflow-hidden data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom shadow-2xl outline-none max-w-md mx-auto sm:h-[80vh] sm:bottom-auto sm:top-[50%] sm:-translate-y-1/2 sm:rounded-[20px]">
+        <Dialog.Content className="fixed inset-x-0 bottom-0 z-50 mt-24 h-[85dvh] flex flex-col rounded-t-[20px] bg-background border-t overflow-hidden data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom shadow-2xl outline-none max-w-md mx-auto sm:h-[80vh] sm:bottom-auto sm:top-[50%] sm:-translate-y-1/2 sm:rounded-[20px]">
           
-          <div className="px-5 py-4 border-b flex justify-between items-center bg-white shrink-0">
+          <div className="px-5 py-4 border-b flex justify-between items-center bg-card shrink-0">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-red-100 text-red-600 rounded-full flex items-center justify-center">
                 <CalendarClock size={20} />
               </div>
               <div>
-                <Dialog.Title className="text-lg font-bold text-gray-900">Aaj Ki Deliveries</Dialog.Title>
-                <Dialog.Description className="text-gray-500 text-xs mt-0.5">Today & Tomorrow</Dialog.Description>
+                <Dialog.Title className="text-lg font-bold text-foreground">{label('Deliveries due', 'آنے والی ڈیلیوری')}</Dialog.Title>
+                <Dialog.Description className="text-muted-foreground text-xs mt-0.5">{label('Overdue, today and tomorrow', 'دیر، آج اور کل')}</Dialog.Description>
               </div>
             </div>
             <Dialog.Close asChild>
-              <button className="h-8 w-8 inline-flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors text-gray-500" aria-label="Close">
+              <button className="h-11 w-11 inline-flex items-center justify-center rounded-full bg-muted hover:bg-accent transition-colors text-muted-foreground" aria-label={label('Close', 'بند کریں')}>
                 <X size={20} />
               </button>
             </Dialog.Close>
@@ -121,7 +124,7 @@ export function DueTodayModal({ open, onOpenChange, orders, onViewReceipt }: Due
             {overdueOrders.length > 0 && (
               <section>
                 <h3 className="text-xs font-bold text-red-600 uppercase tracking-wider mb-3 flex items-center gap-2">
-                  <AlertCircle size={14} /> Overdue ({overdueOrders.length})
+                  <AlertCircle size={14} aria-hidden /> {label('Overdue', 'دیر')} ({overdueOrders.length})
                 </h3>
                 <div className="space-y-3">
                   {overdueOrders.map(renderCompactCard)}
@@ -131,11 +134,11 @@ export function DueTodayModal({ open, onOpenChange, orders, onViewReceipt }: Due
 
             <section>
               <h3 className="text-xs font-bold text-emerald-800 uppercase tracking-wider mb-3 bg-emerald-100 inline-block px-3 py-1 rounded-full">
-                Aaj / Today ({todayOrders.length})
+                {label('Today', 'آج')} ({todayOrders.length})
               </h3>
               {todayOrders.length === 0 ? (
-                <div className="text-center py-6 bg-white border border-dashed border-gray-200 rounded-xl">
-                  <p className="text-sm font-bold text-gray-400">Aaj koi delivery nahi!</p>
+                <div className="text-center py-6 bg-card border border-dashed border-border rounded-xl">
+                  <p className="text-sm font-bold text-muted-foreground">{label('No deliveries today', 'آج کوئی ڈیلیوری نہیں')}</p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -145,12 +148,12 @@ export function DueTodayModal({ open, onOpenChange, orders, onViewReceipt }: Due
             </section>
 
             <section>
-              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 bg-gray-200 inline-block px-3 py-1 rounded-full">
-                Kal / Tomorrow ({tomorrowOrders.length})
+              <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3 bg-gray-200 inline-block px-3 py-1 rounded-full">
+                {label('Tomorrow', 'کل')} ({tomorrowOrders.length})
               </h3>
               {tomorrowOrders.length === 0 ? (
-                <div className="text-center py-4 bg-transparent border border-dashed border-gray-200 rounded-xl">
-                  <p className="text-sm font-bold text-gray-400">Kal koi delivery nahi</p>
+                <div className="text-center py-4 bg-transparent border border-dashed border-border rounded-xl">
+                  <p className="text-sm font-bold text-muted-foreground">{label('No deliveries tomorrow', 'کل کوئی ڈیلیوری نہیں')}</p>
                 </div>
               ) : (
                 <div className="space-y-3">

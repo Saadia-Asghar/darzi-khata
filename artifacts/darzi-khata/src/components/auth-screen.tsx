@@ -10,10 +10,10 @@ type Tab = 'login' | 'signup';
 type SignupRole = 'owner' | 'karigar';
 
 const DEMO_ACCOUNTS = [
-  { label: 'Shop Owner', name: 'Muhammad Arif', shop: 'Al-Madina Tailors', email: 'demo@darzikhata.com', password: 'demo1234', color: 'emerald', icon: '🏪' },
-  { label: 'Ustad Bashir', name: 'Ustad Bashir', shop: 'Karigar', email: 'bashir@darzikhata.com', password: 'demo1234', color: 'amber', icon: '✂️' },
-  { label: 'Ahmed Karigar', name: 'Ahmed Karigar', shop: 'Karigar', email: 'ahmed@darzikhata.com', password: 'demo1234', color: 'amber', icon: '✂️' },
-  { label: 'Rustam Ustad', name: 'Rustam Ustad', shop: 'Karigar', email: 'rustam@darzikhata.com', password: 'demo1234', color: 'amber', icon: '✂️' },
+  { label: 'Shop Owner', name: 'Muhammad Arif', shop: 'Al-Madina Tailors', email: 'demo@darzikhata.com', password: 'demo1234', color: 'emerald' },
+  { label: 'Ustad Bashir', name: 'Ustad Bashir', shop: 'Karigar', email: 'bashir@darzikhata.com', password: 'demo1234', color: 'amber' },
+  { label: 'Ahmed Karigar', name: 'Ahmed Karigar', shop: 'Karigar', email: 'ahmed@darzikhata.com', password: 'demo1234', color: 'amber' },
+  { label: 'Rustam Ustad', name: 'Rustam Ustad', shop: 'Karigar', email: 'rustam@darzikhata.com', password: 'demo1234', color: 'amber' },
 ];
 
 export function AuthScreen({ onLogin, onSignup }: AuthScreenProps) {
@@ -122,7 +122,7 @@ export function AuthScreen({ onLogin, onSignup }: AuthScreenProps) {
                   onClick={() => setDemoOpen((v) => !v)}
                   className="w-full flex items-center justify-between px-3.5 py-2.5 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
                 >
-                  <span className="text-xs font-bold flex items-center gap-2">✨ Demo Accounts se try karein</span>
+                  <span className="text-xs font-bold flex items-center gap-2">Demo Accounts se try karein</span>
                   {demoOpen ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
                 </button>
 
@@ -138,7 +138,7 @@ export function AuthScreen({ onLogin, onSignup }: AuthScreenProps) {
                       >
                         <div className="text-left">
                           <p className="text-xs font-bold text-gray-800 dark:text-gray-200">
-                            {acc.icon} {acc.label}
+                            {acc.label}
                             {acc.color === 'emerald' && <span className="ml-2 text-[10px] bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-400 px-1.5 py-0.5 rounded-full">Owner</span>}
                             {acc.color === 'amber' && <span className="ml-2 text-[10px] bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-400 px-1.5 py-0.5 rounded-full">Karigar</span>}
                           </p>
@@ -186,7 +186,7 @@ export function AuthScreen({ onLogin, onSignup }: AuthScreenProps) {
 
               {signupRole === 'karigar' && (
                 <div className="bg-amber-50 dark:bg-amber-900/20 rounded-xl p-3 border border-amber-200 dark:border-amber-800">
-                  <label className="block text-xs font-semibold text-amber-700 dark:text-amber-400 mb-1">👤 Owner ki Email *</label>
+                  <label className="block text-xs font-semibold text-amber-700 dark:text-amber-400 mb-1">Owner ki Email *</label>
                   <input type="email" required={signupRole === 'karigar'} placeholder="malik@email.com" value={signupOwnerEmail} onChange={(e) => setSignupOwnerEmail(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-amber-200 dark:border-amber-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 placeholder-gray-400" />
                   <p className="text-[10px] text-amber-600 dark:text-amber-500 mt-1">Jis owner ki team mein shamil hona chahte hain</p>
                 </div>
