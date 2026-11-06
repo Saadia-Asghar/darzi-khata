@@ -84,21 +84,21 @@ header, routed tool headers and sign-in. UI labels now show one language at a
 time. Help on More is collapsed by default. TypeScript, all 68 unit tests,
 the language-switch/persistence browser scenario and the 360px dark-Urdu page
 layout scenario pass. English and Urdu mobile screenshots were inspected.
-Impeccable source scan has no findings. Older Lighthouse measurements below
-predate this language simplification and have not been remeasured.
+Impeccable source scan has no findings. Lighthouse has now been remeasured
+against the current production build as described below.
 
 | Check | Result |
 | --- | --- |
 | TypeScript, `pnpm --filter @workspace/darzi-khata exec tsc --noEmit` | Passed |
 | Core finance tests | 29 passed |
-| Vitest, offline/storage/design/i18n tests | 39 passed |
-| Production mobile Playwright suite | 12 passed |
+| Vitest, offline/storage/design/i18n/encrypted-backup tests | 48 passed |
+| Production mobile Playwright suite, including startup regressions | 18 passed |
 | Final font change: dark/Urdu layout and production offline tests | 2 passed |
 | Impeccable source scan | No findings |
 | Impeccable rendered mobile login scan | No findings |
 | Lighthouse mobile Accessibility | **100**. Target ≥95 met |
 | Lighthouse mobile Best Practices | **100**. Target ≥95 met |
-| Lighthouse mobile Performance | **76**. Target ≥85 **not met** |
+| Lighthouse mobile Performance | **99, 100, 100**. Target ≥85 **met in all three runs** |
 | Production PWA build | Generated manifest, service worker and precache |
 | Offline reload and order save | Passed against the production build |
 | Public production release | Not published. User action required |
@@ -152,14 +152,84 @@ Finance and storage tests cover remaining-balance arithmetic, invalid payments,
 phone normalization, credit scoring, legacy migrations, backups, photo storage,
 atomic recovery and offline persistence. Existing voice parser tests remain.
 
-## Performance work and remaining gap
+## Mobile performance target verification
 
-The initial mobile performance result was 72. Changes included lazy-loading
-signed-in dashboards, deferring service-worker installation until fonts and
-initial rendering settle, and avoiding a late Nastaliq font swap on slow
-connections. The final recorded score is 76. Accessibility and Best Practices
-are both 100. Main-thread work remains the principal performance concern.
-Do not report the Performance acceptance target as passed.
+The historical scores were 72 and 76. Those reports predate the single-language
+sign-in screen. A fresh baseline of the current source, before this task's
+optimization, already scored **100**. Do not attribute the entire improvement
+from 76 to the changes in this task or treat one runner's timings as a phone
+hardware guarantee.
+
+Profiling used Lighthouse's saved Chromium trace and main-thread/bootup
+breakdowns on a production Vite build, through `http://localhost/` (the shared
+artifact proxy), with its standard simulated mobile network and 4× CPU slowdown.
+The historical report showed 1,506ms style/layout, 649ms script evaluation and
+1,183ms blocking time. The fresh baseline showed 238ms style/layout, 203ms
+script evaluation and 56ms blocking time. Its largest layout event was 46ms
+before simulation, while the initial entry bundle was 464kB (149kB gzip).
+There is no evidence of the former layout bottleneck on the current entry
+screen, so no speculative CSS, font or feature removal was applied.
+
+The remaining avoidable startup work was the eager authenticated shell.
+`src/signed-in-app.tsx` now owns routing, the PIN gate, preferences, introduction,
+toast/tooltip and query providers. These load only after authentication;
+the existing owner and karigar dashboards remain lazy. The entry bundle is
+now **284kB (88kB gzip)**, about **41% smaller by gzip**. Authentication, storage
+formats, both self-hosted Nastaliq weights, font-display behavior, service-worker
+registration and offline precaching are unchanged. The generated precache
+contains 29 entries, including the new signed-in chunk and fonts.
+
+Three sequential fresh mobile audits of the finished build, with no concurrent
+test/build workload, produced:
+
+| Metric | Run 1 | Run 2 | Run 3 |
+| --- | ---: | ---: | ---: |
+| Performance | **99** | **100** | **100** |
+| Accessibility | 100 | 100 | 100 |
+| Best Practices | 100 | 100 | 100 |
+| FCP / LCP | 933ms | 915ms | 909ms |
+| Total Blocking Time | 148ms | 3.5ms | 0ms |
+| Speed Index | 933ms | 915ms | 909ms |
+| CLS | 0.00034 | 0.00033 | 0.00033 |
+| Style/layout | 419ms | 364ms | 324ms |
+| Script evaluation | 297ms | 134ms | 111ms |
+
+Main-thread timings vary in the shared runner; the baseline and final ranges
+overlap, so they do not prove a causal CPU-time reduction. The reproducible
+bundle reduction and all three scores support the target result.
+`generated-artifacts/audits/lighthouse-mobile.report.{json,html}` retains the
+**lowest-scoring run (99)** rather than selecting the best result.
+`lighthouse-baseline*` and `lighthouse-mobile-run-{1,2,3}*` contain the other
+reports and saved traces. These generated files remain excluded from Git.
+
+Reproduction commands (run the managed web workflow in `serve` mode after build):
+
+```bash
+pnpm --filter @workspace/darzi-khata typecheck
+pnpm --filter @workspace/darzi-khata test
+PORT=24310 BASE_PATH=/ pnpm --filter @workspace/darzi-khata build
+E2E_BASE_URL=http://localhost E2E_PRODUCTION=1 pnpm exec playwright test \
+  e2e/darzi-khata.spec.ts e2e/startup.spec.ts
+CHROME_PATH=/repl/tools/bin/chromium pnpm exec lighthouse http://localhost/ \
+  --chrome-flags='--headless --no-sandbox --disable-dev-shm-usage' \
+  --only-categories=performance,accessibility,best-practices \
+  --output=json --output=html --save-assets \
+  --output-path=generated-artifacts/audits/lighthouse-mobile
+```
+
+TypeScript, production build, 29 core tests, 48 Vitest tests and all 18 production
+mobile Playwright scenarios passed. The four new startup cases verify:
+signed-out English/Urdu and signup-tab rendering without requesting shop chunks;
+real owner and karigar demo sign-in with wrong-password rejection and reload;
+and a signed-out installation precaching the lazy shell and both Urdu font
+weights before successfully signing in offline. Existing tests verify PIN
+unlock, first-run intro, routes, dark RTL layout, order creation, payments,
+plain/encrypted backup restore and offline order saving. A 390×844 screenshot
+of the finished signed-out page was inspected.
+
+The existing signed-in dashboard still produces a >500kB build warning. The
+entry-page Lighthouse target is met; signed-in route performance has not been
+scored by these audits.
 
 ## Limits and release notes
 
