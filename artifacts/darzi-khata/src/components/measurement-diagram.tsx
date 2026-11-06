@@ -24,8 +24,8 @@ export function MeasurementDiagram({ garmentType, active, activeLabel }: { garme
   const stroke = (k: string) => hl(k) ? 'hsl(38 92% 45%)' : 'currentColor';
   const sw = (k: string) => hl(k) ? 3.5 : 1.4;
   return (
-    <figure className="rounded-xl border border-border bg-card p-2 flex items-center gap-3" aria-label={label('Body diagram', 'جسم کا خاکہ')}>
-      <svg viewBox="0 0 120 200" className="h-36 w-auto text-emerald-900/50 dark:text-emerald-200/50 shrink-0" role="img" aria-hidden>
+    <figure className="rounded-lg border border-border bg-card p-2 flex items-center gap-3" aria-label={label('body_diagram')}>
+      <svg viewBox="0 0 120 200" className="h-36 w-auto text-primary/50  shrink-0" role="img" aria-hidden>
         {!lowerOnly && <g fill="none" strokeLinejoin="round">
           <path d="M42 28 L30 34 L14 78 L24 82 L36 52 L36 118 L84 118 L84 52 L96 82 L106 78 L90 34 L78 28" stroke="currentColor" strokeWidth="1.4" fill="hsl(160 40% 50% / .08)" />
           <path d="M42 28 Q60 44 78 28" stroke={stroke('neck')} strokeWidth={sw('neck')} />
@@ -45,8 +45,8 @@ export function MeasurementDiagram({ garmentType, active, activeLabel }: { garme
           <path d="M90 124 L90 194" stroke={stroke('hem')} strokeWidth={sw('hem')} opacity={lowerOnly && hl('hem') ? 1 : 0} />
         </g>
       </svg>
-      <figcaption className="text-xs text-muted-foreground" aria-live="polite">
-        {activeLabel ? <><span className="block text-[10px] uppercase tracking-wider">{label('Measuring', 'ناپ')}</span><span className="text-base font-bold text-amber-700 dark:text-amber-400">{activeLabel}</span></> : label('Tap a field to see where to measure', 'خانے پر ٹیپ کریں')}
+      <figcaption className="text-sm text-muted-foreground" aria-live="polite">
+        {activeLabel ? <><span className="block text-xs  ">{label('measuring')}</span><span className="text-base font-bold text-warning ">{activeLabel}</span></> : label('tap_a_field_to_see_where_to_measure')}
       </figcaption>
     </figure>
   );

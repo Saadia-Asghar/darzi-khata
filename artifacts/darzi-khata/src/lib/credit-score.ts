@@ -1,3 +1,4 @@
+import { tl as bi } from './i18n';
 import type { Order } from '../types/order';
 import { paymentShare } from './payments';
 
@@ -39,17 +40,17 @@ export function computeCreditScore(orders: Order[], now = new Date()): CreditPro
   const collectionPercent = totalRevenue ? collected / totalRevenue * 100 : 0;
   const digitalPercent = paymentShare(valid).digitalPercent;
   const factors: CreditFactor[] = [
-    { key: 'age', label: 'Business age / کاروبار کی عمر', weight: 15, score: clamp(monthsActive / 12 * 100), tip: 'Record regularly / باقاعدگی سے آرڈر لکھیں' },
-    { key: 'volume', label: 'Volume & consistency / آرڈر اور تسلسل', weight: 20, score: clamp(meanVolume / 30 * 60 + consistency * 0.4), tip: 'Keep a steady order book / مسلسل آرڈر حاصل کریں' },
-    { key: 'growth', label: 'Revenue trend / آمدن میں اضافہ', weight: 20, score: growth, tip: 'Grow monthly sales / ماہانہ آمدن بڑھائیں' },
-    { key: 'delivery', label: 'On-time delivery / بروقت ترسیل', weight: 20, score: onTimePercent, tip: 'Mark delivery on the actual day / اصل دن پر ڈیلیور نشان لگائیں' },
-    { key: 'collection', label: 'Collection rate / وصولی کی شرح', weight: 15, score: collectionPercent, tip: 'Collect outstanding balances / بقایا رقم وصول کریں' },
-    { key: 'digital', label: 'Digital payments / ڈیجیٹل ادائیگی', weight: 10, score: digitalPercent, tip: 'Record wallet and bank payments / بینک اور والٹ کی ادائیگی لکھیں' },
+    { key: 'age', label: bi('m_business_age'), weight: 15, score: clamp(monthsActive / 12 * 100), tip: bi('m_record_regularly') },
+    { key: 'volume', label: bi('m_volume_consistency'), weight: 20, score: clamp(meanVolume / 30 * 60 + consistency * 0.4), tip: bi('m_keep_a_steady_order_book') },
+    { key: 'growth', label: bi('m_revenue_trend'), weight: 20, score: growth, tip: bi('m_grow_monthly_sales') },
+    { key: 'delivery', label: bi('m_on_time_delivery'), weight: 20, score: onTimePercent, tip: bi('m_mark_delivery_on_the_actual_day') },
+    { key: 'collection', label: bi('m_collection_rate'), weight: 15, score: collectionPercent, tip: bi('m_collect_outstanding_balances') },
+    { key: 'digital', label: bi('m_digital_payments'), weight: 10, score: digitalPercent, tip: bi('m_record_wallet_and_bank_payments') },
   ];
   const enoughData = valid.length >= 5 && monthsActive >= 2;
   const score = Math.round(factors.reduce((sum, f) => sum + f.score * f.weight / 100, 0));
   return {
-    score, band: score < 40 ? 'Starter / بنیادی' : score < 70 ? 'Growing / ترقی پذیر' : 'Trusted / قابلِ اعتماد',
+    score, band: score < 40 ? bi('m_starter') : score < 70 ? bi('m_growing') : bi('m_trusted'),
     enoughData, monthsActive, factors, monthly, averageMonthlyRevenue,
     eligibleLoan: enoughData ? Math.min(300000, Math.round(1.5 * averageMonthlyRevenue * score / 100)) : 0,
     onTimePercent, observedDeliveries: observed.length, collectionPercent, digitalPercent,

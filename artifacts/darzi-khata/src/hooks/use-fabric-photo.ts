@@ -1,3 +1,4 @@
+import { bi } from '../lib/i18n';
 import { useEffect, useState } from 'react';
 import { getFabricPhoto } from '../lib/photos';
 export function useFabricPhoto(id?: string) {
@@ -7,9 +8,9 @@ export function useFabricPhoto(id?: string) {
     setState({ loading: !!id });
     if (id) getFabricPhoto(id).then(blob => {
       if (cancelled) return;
-      if (!blob) { setState({ loading:false,error:'Photo not found / تصویر دستیاب نہیں' }); return; }
+      if (!blob) { setState({ loading:false,error:bi('m_photo_not_found') }); return; }
       src = URL.createObjectURL(blob); setState({ src, loading:false });
-    }).catch(() => { if (!cancelled) setState({ loading:false,error:'Photo unavailable / تصویر دستیاب نہیں' }); });
+    }).catch(() => { if (!cancelled) setState({ loading:false,error:bi('m_photo_unavailable') }); });
     return () => { cancelled = true; if (src) URL.revokeObjectURL(src); };
   }, [id]);
   return state;

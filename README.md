@@ -171,10 +171,36 @@ logic, all canonical Urdu/Roman Urdu numbers 1–60 and voice parsing.
 
 ## Publishing
 
+Live production URL: not yet published for this Replit project. The development
+preview is not a production URL. Use Publish to release, then record the verified
+production URL here.
+
 The existing artifact already serves a static Vite build from
 `artifacts/darzi-khata/dist/public`, with SPA rewrites. The monorepo also contains
 an unused API artifact; the khata does not call it. Keep managed artifact routing.
 Use Replit's Publish/Republish action to release these workspace changes.
+
+## Mobile acceptance checks
+
+From the workspace root:
+
+```bash
+pnpm --filter @workspace/darzi-khata typecheck
+pnpm --filter @workspace/darzi-khata test
+pnpm test:e2e
+pnpm audit:design
+```
+
+Playwright uses a separate, isolated browser context for every test, a 390×844
+touch viewport, and Asia/Karachi time. The layout test also checks 360px width.
+Set `E2E_BASE_URL` to test another preview and `CHROME_PATH` if Chromium is not at
+`/repl/tools/bin/chromium`. Run the offline test against a production static
+build with `E2E_PRODUCTION=1`; Vite development does not register a service worker.
+Reports and screenshots are written to ignored `generated-artifacts/`.
+
+See `DESIGN.md` for the visual rules and `QA.md` for measured results and any
+remaining limitations. A sample payment QR is **not** a bank-scannable Raast or
+Zindigi merchant QR.
 
 ## Main implementation files
 

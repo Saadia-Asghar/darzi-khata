@@ -1,40 +1,31 @@
-import { CalendarClock, ClipboardList, Wallet } from 'lucide-react';
 import { Order } from '../types/order';
 import { usePreferences } from '../hooks/use-preferences';
+import { balance } from '../lib/payments';
+import { money } from '../lib/i18n';
+import { isOverdue, startOfDay } from './status-meta';
 
-interface StatsBarProps {
-  orders: Order[];
-  onDueTodayClick: () => void;
-}
-
-export function StatsBar({ orders, onDueTodayClick }: StatsBarProps) {
-  const { label } = usePreferences();
-  const activeOrders = orders.filter((o) => o.status !== 'delivered');
-  const today = new Date(); today.setHours(0, 0, 0, 0);
-  const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
-  const deliveriesSoon = activeOrders.filter((o) => {
-    const d = new Date(o.deliveryDate); d.setHours(0, 0, 0, 0);
-    return d.getTime() <= tomorrow.getTime();
-  });
-  const totalBaqi = activeOrders.reduce((sum, o) => sum + Math.max(0, o.totalAmount - o.advanceAmount), 0);
-
+/** One calm summary strip: three columns, thin dividers. Red only when something is overdue. */
+export function StatsBar({ orders, onDueTodayClick }: { orders: Order[]; onDueTodayClick: () => void }) {
+  const { label, one } = usePreferences();
+  const active = orders.filter((o) => o.status !== 'delivered');
+  const tomorrow = startOfDay(new Date()); tomorrow.setDate(tomorrow.getDate() + 1);
+  const dueSoon = active.filter((o) => startOfDay(o.deliveryDate).getTime() <= tomorrow.getTime());
+  const anyOverdue = active.some((o) => isOverdue(o));
+  const totalBaqi = active.reduce((s, o) => s + balance(o), 0);
+  const cell = 'flex flex-col items-center justify-center gap-0.5 px-2 py-3 min-h-[72px] text-center';
   return (
-    <div className="grid grid-cols-3 gap-2.5 mb-5">
-      <div className="bg-emerald-800 dark:bg-emerald-900 text-white rounded-xl p-3 border border-emerald-700" data-testid="stat-active">
-        <ClipboardList size={15} className="text-emerald-200" aria-hidden />
-        <div className="text-2xl font-bold mt-1">{activeOrders.length}</div>
-        <div className="text-[11px] text-emerald-100 font-semibold leading-tight">{label('Active orders', 'جاری آرڈر')}</div>
+    <div className="grid grid-cols-3 divide-x divide-border rtl:divide-x-reverse bg-card border border-border rounded-lg mb-4" data-testid="stats-strip">
+      <div className={cell} data-testid="stat-active">
+        <span className="num text-xl font-semibold text-foreground">{active.length}</span>
+        <span className="text-sm text-muted-foreground">{one('summary_active')}</span>
       </div>
-      <button onClick={onDueTodayClick} className="bg-card border border-border rounded-xl p-3 relative text-start active:scale-95 transition-transform motion-reduce:transition-none hover:bg-muted min-h-[44px]" aria-label={label(`${deliveriesSoon.length} due by tomorrow, open list`, `${deliveriesSoon.length} کل تک، فہرست کھولیں`)} data-testid="stat-due">
-        {deliveriesSoon.length > 0 && <span className="absolute top-2 end-2 h-2.5 w-2.5 rounded-full bg-red-600" aria-hidden />}
-        <CalendarClock size={15} className={deliveriesSoon.length > 0 ? 'text-red-600 dark:text-red-400' : 'text-muted-foreground'} aria-hidden />
-        <div className={`text-2xl font-bold mt-1 ${deliveriesSoon.length > 0 ? 'text-red-600 dark:text-red-400' : 'text-foreground'}`}>{deliveriesSoon.length}</div>
-        <div className="text-[11px] text-muted-foreground font-semibold leading-tight">{label('Due by tomorrow', 'کل تک ڈیلیوری')}</div>
+      <button onClick={onDueTodayClick} className={`${cell} hover:bg-muted`} aria-label={`${dueSoon.length} ${label('summary_due')}. ${label('open_due_list')}`} data-testid="stat-due">
+        <span className={`num text-xl font-semibold ${anyOverdue ? 'text-danger' : 'text-foreground'}`}>{dueSoon.length}</span>
+        <span className="text-sm text-muted-foreground">{one('summary_due')}</span>
       </button>
-      <div className="bg-amber-500 dark:bg-amber-600 text-amber-950 rounded-xl p-3" data-testid="stat-baqi">
-        <Wallet size={15} aria-hidden />
-        <div className="text-base sm:text-lg font-bold mt-1 break-all leading-tight" dir="ltr">Rs {totalBaqi.toLocaleString()}</div>
-        <div className="text-[11px] font-semibold leading-tight">{label('Total balance', 'کل باقی')}</div>
+      <div className={cell} data-testid="stat-baqi">
+        <span dir="ltr" className="num text-lg font-semibold text-foreground whitespace-nowrap">{money(totalBaqi)}</span>
+        <span className="text-sm text-muted-foreground">{one('summary_baqi')}</span>
       </div>
     </div>
   );

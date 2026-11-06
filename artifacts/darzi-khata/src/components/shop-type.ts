@@ -1,8 +1,9 @@
+import { entry, type DictKey } from '../lib/i18n';
 import type { ShopSettings } from '../hooks/use-settings';
-export const SHOP_TYPES: { value: NonNullable<ShopSettings['shopType']>; en: string; ur: string }[] = [
-  { value: 'shop', en: 'Shop', ur: 'دکان' },
-  { value: 'home-based', en: 'Home-based', ur: 'گھر سے کام' },
-  { value: 'women-home-tailor', en: 'Woman home tailor', ur: 'خاتون درزی (گھر)' },
+export const SHOP_TYPES: { value: NonNullable<ShopSettings['shopType']>; tk: DictKey; en: string; ur: string }[] = [
+  { value: 'shop', ...entry('d_shop') },
+  { value: 'home-based', ...entry('d_home_based') },
+  { value: 'women-home-tailor', ...entry('d_woman_home_tailor') },
 ];
 export const shopTypeLabel = (t?: ShopSettings['shopType']) => {
   const s = SHOP_TYPES.find((x) => x.value === (t || 'shop')) || SHOP_TYPES[0];

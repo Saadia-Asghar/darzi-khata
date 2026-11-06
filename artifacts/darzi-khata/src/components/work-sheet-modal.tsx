@@ -1,6 +1,7 @@
 import { StatusBadge } from './status-meta';
 import { usePreferences } from '../hooks/use-preferences';
-import * as Dialog from '@radix-ui/react-dialog';
+import { shortDate } from '../lib/i18n';
+import * as Dialog from './page-dialog';
 import { X, Printer, ClipboardList, AlertTriangle } from 'lucide-react';
 import { Order } from '../types/order';
 import { useSettings } from '../hooks/use-settings';
@@ -13,7 +14,7 @@ interface WorkSheetModalProps {
 
 export function WorkSheetModal({ open, onOpenChange, orders }: WorkSheetModalProps) {
   const { settings } = useSettings();
-  const { label } = usePreferences();
+  const { label, lang } = usePreferences();
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -38,8 +39,7 @@ export function WorkSheetModal({ open, onOpenChange, orders }: WorkSheetModalPro
     return !o.urgent && d >= today;
   });
 
-  const formatDate = (iso: string) =>
-    new Date(iso).toLocaleDateString('en-PK', { day: '2-digit', month: 'short' });
+  const formatDate = (iso: string) => shortDate(iso, lang);
 
   const getDiffDays = (iso: string) => {
     const d = new Date(iso);
@@ -51,39 +51,39 @@ export function WorkSheetModal({ open, onOpenChange, orders }: WorkSheetModalPro
     const diff = getDiffDays(order.deliveryDate);
     return (
       <tr className={rowBg}>
-        <td className="px-2 py-2 font-mono text-xs text-gray-500 whitespace-nowrap">{order.serialNumber || '—'}</td>
+        <td className="px-2 py-2 font-mono text-sm text-muted-foreground whitespace-nowrap">{order.serialNumber || '—'}</td>
         <td className="px-2 py-2">
-          <div className="font-bold text-sm text-gray-900">{order.customerName}</div>
-          <div className="text-xs text-gray-500 font-mono">{order.phone}</div>
+          <div className="font-bold text-sm text-foreground">{order.customerName}</div>
+          <div className="text-sm text-muted-foreground font-mono">{order.phone}</div>
         </td>
         <td className="px-2 py-2 text-center text-sm font-bold">{order.suitCount}</td>
-        <td className="px-2 py-2 text-xs text-gray-700">{order.fabric}</td>
-        <td className="px-2 py-2 text-xs text-center">
-          <div className="font-semibold text-gray-800">{formatDate(order.deliveryDate)}</div>
-          <div className={`text-[10px] font-bold ${diff < 0 ? 'text-red-600' : diff === 0 ? 'text-orange-600' : 'text-gray-500'}`}>
-            {diff < 0 ? label(`${Math.abs(diff)}d late`, `${Math.abs(diff)} دن دیر`) : diff === 0 ? label('Today', 'آج') : label(`${diff}d`, `${diff} دن`)}
+        <td className="px-2 py-2 text-sm text-foreground">{order.fabric}</td>
+        <td className="px-2 py-2 text-sm text-center">
+          <div className="font-semibold text-foreground">{formatDate(order.deliveryDate)}</div>
+          <div className={`text-xs font-bold ${diff < 0 ? 'text-danger' : diff === 0 ? 'text-warning' : 'text-muted-foreground'}`}>
+            {diff < 0 ? label('t_nd_late', { diff: Math.abs(diff) }) : diff === 0 ? label('today') : label('t_nd', { diff })}
           </div>
         </td>
-        <td className="px-2 py-2 text-xs text-center text-gray-600">{order.karigar || '—'}</td>
+        <td className="px-2 py-2 text-sm text-center text-muted-foreground">{order.karigar || '—'}</td>
         <td className="px-2 py-2 text-center">
           <StatusBadge order={order} />
         </td>
         <td className="px-2 py-2 text-right">
           {order.totalAmount - order.advanceAmount > 0 ? (
-            <span className="text-red-600 font-bold text-xs">Rs {(order.totalAmount - order.advanceAmount).toLocaleString()}</span>
+            <span className="text-danger font-bold text-sm">Rs {(order.totalAmount - order.advanceAmount).toLocaleString()}</span>
           ) : (
-            <span className="text-emerald-600 text-xs font-semibold">{label('Paid', 'ادا')}</span>
+            <span className="text-primary text-sm font-semibold">{label('paid')}</span>
           )}
         </td>
-        <td className="px-2 py-2 text-xs text-gray-500 text-center">{order.specialNotes || '—'}</td>
+        <td className="px-2 py-2 text-sm text-muted-foreground text-center">{order.specialNotes || '—'}</td>
       </tr>
     );
   };
 
   const SectionHeader = ({ label: title, count, color }: { label: string; count: number; color: string }) => (
     <tr>
-      <td colSpan={9} className={`px-2 py-1 font-bold text-xs uppercase tracking-widest ${color}`}>
-        {title} ({label(`${count} order${count !== 1 ? 's' : ''}`, `${count} آرڈر`)})
+      <td colSpan={9} className={`px-2 py-1 font-bold text-sm   ${color}`}>
+        {title} ({(count === 1 ? label('t_one_order') : label('t_n_orders_count', { count }))})
       </td>
     </tr>
   );
@@ -91,28 +91,28 @@ export function WorkSheetModal({ open, onOpenChange, orders }: WorkSheetModalPro
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-black/60 z-50 backdrop-blur-sm print:hidden" />
-        <Dialog.Content className="fixed inset-2 sm:inset-8 z-50 rounded-2xl bg-white shadow-2xl outline-none overflow-hidden flex flex-col max-h-[95vh] print:static print:inset-0 print:rounded-none print:max-h-none">
+        <Dialog.Overlay className="fixed inset-0 bg-foreground/60 z-50  print:hidden" />
+        <Dialog.Content className="fixed inset-2 sm:inset-8 z-50 rounded-lg bg-card  outline-none overflow-hidden flex flex-col max-h-[95vh] print:static print:inset-0 print:rounded-none print:max-h-none">
 
           {/* Header */}
-          <div className="px-5 py-4 border-b flex justify-between items-center bg-emerald-800 text-white shrink-0 print:bg-white print:text-gray-900 print:border-b-2 print:border-gray-800">
+          <div className="px-5 py-4 border-b flex justify-between items-center bg-card text-foreground border-border shrink-0 print:bg-card print:text-foreground print:border-b-2 print:border-border">
             <div>
               <Dialog.Title className="text-base font-bold flex items-center gap-2">
-                <ClipboardList size={18} aria-hidden /> {label('Production work sheet', 'کام کی شیٹ')}
+                <ClipboardList size={18} aria-hidden /> {label('production_work_sheet')}
               </Dialog.Title>
-              <Dialog.Description className="text-emerald-200 text-xs font-urdu print:text-gray-600">
-                {settings.shopName} — {new Date().toLocaleDateString('en-PK', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+              <Dialog.Description className="text-muted-foreground text-sm">
+                {settings.shopName} · {new Date().toLocaleDateString('en-PK', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
               </Dialog.Description>
             </div>
             <div className="flex items-center gap-2 print:hidden">
               <button
                 onClick={() => window.print()}
-                className="flex items-center gap-2 px-4 min-h-[44px] bg-white/10 hover:bg-white/20 rounded-lg text-sm font-bold transition-colors"
+                className="flex items-center gap-2 px-4 min-h-[44px] bg-card/10 hover:bg-card/20 rounded-lg text-sm font-bold transition-colors"
               >
-                <Printer size={16} aria-hidden /> {label('Print', 'پرنٹ')}
+                <Printer size={16} aria-hidden /> {label('print')}
               </button>
               <Dialog.Close asChild>
-                <button className="h-11 w-11 flex items-center justify-center rounded-full hover:bg-emerald-700 text-white" aria-label={label('Close', 'بند کریں')}>
+                <button className="h-11 w-11 flex items-center justify-center rounded-full hover:bg-primary text-primary-foreground" aria-label={label('close')}>
                   <X size={18} />
                 </button>
               </Dialog.Close>
@@ -122,55 +122,71 @@ export function WorkSheetModal({ open, onOpenChange, orders }: WorkSheetModalPro
           {/* Scrollable table */}
           <div className="flex-1 overflow-auto p-4 print:overflow-visible print:p-6">
             {activeOrders.length === 0 ? (
-              <div className="text-center py-16 text-gray-400">
+              <div className="text-center py-16 text-muted-foreground">
                 <ClipboardList size={48} className="mx-auto mb-3" />
-                <p className="font-semibold">{label('No active orders', 'کوئی جاری آرڈر نہیں')}</p>
+                <p className="font-semibold">{label('no_active_orders')}</p>
               </div>
             ) : (
-              <table className="w-full border-collapse text-xs min-w-[700px]">
+              <>
+              <ul className="space-y-4 sm:hidden print:hidden">
+                {[...overdueOrders, ...urgentOrders, ...normalOrders].map((o) => (
+                  <li key={o.id} className="border-b border-border pb-4 space-y-2">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <strong className="text-lg">{o.customerName}</strong>
+                      <span className="num text-sm text-muted-foreground">{o.serialNumber}</span>
+                    </div>
+                    <p className="text-base">{o.suitCount} {label('pcs_2')} · {o.fabric}</p>
+                    <p className="text-sm">{label('delivery')}: {formatDate(o.deliveryDate)}</p>
+                    <p className="text-sm">{label('karigar')}: {o.karigar || label('not_assigned')}</p>
+                    <StatusBadge order={o} />
+                  </li>
+                ))}
+              </ul>
+              <table className="hidden sm:table print:table w-full border-collapse text-sm min-w-[700px]">
                 <thead>
-                  <tr className="bg-gray-100 border-b-2 border-gray-300">
-                    <th className="px-2 py-2 text-left font-bold text-gray-600 whitespace-nowrap">{label('Serial', 'نمبر')}</th>
-                    <th className="px-2 py-2 text-left font-bold text-gray-600">{label('Customer', 'گاہک')}</th>
-                    <th className="px-2 py-2 text-center font-bold text-gray-600">{label('Pcs', 'جوڑے')}</th>
-                    <th className="px-2 py-2 text-left font-bold text-gray-600">{label('Fabric', 'کپڑا')}</th>
-                    <th className="px-2 py-2 text-center font-bold text-gray-600">{label('Delivery', 'ڈیلیوری')}</th>
-                    <th className="px-2 py-2 text-center font-bold text-gray-600">{label('Karigar', 'کاریگر')}</th>
-                    <th className="px-2 py-2 text-center font-bold text-gray-600">{label('Status', 'حالت')}</th>
-                    <th className="px-2 py-2 text-right font-bold text-gray-600">{label('Balance', 'باقی')}</th>
-                    <th className="px-2 py-2 text-center font-bold text-gray-600">{label('Note', 'نوٹ')}</th>
+                  <tr className="bg-muted border-b-2 border-border">
+                    <th className="px-2 py-2 text-left font-bold text-muted-foreground whitespace-nowrap">{label('serial')}</th>
+                    <th className="px-2 py-2 text-left font-bold text-muted-foreground">{label('customer')}</th>
+                    <th className="px-2 py-2 text-center font-bold text-muted-foreground">{label('pcs_2')}</th>
+                    <th className="px-2 py-2 text-left font-bold text-muted-foreground">{label('fabric')}</th>
+                    <th className="px-2 py-2 text-center font-bold text-muted-foreground">{label('delivery')}</th>
+                    <th className="px-2 py-2 text-center font-bold text-muted-foreground">{label('karigar')}</th>
+                    <th className="px-2 py-2 text-center font-bold text-muted-foreground">{label('status')}</th>
+                    <th className="px-2 py-2 text-right font-bold text-muted-foreground">{label('balance_2')}</th>
+                    <th className="px-2 py-2 text-center font-bold text-muted-foreground">{label('note')}</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-border">
                   {overdueOrders.length > 0 && (
                     <>
-                      <SectionHeader label={label('Overdue', 'دیر')} count={overdueOrders.length} color="bg-red-50 text-red-700" />
-                      {overdueOrders.map((o) => <OrderRow key={o.id} order={o} rowBg="bg-red-50/50 hover:bg-red-50" />)}
+                      <SectionHeader label={label('overdue')} count={overdueOrders.length} color="bg-danger-soft text-danger" />
+                      {overdueOrders.map((o) => <OrderRow key={o.id} order={o} rowBg="bg-danger-soft/50 hover:bg-danger-soft" />)}
                     </>
                   )}
                   {urgentOrders.length > 0 && (
                     <>
-                      <SectionHeader label={label('Urgent orders', 'ہنگامی آرڈر')} count={urgentOrders.length} color="bg-orange-50 text-orange-700" />
-                      {urgentOrders.map((o) => <OrderRow key={o.id} order={o} rowBg="bg-orange-50/40 hover:bg-orange-50" />)}
+                      <SectionHeader label={label('urgent_orders')} count={urgentOrders.length} color="bg-warning-soft text-warning" />
+                      {urgentOrders.map((o) => <OrderRow key={o.id} order={o} rowBg="bg-warning-soft/40 hover:bg-warning-soft" />)}
                     </>
                   )}
                   {normalOrders.length > 0 && (
                     <>
-                      <SectionHeader label={label('Regular orders', 'عام آرڈر')} count={normalOrders.length} color="bg-emerald-50 text-emerald-700" />
-                      {normalOrders.map((o) => <OrderRow key={o.id} order={o} rowBg="bg-white hover:bg-gray-50" />)}
+                      <SectionHeader label={label('regular_orders')} count={normalOrders.length} color="bg-primary-soft text-primary" />
+                      {normalOrders.map((o) => <OrderRow key={o.id} order={o} rowBg="bg-card hover:bg-muted" />)}
                     </>
                   )}
                 </tbody>
               </table>
+              </>
             )}
           </div>
 
           {/* Footer summary */}
-          <div className="px-5 py-3 bg-gray-50 border-t text-xs text-gray-600 flex flex-wrap gap-4 shrink-0 print:bg-white print:border-t-2">
-            <span className="font-semibold">{label('Total active', 'کل جاری')}: <strong>{activeOrders.length}</strong></span>
-            <span className="text-red-600 font-semibold">{label('Overdue', 'دیر')}: <strong>{overdueOrders.length}</strong></span>
-            <span className="text-orange-600 font-semibold">{label('Urgent', 'ہنگامی')}: <strong>{urgentOrders.length}</strong></span>
-            <span>{label('Total balance', 'کل باقی')}: <strong>Rs {activeOrders.reduce((s, o) => s + (o.totalAmount - o.advanceAmount), 0).toLocaleString()}</strong></span>
+          <div className="px-5 py-3 bg-muted border-t text-sm text-muted-foreground flex flex-wrap gap-4 shrink-0 print:bg-card print:border-t-2">
+            <span className="font-semibold">{label('total_active')}: <strong>{activeOrders.length}</strong></span>
+            <span className="text-danger font-semibold">{label('overdue')}: <strong>{overdueOrders.length}</strong></span>
+            <span className="text-warning font-semibold">{label('urgent')}: <strong>{urgentOrders.length}</strong></span>
+            <span>{label('total_balance')}: <strong>Rs {activeOrders.reduce((s, o) => s + (o.totalAmount - o.advanceAmount), 0).toLocaleString()}</strong></span>
           </div>
 
         </Dialog.Content>

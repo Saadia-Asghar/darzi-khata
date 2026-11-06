@@ -1,19 +1,25 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @plugin "@tailwindcss/typography";
 
-@custom-variant dark (&:is(.dark *));
-
-/* Offline Urdu font, served from public/ (Vite rebases the URL). */
+/* Keep fonts offline-capable without a late, expensive Nastaliq layout swap
+   on low-end phones. A cached font is used immediately on later visits. */
 @font-face {
   font-family: 'Noto Nastaliq Urdu';
-  src: url('/noto-nastaliq-urdu.woff2') format('woff2');
-  font-weight: 400 700;
   font-style: normal;
-  font-display: swap;
-  unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF, U+200C-200F;
+  font-weight: 400;
+  font-display: optional;
+  src: url('@fontsource/noto-nastaliq-urdu/files/noto-nastaliq-urdu-arabic-400-normal.woff2') format('woff2');
 }
+@font-face {
+  font-family: 'Noto Nastaliq Urdu';
+  font-style: normal;
+  font-weight: 700;
+  font-display: optional;
+  src: url('@fontsource/noto-nastaliq-urdu/files/noto-nastaliq-urdu-arabic-700-normal.woff2') format('woff2');
+}
+
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: hsl(var(--background));
@@ -67,221 +73,220 @@
   --color-sidebar-accent-border: var(--sidebar-accent-border);
   --color-sidebar-ring: hsl(var(--sidebar-ring));
 
+  --color-primary-soft: hsl(var(--primary-soft));
+  --color-success: hsl(var(--success));
+  --color-success-foreground: hsl(var(--success-foreground));
+  --color-success-soft: hsl(var(--success-soft));
+  --color-warning: hsl(var(--warning));
+  --color-warning-foreground: hsl(var(--warning-foreground));
+  --color-warning-soft: hsl(var(--warning-soft));
+  --color-danger: hsl(var(--danger));
+  --color-danger-foreground: hsl(var(--danger-foreground));
+  --color-danger-soft: hsl(var(--danger-soft));
+  --color-info: hsl(var(--info));
+  --color-info-foreground: hsl(var(--info-foreground));
+  --color-info-soft: hsl(var(--info-soft));
+  --color-neutral-soft: hsl(var(--neutral-soft));
+  --color-delivered: hsl(var(--delivered));
+  --color-delivered-foreground: hsl(var(--delivered-foreground));
+
+  --text-xs: 12px; --text-xs--line-height: 1.5;
+  --text-sm: 14px; --text-sm--line-height: 1.5;
+  --text-base: 16px; --text-base--line-height: 1.5;
+  --text-lg: 18px; --text-lg--line-height: 1.45;
+  --text-xl: 22px; --text-xl--line-height: 1.35;
+  --text-2xl: 28px; --text-2xl--line-height: 1.25;
+  --text-3xl: 28px; --text-3xl--line-height: 1.25;
+  --text-4xl: 28px; --text-4xl--line-height: 1.25;
+
   --font-sans: var(--app-font-sans);
   --font-serif: var(--app-font-serif);
   --font-mono: var(--app-font-mono);
   --font-urdu: 'Noto Nastaliq Urdu', serif;
 
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 8px;
+  --radius-2xl: 8px;
 }
 
-/* LIGHT MODE */
+
+/* Darzi Khata design tokens. See DESIGN.md. Ink green ledger + measuring-tape yellow. */
 :root {
-  --button-outline: rgba(0, 0, 0, 0.1);
-  --badge-outline: rgba(0, 0, 0, 0.05);
-
+  --button-outline: hsl(150 8% 20% / 0.12);
+  --badge-outline: hsl(150 8% 20% / 0.06);
   --opaque-button-border-intensity: -8;
+  --elevate-1: hsl(150 8% 20% / 0.04);
+  --elevate-2: hsl(150 8% 20% / 0.08);
 
-  --elevate-1: rgba(0, 0, 0, 0.03);
-  --elevate-2: rgba(0, 0, 0, 0.08);
-
-  --background: 210 40% 98%;      
-  --foreground: 160 84% 10%;      
-  --border: 160 30% 85%;
+  --background: 150 10% 98%;
+  --foreground: 160 20% 12%;
+  --border: 150 8% 88%;
   --card: 0 0% 100%;
-  --card-foreground: 160 84% 10%;
-  --card-border: 160 20% 88%;
-  
-  --sidebar: 160 84% 10%;         
-  --sidebar-foreground: 0 0% 100%;
-  --sidebar-border: 160 84% 15%;
-  --sidebar-primary: 38 92% 50%;  
-  --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 160 84% 15%;
-  --sidebar-accent-foreground: 0 0% 100%;
-  --sidebar-ring: 38 92% 50%;
-  
+  --card-foreground: 160 20% 12%;
+  --card-border: 150 8% 88%;
   --popover: 0 0% 100%;
-  --popover-foreground: 160 84% 10%;
-  --popover-border: 160 20% 88%;
-  
-  --primary: 160 84% 20%;         
-  --primary-foreground: 0 0% 100%;
-  
-  --secondary: 38 92% 50%;        
-  --secondary-foreground: 160 84% 10%;
-  
-  --muted: 210 20% 94%;
-  --muted-foreground: 160 20% 40%;
-  
-  --accent: 38 92% 95%;           
-  --accent-foreground: 38 92% 25%;
-  
-  --destructive: 0 84% 50%;
-  --destructive-foreground: 0 0% 100%;
-  
-  --input: 160 20% 80%;
-  --ring: 160 84% 20%;
-  
-  --chart-1: 160 84% 20%;
-  --chart-2: 38 92% 50%;
-  --chart-3: 200 80% 40%;
-  --chart-4: 0 84% 50%;
-  --chart-5: 280 60% 50%;
+  --popover-foreground: 160 20% 12%;
+  --popover-border: 150 8% 86%;
 
-  --app-font-sans: 'Inter', sans-serif;
+  --primary: 158 64% 22%;
+  --primary-foreground: 0 0% 100%;
+  --primary-soft: 152 38% 93%;
+  --secondary: 150 10% 94%;
+  --secondary-foreground: 160 20% 14%;
+  --muted: 150 10% 94%;
+  --muted-foreground: 160 8% 36%;
+  --accent: 43 96% 52%;
+  --accent-foreground: 30 60% 12%;
+
+  --success: 152 62% 26%;
+  --success-foreground: 0 0% 100%;
+  --success-soft: 145 45% 92%;
+  --warning: 30 90% 32%;
+  --warning-foreground: 0 0% 100%;
+  --warning-soft: 43 90% 91%;
+  --danger: 0 72% 42%;
+  --danger-foreground: 0 0% 100%;
+  --danger-soft: 0 80% 95%;
+  --info: 207 78% 36%;
+  --info-foreground: 0 0% 100%;
+  --info-soft: 207 80% 94%;
+  --neutral-soft: 150 6% 92%;
+  --delivered: 160 10% 26%;
+  --delivered-foreground: 0 0% 100%;
+
+  --destructive: 0 72% 42%;
+  --destructive-foreground: 0 0% 100%;
+  --input: 150 8% 82%;
+  --ring: 158 64% 30%;
+
+  --chart-1: 158 64% 22%;
+  --chart-2: 43 96% 52%;
+  --chart-3: 207 78% 36%;
+  --chart-4: 0 72% 42%;
+  --chart-5: 160 8% 50%;
+
+  --sidebar: 0 0% 100%;
+  --sidebar-foreground: 160 20% 12%;
+  --sidebar-border: 150 8% 88%;
+  --sidebar-primary: 158 64% 22%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 150 10% 94%;
+  --sidebar-accent-foreground: 160 20% 12%;
+  --sidebar-ring: 158 64% 30%;
+
+  --app-font-sans: 'IBM Plex Sans', 'Noto Nastaliq Urdu', system-ui, sans-serif;
   --app-font-serif: 'Noto Nastaliq Urdu', serif;
-  --app-font-mono: Menlo, monospace;
-  
-  --radius: 0.75rem; 
-  --shadow-2xs: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0); 
-  --shadow-xs: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0); 
-  --shadow-sm:
-    0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
-    0px 1px 2px -1px hsl(202.8169 89.1213% 53.1373% / 0);
-  --shadow:
-    0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
-    0px 1px 2px -1px hsl(202.8169 89.1213% 53.1373% / 0);
-  --shadow-md:
-    0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
-    0px 2px 4px -1px hsl(202.8169 89.1213% 53.1373% / 0);
-  --shadow-lg:
-    0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
-    0px 4px 6px -1px hsl(202.8169 89.1213% 53.1373% / 0);
-  --shadow-xl:
-    0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
-    0px 8px 10px -1px hsl(202.8169 89.1213% 53.1373% / 0);
-  --shadow-2xl: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0);
+  --app-font-mono: 'IBM Plex Sans', ui-monospace, monospace;
+
+  --radius: 0.5rem;
+  --shadow-2xs: none; --shadow-xs: none; --shadow-sm: none; --shadow: none; --shadow-md: none;
+  --shadow-lg: 0 8px 24px -8px hsl(160 30% 10% / 0.18);
+  --shadow-xl: 0 12px 32px -10px hsl(160 30% 10% / 0.22);
+  --shadow-2xl: 0 16px 40px -12px hsl(160 30% 10% / 0.26);
   --tracking-normal: 0em;
   --spacing: 0.25rem;
 
-  --sidebar-primary-border: hsl(var(--sidebar-primary));
-  --sidebar-primary-border: hsl(
-    from hsl(var(--sidebar-primary)) h s
-      calc(l + var(--opaque-button-border-intensity)) / alpha
-  );
-
-  --sidebar-accent-border: hsl(var(--sidebar-accent));
-  --sidebar-accent-border: hsl(
-    from hsl(var(--sidebar-accent)) h s
-      calc(l + var(--opaque-button-border-intensity)) / alpha
-  );
-
-  --primary-border: hsl(var(--primary));
-  --primary-border: hsl(
-    from hsl(var(--primary)) h s
-      calc(l + var(--opaque-button-border-intensity)) / alpha
-  );
-
-  --secondary-border: hsl(var(--secondary));
-  --secondary-border: hsl(
-    from hsl(var(--secondary)) h s
-      calc(l + var(--opaque-button-border-intensity)) / alpha
-  );
-
-  --muted-border: hsl(var(--muted));
-  --muted-border: hsl(
-    from hsl(var(--muted)) h s calc(l + var(--opaque-button-border-intensity)) /
-      alpha
-  );
-
-  --accent-border: hsl(var(--accent));
-  --accent-border: hsl(
-    from hsl(var(--accent)) h s
-      calc(l + var(--opaque-button-border-intensity)) / alpha
-  );
-
-  --destructive-border: hsl(var(--destructive));
-  --destructive-border: hsl(
-    from hsl(var(--destructive)) h s
-      calc(l + var(--opaque-button-border-intensity)) / alpha
-  );
+  --primary-border: hsl(158 64% 18%);
+  --secondary-border: hsl(150 8% 86%);
+  --muted-border: hsl(150 8% 86%);
+  --accent-border: hsl(43 90% 44%);
+  --destructive-border: hsl(0 72% 36%);
+  --sidebar-primary-border: hsl(158 64% 18%);
+  --sidebar-accent-border: hsl(150 8% 86%);
 }
 
 .dark {
-  --button-outline: rgba(255, 255, 255, 0.1);
-  --badge-outline: rgba(255, 255, 255, 0.05);
-
+  --button-outline: hsl(150 10% 90% / 0.12);
+  --badge-outline: hsl(150 10% 90% / 0.06);
   --opaque-button-border-intensity: 9;
+  --elevate-1: hsl(150 10% 90% / 0.04);
+  --elevate-2: hsl(150 10% 90% / 0.09);
 
-  --elevate-1: rgba(255, 255, 255, 0.04);
-  --elevate-2: rgba(255, 255, 255, 0.09);
+  --background: 160 10% 8%;
+  --foreground: 150 12% 92%;
+  --border: 160 8% 20%;
+  --card: 160 8% 12%;
+  --card-foreground: 150 12% 92%;
+  --card-border: 160 8% 20%;
+  --popover: 160 8% 13%;
+  --popover-foreground: 150 12% 92%;
+  --popover-border: 160 8% 22%;
 
-  --background: 160 84% 5%;      
-  --foreground: 210 40% 98%;      
-  --border: 160 84% 15%;
-  --card: 160 84% 8%;
-  --card-foreground: 210 40% 98%;
-  --card-border: 160 84% 15%;
-  
-  --sidebar: 160 84% 5%;         
-  --sidebar-foreground: 210 40% 98%;
-  --sidebar-border: 160 84% 15%;
-  --sidebar-primary: 38 92% 50%;  
-  --sidebar-primary-foreground: 160 84% 5%;
-  --sidebar-accent: 160 84% 15%;
-  --sidebar-accent-foreground: 210 40% 98%;
-  --sidebar-ring: 38 92% 50%;
-  
-  --popover: 160 84% 8%;
-  --popover-foreground: 210 40% 98%;
-  --popover-border: 160 84% 15%;
-  
-  --primary: 160 84% 20%;         
-  --primary-foreground: 210 40% 98%;
-  
-  --secondary: 38 92% 50%;        
-  --secondary-foreground: 160 84% 10%;
-  
-  --muted: 160 84% 15%;
-  --muted-foreground: 160 20% 70%;
-  
-  --accent: 160 84% 15%;           
-  --accent-foreground: 210 40% 98%;
-  
-  --destructive: 0 84% 50%;
-  --destructive-foreground: 210 40% 98%;
-  
-  --input: 160 84% 15%;
-  --ring: 160 84% 20%;
-  
-  --chart-1: 160 84% 40%;
-  --chart-2: 38 92% 50%;
-  --chart-3: 200 80% 40%;
-  --chart-4: 0 84% 50%;
-  --chart-5: 280 60% 50%;
+  --primary: 156 48% 52%;
+  --primary-foreground: 160 30% 8%;
+  --primary-soft: 158 30% 17%;
+  --secondary: 160 8% 17%;
+  --secondary-foreground: 150 12% 92%;
+  --muted: 160 8% 17%;
+  --muted-foreground: 150 8% 70%;
+  --accent: 43 92% 56%;
+  --accent-foreground: 30 60% 10%;
 
-  --shadow-2xs: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0);
-  --shadow-xs: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0);
-  --shadow-sm:
-    0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
-    0px 1px 2px -1px hsl(202.8169 89.1213% 53.1373% / 0);
-  --shadow:
-    0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
-    0px 1px 2px -1px hsl(202.8169 89.1213% 53.1373% / 0);
-  --shadow-md:
-    0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
-    0px 2px 4px -1px hsl(202.8169 89.1213% 53.1373% / 0);
-  --shadow-lg:
-    0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
-    0px 4px 6px -1px hsl(202.8169 89.1213% 53.1373% / 0);
-  --shadow-xl:
-    0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
-    0px 8px 10px -1px hsl(202.8169 89.1213% 53.1373% / 0);
-  --shadow-2xl: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0);
+  --success: 150 50% 58%;
+  --success-foreground: 160 30% 8%;
+  --success-soft: 150 30% 16%;
+  --warning: 38 88% 62%;
+  --warning-foreground: 30 60% 10%;
+  --warning-soft: 38 40% 16%;
+  --danger: 0 80% 70%;
+  --danger-foreground: 0 40% 10%;
+  --danger-soft: 0 35% 18%;
+  --info: 207 80% 70%;
+  --info-foreground: 210 40% 10%;
+  --info-soft: 207 35% 18%;
+  --neutral-soft: 160 6% 20%;
+  --delivered: 150 8% 78%;
+  --delivered-foreground: 160 10% 10%;
+
+  --destructive: 0 80% 70%;
+  --destructive-foreground: 0 40% 10%;
+  --input: 160 8% 24%;
+  --ring: 156 48% 52%;
+
+  --chart-1: 156 48% 52%;
+  --chart-2: 43 92% 56%;
+  --chart-3: 207 80% 70%;
+  --chart-4: 0 80% 70%;
+  --chart-5: 150 8% 60%;
+
+  --sidebar: 160 8% 12%;
+  --sidebar-foreground: 150 12% 92%;
+  --sidebar-border: 160 8% 20%;
+  --sidebar-primary: 156 48% 52%;
+  --sidebar-primary-foreground: 160 30% 8%;
+  --sidebar-accent: 160 8% 17%;
+  --sidebar-accent-foreground: 150 12% 92%;
+  --sidebar-ring: 156 48% 52%;
+
+  --primary-border: hsl(156 48% 44%);
+  --secondary-border: hsl(160 8% 24%);
+  --muted-border: hsl(160 8% 24%);
+  --accent-border: hsl(43 80% 48%);
+  --destructive-border: hsl(0 70% 60%);
+  --sidebar-primary-border: hsl(156 48% 44%);
+  --sidebar-accent-border: hsl(160 8% 24%);
+  --shadow-lg: 0 8px 24px -8px hsl(0 0% 0% / 0.5);
+  --shadow-xl: 0 12px 32px -10px hsl(0 0% 0% / 0.55);
+  --shadow-2xl: 0 16px 40px -12px hsl(0 0% 0% / 0.6);
 }
-
 @layer base {
   * {
     @apply border-border;
   }
 
+  html { -webkit-text-size-adjust: 100%; }
   body {
     @apply font-sans antialiased bg-background text-foreground;
+    font-size: 16px;
+    line-height: 1.5;
   }
+  h1, h2, h3 { letter-spacing: 0; }
+  button:not([role='switch']):not([role='checkbox']) { min-height: 44px; }
+  button > svg.lucide, a > svg.lucide { width: 20px; height: 20px; flex-shrink: 0; }
+  p:not([class*='text-']), input, textarea { font-size: 16px; }
+  :focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 2px; }
 }
 
 @layer utilities {
@@ -358,32 +363,46 @@
   }
 }
 
-/* ---- Darzi Khata upgrade additions ---- */
+
+/* ---- Darzi Khata ---- */
+/* Numbers line up in columns: money, measurements, DK numbers. */
+.num, .tabular-nums, [data-num] { font-variant-numeric: tabular-nums; font-feature-settings: 'tnum' 1; }
+input[type='number'], input[type='tel'], table { font-variant-numeric: tabular-nums; }
+
+/* Nastaliq needs tall lines and no negative margins. */
+.font-urdu, [lang='ur'] { font-family: 'Noto Nastaliq Urdu', var(--app-font-sans); line-height: 2; margin-top: 0; }
+:where([lang='ur']) { padding-block: 0.05em; }
+[dir='rtl'] body { font-family: 'Noto Nastaliq Urdu', var(--app-font-sans); line-height: 2; }
+[dir='rtl'] .num, [dir='rtl'] input[type='number'], [dir='rtl'] input[type='tel'], [dir='rtl'] input[type='email'], [dir='rtl'] [lang='en'] { font-family: var(--app-font-sans); line-height: 1.5; }
+
+/* Ledger rule used under page titles. */
+.dk-rule { height: 1px; background: hsl(var(--border)); }
+[data-page-mode] { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
+input:not([type='checkbox']):not([type='radio']), textarea, select { font-size: 16px; }
+
+/* Print: receipt / work sheet / profile. */
 #dk-print-root { display: none; }
+:root { --dk-paper: 80mm; }
 @media print {
   body.dk-printing > *:not(#dk-print-root) { display: none !important; }
   body.dk-printing #dk-print-root { display: block !important; }
-  body.dk-printing { background: white !important; }
-  #dk-print-root, #dk-print-root * { color: #111 !important; }
-  #dk-print-root article { background: white; break-inside: avoid; }
-  @page { size: A4; margin: 14mm; }
+  body.dk-printing, .print-paper { background: #fff !important; }
+  #dk-print-root, #dk-print-root *, .print-paper, .print-paper * { color: #111 !important; border-color: #999 !important; }
+  #dk-print-root article { background: #fff; break-inside: avoid; }
+  .print-hide, nav[data-bottom-nav], header[data-app-header] { display: none !important; }
+  @page { size: A4; margin: 12mm; }
 }
-@keyframes dk-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-.dk-rise { animation: dk-rise .35s cubic-bezier(.2,.7,.2,1) both; }
-.dk-stitch { background-image: repeating-linear-gradient(90deg, hsl(38 92% 50%) 0 6px, transparent 6px 11px); height: 2px; }
-@media (prefers-reduced-motion: reduce) { .dk-rise { animation: none; } }
+@media print { body[data-paper='58'] .print-paper { width: 54mm !important; max-width: 54mm !important; font-size: 12px; } }
+@media print { body[data-paper='80'] .print-paper { width: 76mm !important; max-width: 76mm !important; font-size: 12px; } }
+@media print { body[data-paper='a4'] .print-paper { width: 100% !important; max-width: 180mm !important; } }
+@page dk58 { size: 58mm auto; margin: 2mm; }
+@page dk80 { size: 80mm auto; margin: 2mm; }
+@media print { body[data-paper='58'] { page: dk58; } body[data-paper='80'] { page: dk80; } }
 
-/* Large text: root rem scaling is applied by preferences; also lift fixed pixel labels. */
-.large-font .text-\[8px\] { font-size: 11px; }
-.large-font .text-\[9px\] { font-size: 12px; }
-.large-font .text-\[10px\] { font-size: 13px; }
-.large-font .text-\[11px\] { font-size: 14px; }
-.large-font .text-\[12px\] { font-size: 15px; }
-/* Urdu body text uses Nastaliq which needs taller lines. */
-[dir='rtl'] body { font-family: 'Noto Nastaliq Urdu', var(--app-font-sans); line-height: 1.9; }
-[dir='rtl'] .font-mono, [dir='rtl'] input[type='number'], [dir='rtl'] input[type='tel'] { font-family: var(--app-font-mono); }
+/* Motion: 150-200ms ease-out only. */
+@keyframes dk-rise { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.dk-rise { animation: dk-rise 180ms ease-out both; }
 @media (prefers-reduced-motion: reduce) {
-  .animate-pulse, .animate-ping, .animate-spin, .animate-bounce { animation: none !important; }
-  .animate-ping { opacity: 0 !important; }
+  .dk-rise { animation: none; }
   *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
 }

@@ -1,3 +1,4 @@
+import { bi } from './i18n';
 import { readJSON, storage } from './storage';
 import { writeStorage } from './local-store';
 export interface PinLock { salt: string; hash: string; enabled: boolean; failures: number; lockedUntil: number }
@@ -8,7 +9,7 @@ export async function hashPin(pin: string, salt: string) {
   return [...new Uint8Array(bytes)].map(b=>b.toString(16).padStart(2,'0')).join('');
 }
 export async function createPinLock(pin: string): Promise<PinLock> {
-  if (!validPin(pin)) throw new Error('Use 4–8 digits / چار سے آٹھ ہندسے استعمال کریں');
+  if (!validPin(pin)) throw new Error(bi('m_use_4_8_digits'));
   const salt = [...crypto.getRandomValues(new Uint8Array(16))].map(b=>b.toString(16).padStart(2,'0')).join('');
   return { salt, hash: await hashPin(pin,salt), enabled:true, failures:0, lockedUntil:0 };
 }
@@ -41,7 +42,7 @@ export async function migrateLegacyPin(userId: string) {
     const settings = readJSON<Record<string,unknown> | null>(settingsKey,null);
     if (!settings || settings.pin === undefined) continue;
     const pin = String(settings.pin);
-    if (!validPin(pin)) throw new Error('Legacy PIN format needs recovery / پرانے پن کی بحالی ضروری ہے');
+    if (!validPin(pin)) throw new Error(bi('m_legacy_pin_format_needs_recovery'));
     if (!storage.getItem(key)) {
       const lock = await createPinLock(pin);
       lock.enabled = settings.pinEnabled !== false;

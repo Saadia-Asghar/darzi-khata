@@ -1,5 +1,8 @@
 import { useState } from 'react';
-import { Scissors, Eye, EyeOff, LogIn, UserPlus, Loader2, Store, Users, ChevronDown, ChevronUp } from 'lucide-react';
+import { Eye, EyeOff, LogIn, UserPlus, Loader2, Store, Users, ChevronDown, ChevronUp } from 'lucide-react';
+import { DICT, type DictKey } from '../lib/i18n';
+import { BrandMark } from './brand-mark';
+import { LanguageSwitch } from './language-switch';
 
 interface AuthScreenProps {
   onLogin: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
@@ -17,6 +20,8 @@ const DEMO_ACCOUNTS = [
 ];
 
 export function AuthScreen({ onLogin, onSignup }: AuthScreenProps) {
+  const [urduFirst, setUrduFirst] = useState(() => { try { return localStorage.getItem('darzi-khata-auth-lang') === 'ur'; } catch { return false; } });
+  const L = (k: DictKey) => DICT[k][urduFirst ? 'ur' : 'en'];
   const [tab, setTab] = useState<Tab>('login');
   const [demoOpen, setDemoOpen] = useState(false);
 
@@ -45,17 +50,17 @@ export function AuthScreen({ onLogin, onSignup }: AuthScreenProps) {
     setLoginLoading(true);
     const result = await onLogin(loginEmail, loginPassword);
     setLoginLoading(false);
-    if (!result.success) setLoginError(result.error ?? 'Login fail ho gaya.');
+    if (!result.success) setLoginError(result.error ?? L('auth_login_failed'));
   };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setSignupError('');
-    if (signupPassword !== signupConfirm) { setSignupError('Dono passwords match nahi kar rahe.'); return; }
+    if (signupPassword !== signupConfirm) { setSignupError(L('auth_pw_mismatch')); return; }
     setSignupLoading(true);
     const result = await onSignup(signupName, signupEmail, signupPassword, signupShop, signupRole, signupOwnerEmail);
     setSignupLoading(false);
-    if (!result.success) setSignupError(result.error ?? 'Account nahi bana.');
+    if (!result.success) setSignupError(result.error ?? L('auth_signup_failed'));
   };
 
   const quickLogin = async (email: string, password: string) => {
@@ -66,161 +71,130 @@ export function AuthScreen({ onLogin, onSignup }: AuthScreenProps) {
     setLoginPassword(password);
     const result = await onLogin(email, password);
     setLoginLoading(false);
-    if (!result.success) setLoginError(result.error ?? 'Login fail ho gaya.');
+    if (!result.success) setLoginError(result.error ?? L('auth_login_failed'));
   };
 
+  const field = 'w-full min-h-[48px] px-3.5 rounded-md border border-input bg-card text-foreground text-base placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring';
+  const lab = 'block text-sm font-medium text-foreground mb-1';
+  const tabCls = (on: boolean) => `flex-1 min-h-[48px] text-base font-medium flex items-center justify-center gap-2 border-b-2 ${on ? 'border-primary text-primary' : 'border-transparent text-muted-foreground'}`;
   return (
-    <div className="min-h-[100dvh] bg-emerald-900 dark:bg-gray-950 flex flex-col items-center justify-center px-5 py-8">
-
-      {/* Branding */}
-      <div className="text-center mb-7">
-        <div className="inline-flex items-center justify-center w-20 h-20 bg-emerald-700 rounded-full shadow-2xl mb-4">
-          <Scissors size={36} color="#d97706" className="rotate-90" />
-        </div>
-        <h1 className="text-3xl font-black text-white tracking-widest uppercase">DARZI KHATA</h1>
-        <h2 className="font-urdu text-emerald-300 text-2xl mt-1">درزی کھاتہ</h2>
-        <p className="text-emerald-400 text-sm mt-1">Tailor Shop Management App</p>
+    <main className="min-h-[100dvh] bg-background flex flex-col items-center justify-center px-4 py-8" lang={urduFirst ? 'ur' : 'en'} dir={urduFirst ? 'rtl' : 'ltr'}>
+      <div className="w-full max-w-sm flex justify-end mb-2">
+        <LanguageSwitch value={urduFirst ? 'ur' : 'en'} onChange={language => {
+          setUrduFirst(language === 'ur');
+          try { localStorage.setItem('darzi-khata-auth-lang', language); } catch { /* private mode */ }
+        }} />
       </div>
-
-      {/* Card */}
-      <div className="w-full max-w-sm bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden">
-        {/* Tabs */}
-        <div className="flex">
-          <button onClick={() => { setTab('login'); setLoginError(''); }} className={`flex-1 py-3.5 text-sm font-bold flex items-center justify-center gap-2 transition-colors ${tab === 'login' ? 'bg-emerald-700 text-white' : 'bg-emerald-50 dark:bg-gray-800 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-gray-700'}`}>
-            <LogIn size={15} /> Login
-          </button>
-          <button onClick={() => { setTab('signup'); setSignupError(''); }} className={`flex-1 py-3.5 text-sm font-bold flex items-center justify-center gap-2 transition-colors ${tab === 'signup' ? 'bg-emerald-700 text-white' : 'bg-emerald-50 dark:bg-gray-800 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-gray-700'}`}>
-            <UserPlus size={15} /> Sign Up
-          </button>
+      <div className="w-full max-w-sm mb-6 flex items-center gap-3">
+        <BrandMark size={48} />
+        <div className="min-w-0">
+          <h1 className="text-xl font-semibold text-foreground" lang="en">{DICT.app_name.en}</h1>
+          <p className="font-urdu text-base text-muted-foreground" lang="ur" dir="rtl">{DICT.app_name.ur}</p>
         </div>
+      </div>
+      <p className="w-full max-w-sm text-base text-muted-foreground mb-4">{L('auth_tagline')}</p>
 
-        <div className="p-5">
-          {/* ── LOGIN ── */}
+      <div className="w-full max-w-sm bg-card border border-border rounded-lg overflow-hidden">
+        <div className="flex border-b border-border" role="tablist">
+          <button role="tab" aria-selected={tab === 'login'} onClick={() => { setTab('login'); setLoginError(''); }} className={tabCls(tab === 'login')} data-testid="tab-login"><LogIn size={20} aria-hidden /> {L('auth_login')}</button>
+          <button role="tab" aria-selected={tab === 'signup'} onClick={() => { setTab('signup'); setSignupError(''); }} className={tabCls(tab === 'signup')} data-testid="tab-signup"><UserPlus size={20} aria-hidden /> {L('auth_signup')}</button>
+        </div>
+        <div className="p-4">
           {tab === 'login' && (
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Email Address</label>
-                <input type="email" required autoComplete="email" placeholder="aapka@email.com" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 placeholder-gray-400" />
+                <label htmlFor="login-email" className={lab}>{L('auth_email')}</label>
+                <input id="login-email" type="email" required autoComplete="email" aria-label={L('auth_email')} placeholder="aapka@email.com" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} className={field} dir="ltr" data-testid="input-login-email" />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Password</label>
+                <label htmlFor="login-password" className={lab}>{L('auth_password')}</label>
                 <div className="relative">
-                  <input type={loginShowPw ? 'text' : 'password'} required autoComplete="current-password" placeholder="••••••••" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} className="w-full px-3.5 py-2.5 pr-10 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 placeholder-gray-400" />
-                  <button type="button" onClick={() => setLoginShowPw((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600" tabIndex={-1}>{loginShowPw ? <EyeOff size={16} /> : <Eye size={16} />}</button>
+                  <input id="login-password" type={loginShowPw ? 'text' : 'password'} required autoComplete="current-password" aria-label={L('auth_password')} value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} className={`${field} pe-12`} dir="ltr" data-testid="input-login-password" />
+                  <button type="button" onClick={() => setLoginShowPw((v) => !v)} className="absolute end-0 top-0 h-[48px] w-[48px] flex items-center justify-center text-muted-foreground" aria-label={L(loginShowPw ? 'auth_hide_pw' : 'auth_show_pw')}>{loginShowPw ? <EyeOff size={20} aria-hidden /> : <Eye size={20} aria-hidden />}</button>
                 </div>
               </div>
-              {loginError && <p className="text-red-500 text-xs font-medium bg-red-50 dark:bg-red-900/20 rounded-lg px-3 py-2">{loginError}</p>}
-              <button type="submit" disabled={loginLoading} className="w-full py-2.5 bg-emerald-700 hover:bg-emerald-600 disabled:opacity-60 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-colors">
-                {loginLoading ? <Loader2 size={16} className="animate-spin" /> : <LogIn size={16} />}
-                {loginLoading ? 'Login ho raha hai...' : 'Login'}
+              {loginError && <p role="alert" className="text-danger text-sm font-medium bg-danger-soft rounded-md px-3 py-2">{loginError}</p>}
+              <button type="submit" disabled={loginLoading} className="w-full min-h-[48px] bg-primary disabled:opacity-60 text-primary-foreground text-base font-semibold rounded-md flex items-center justify-center gap-2" data-testid="btn-login">
+                {loginLoading ? <Loader2 size={20} className="animate-spin" aria-hidden /> : <LogIn size={20} aria-hidden />}
+                {L('auth_login')}
               </button>
 
-              {/* Demo section */}
-              <div className="border border-dashed border-amber-300 dark:border-amber-700 rounded-xl overflow-hidden">
-                <button
-                  type="button"
-                  onClick={() => setDemoOpen((v) => !v)}
-                  className="w-full flex items-center justify-between px-3.5 py-2.5 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
-                >
-                  <span className="text-xs font-bold flex items-center gap-2">Demo Accounts se try karein</span>
-                  {demoOpen ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
+              <div className="border-t border-border pt-2">
+                <button type="button" onClick={() => setDemoOpen((v) => !v)} aria-expanded={demoOpen} className="w-full min-h-[48px] flex items-center justify-between px-3.5 text-base font-medium hover:bg-muted" data-testid="btn-demo-accounts">
+                  <span>{L('auth_demo_accounts')}</span>
+                  {demoOpen ? <ChevronUp size={20} aria-hidden /> : <ChevronDown size={20} aria-hidden />}
                 </button>
-
                 {demoOpen && (
-                  <div className="border-t border-dashed border-amber-200 dark:border-amber-800 divide-y divide-amber-100 dark:divide-amber-900">
+                  <div className="border-t border-border divide-y divide-border">
                     {DEMO_ACCOUNTS.map((acc) => (
-                      <button
-                        key={acc.email}
-                        type="button"
-                        disabled={loginLoading}
-                        onClick={() => quickLogin(acc.email, acc.password)}
-                        className={`w-full px-3.5 py-2.5 flex items-center justify-between hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors disabled:opacity-50 ${acc.color === 'emerald' ? 'bg-emerald-50/50 dark:bg-emerald-900/10' : ''}`}
-                      >
-                        <div className="text-left">
-                          <p className="text-xs font-bold text-gray-800 dark:text-gray-200">
-                            {acc.label}
-                            {acc.color === 'emerald' && <span className="ml-2 text-[10px] bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-400 px-1.5 py-0.5 rounded-full">Owner</span>}
-                            {acc.color === 'amber' && <span className="ml-2 text-[10px] bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-400 px-1.5 py-0.5 rounded-full">Karigar</span>}
-                          </p>
-                          <p className="text-[10px] text-gray-400 font-mono mt-0.5">{acc.email}</p>
-                        </div>
-                        <span className="text-xs text-amber-600 dark:text-amber-400 font-bold shrink-0 ml-2">Login →</span>
+                      <button key={acc.email} type="button" disabled={loginLoading} onClick={() => quickLogin(acc.email, acc.password)} className="w-full min-h-[56px] px-3.5 py-2 flex items-center justify-between gap-2 text-start hover:bg-muted disabled:opacity-50" data-testid={`demo-login-${acc.email.split('@')[0]}`}>
+                        <span className="min-w-0">
+                          <span className="block text-base font-medium">{acc.name} <span className="text-sm text-muted-foreground">· {acc.color === 'emerald' ? L('shop_owner') : L('auth_karigar')}</span></span>
+                          <span className="block text-sm text-muted-foreground" dir="ltr">{acc.email}</span>
+                        </span>
+                        <LogIn size={20} aria-hidden className="text-primary shrink-0" />
                       </button>
                     ))}
-                    <p className="px-3.5 py-2 text-[10px] text-gray-400 text-center">Sab accounts ka password: <span className="font-mono font-bold">demo1234</span></p>
+                    <p className="px-3.5 py-2 text-sm text-muted-foreground">{L('auth_demo_pw')} <span className="num font-semibold" dir="ltr">demo1234</span></p>
                   </div>
                 )}
               </div>
             </form>
           )}
 
-          {/* ── SIGNUP ── */}
           {tab === 'signup' && (
-            <form onSubmit={handleSignup} className="space-y-3.5">
-              <div>
-                <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">Aap kaun hain? *</label>
+            <form onSubmit={handleSignup} className="space-y-4">
+              <fieldset>
+                <legend className={lab}>{L('auth_who')}</legend>
                 <div className="grid grid-cols-2 gap-2">
-                  <button type="button" onClick={() => setSignupRole('owner')} className={`p-3 rounded-xl border-2 flex flex-col items-center gap-1 transition-colors ${signupRole === 'owner' ? 'border-emerald-600 bg-emerald-50 dark:bg-emerald-900/20' : 'border-gray-200 dark:border-gray-700 hover:border-emerald-300'}`}>
-                    <Store size={20} className={signupRole === 'owner' ? 'text-emerald-700' : 'text-gray-400'} />
-                    <span className={`text-xs font-bold ${signupRole === 'owner' ? 'text-emerald-700' : 'text-gray-500'}`}>Shop Owner</span>
-                    <span className="text-[10px] text-gray-400">Apni dukan banana</span>
+                  <button type="button" aria-pressed={signupRole === 'owner'} onClick={() => setSignupRole('owner')} className={`min-h-[72px] p-3 rounded-md border flex flex-col items-center gap-1 ${signupRole === 'owner' ? 'border-primary bg-primary-soft text-primary' : 'border-border text-muted-foreground'}`} data-testid="btn-role-owner">
+                    <Store size={20} aria-hidden /><span className="text-sm font-medium">{L('shop_owner')}</span>
                   </button>
-                  <button type="button" onClick={() => setSignupRole('karigar')} className={`p-3 rounded-xl border-2 flex flex-col items-center gap-1 transition-colors ${signupRole === 'karigar' ? 'border-amber-500 bg-amber-50 dark:bg-amber-900/20' : 'border-gray-200 dark:border-gray-700 hover:border-amber-300'}`}>
-                    <Users size={20} className={signupRole === 'karigar' ? 'text-amber-600' : 'text-gray-400'} />
-                    <span className={`text-xs font-bold ${signupRole === 'karigar' ? 'text-amber-600' : 'text-gray-500'}`}>Karigar</span>
-                    <span className="text-[10px] text-gray-400">Team mein shamil hona</span>
+                  <button type="button" aria-pressed={signupRole === 'karigar'} onClick={() => setSignupRole('karigar')} className={`min-h-[72px] p-3 rounded-md border flex flex-col items-center gap-1 ${signupRole === 'karigar' ? 'border-primary bg-primary-soft text-primary' : 'border-border text-muted-foreground'}`} data-testid="btn-role-karigar">
+                    <Users size={20} aria-hidden /><span className="text-sm font-medium">{L('auth_karigar')}</span>
                   </button>
                 </div>
+              </fieldset>
+              <div>
+                <label htmlFor="su-name" className={lab}>{L('auth_your_name')}</label>
+                <input id="su-name" type="text" required aria-label={L('auth_your_name')} value={signupName} onChange={(e) => setSignupName(e.target.value)} className={field} data-testid="input-signup-name" />
               </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Aapka Naam *</label>
-                  <input type="text" required placeholder="Ahmed Ali" value={signupName} onChange={(e) => setSignupName(e.target.value)} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 placeholder-gray-400" />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">{signupRole === 'owner' ? 'Dukan ka Naam' : 'Display Naam'}</label>
-                  <input type="text" placeholder={signupRole === 'owner' ? 'Al-Rehman Tailors' : 'Ustad Ahmed'} value={signupShop} onChange={(e) => setSignupShop(e.target.value)} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 placeholder-gray-400" />
-                </div>
+              <div>
+                <label htmlFor="su-shop" className={lab}>{signupRole === 'owner' ? L('auth_shop_name') : L('auth_display_name')}</label>
+                <input id="su-shop" type="text" aria-label={signupRole === 'owner' ? L('auth_shop_name') : L('auth_display_name')} value={signupShop} onChange={(e) => setSignupShop(e.target.value)} className={field} data-testid="input-signup-shop" />
               </div>
-
               {signupRole === 'karigar' && (
-                <div className="bg-amber-50 dark:bg-amber-900/20 rounded-xl p-3 border border-amber-200 dark:border-amber-800">
-                  <label className="block text-xs font-semibold text-amber-700 dark:text-amber-400 mb-1">Owner ki Email *</label>
-                  <input type="email" required={signupRole === 'karigar'} placeholder="malik@email.com" value={signupOwnerEmail} onChange={(e) => setSignupOwnerEmail(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-amber-200 dark:border-amber-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 placeholder-gray-400" />
-                  <p className="text-[10px] text-amber-600 dark:text-amber-500 mt-1">Jis owner ki team mein shamil hona chahte hain</p>
+                <div>
+                  <label htmlFor="su-owner" className={lab}>{L('auth_owner_email')}</label>
+                  <input id="su-owner" type="email" required aria-label={L('auth_owner_email')} placeholder="malik@email.com" value={signupOwnerEmail} onChange={(e) => setSignupOwnerEmail(e.target.value)} className={field} dir="ltr" data-testid="input-signup-owner" />
+                  <p className="text-sm text-muted-foreground mt-1">{L('auth_owner_hint')}</p>
                 </div>
               )}
-
               <div>
-                <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Email Address *</label>
-                <input type="email" required autoComplete="email" placeholder="aapka@email.com" value={signupEmail} onChange={(e) => setSignupEmail(e.target.value)} className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 placeholder-gray-400" />
+                <label htmlFor="su-email" className={lab}>{L('auth_email')}</label>
+                <input id="su-email" type="email" required autoComplete="email" aria-label={L('auth_email')} value={signupEmail} onChange={(e) => setSignupEmail(e.target.value)} className={field} dir="ltr" data-testid="input-signup-email" />
               </div>
-
               <div>
-                <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Password * <span className="font-normal text-gray-400">(min 6 huroof)</span></label>
+                <label htmlFor="su-pw" className={lab}>{L('auth_password')} <span className="font-normal text-muted-foreground">{L('auth_pw_min')}</span></label>
                 <div className="relative">
-                  <input type={signupShowPw ? 'text' : 'password'} required minLength={6} autoComplete="new-password" placeholder="••••••••" value={signupPassword} onChange={(e) => setSignupPassword(e.target.value)} className="w-full px-3.5 py-2.5 pr-10 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 placeholder-gray-400" />
-                  <button type="button" onClick={() => setSignupShowPw((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600" tabIndex={-1}>{signupShowPw ? <EyeOff size={16} /> : <Eye size={16} />}</button>
+                  <input id="su-pw" type={signupShowPw ? 'text' : 'password'} required minLength={6} autoComplete="new-password" aria-label={L('auth_password')} value={signupPassword} onChange={(e) => setSignupPassword(e.target.value)} className={`${field} pe-12`} dir="ltr" data-testid="input-signup-password" />
+                  <button type="button" onClick={() => setSignupShowPw((v) => !v)} className="absolute end-0 top-0 h-[48px] w-[48px] flex items-center justify-center text-muted-foreground" aria-label={L(signupShowPw ? 'auth_hide_pw' : 'auth_show_pw')}>{signupShowPw ? <EyeOff size={20} aria-hidden /> : <Eye size={20} aria-hidden />}</button>
                 </div>
               </div>
-
               <div>
-                <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Password Confirm *</label>
-                <input type={signupShowPw ? 'text' : 'password'} required placeholder="••••••••" value={signupConfirm} onChange={(e) => setSignupConfirm(e.target.value)} className={`w-full px-3.5 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 placeholder-gray-400 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white ${signupConfirm && signupPassword !== signupConfirm ? 'border-red-400' : 'border-gray-200 dark:border-gray-700'}`} />
+                <label htmlFor="su-pw2" className={lab}>{L('auth_pw_confirm')}</label>
+                <input id="su-pw2" type={signupShowPw ? 'text' : 'password'} required aria-label={L('auth_pw_confirm')} value={signupConfirm} onChange={(e) => setSignupConfirm(e.target.value)} className={`${field} ${signupConfirm && signupPassword !== signupConfirm ? 'border-danger' : ''}`} dir="ltr" data-testid="input-signup-confirm" />
               </div>
-
-              {signupError && <p className="text-red-500 text-xs font-medium bg-red-50 dark:bg-red-900/20 rounded-lg px-3 py-2">{signupError}</p>}
-
-              <button type="submit" disabled={signupLoading} className="w-full py-2.5 bg-emerald-700 hover:bg-emerald-600 disabled:opacity-60 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-colors">
-                {signupLoading ? <Loader2 size={16} className="animate-spin" /> : <UserPlus size={16} />}
-                {signupLoading ? 'Account ban raha hai...' : signupRole === 'karigar' ? 'Team Mein Shamil Hon' : 'Shop Banayein'}
+              {signupError && <p role="alert" className="text-danger text-sm font-medium bg-danger-soft rounded-md px-3 py-2">{signupError}</p>}
+              <button type="submit" disabled={signupLoading} className="w-full min-h-[48px] bg-primary disabled:opacity-60 text-primary-foreground text-base font-semibold rounded-md flex items-center justify-center gap-2" data-testid="btn-signup">
+                {signupLoading ? <Loader2 size={20} className="animate-spin" aria-hidden /> : <UserPlus size={20} aria-hidden />}
+                {signupRole === 'karigar' ? L('auth_join_team') : L('auth_create_shop')}
               </button>
             </form>
           )}
         </div>
       </div>
-      <p className="text-emerald-600 dark:text-emerald-700 text-xs mt-6">Darzi Khata v2.0 — درزی کھاتہ · Data device par محفوظ</p>
-    </div>
+      <p className="w-full max-w-sm text-sm text-muted-foreground mt-6 text-center">{L('data_note')}</p>
+    </main>
   );
 }

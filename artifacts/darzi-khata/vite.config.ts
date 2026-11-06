@@ -35,22 +35,22 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      injectRegister: 'auto',
+      injectRegister: false,
       includeAssets: ['favicon.svg', 'icon-192.png', 'icon-512.png'],
       manifest: {
-        name: 'Darzi Khata — درزی کھاتہ',
+        name: 'Darzi Khata. درزی کھاتہ',
         short_name: 'Darzi Khata',
         description: 'Record orders, track payments, build an illustrative credit profile.',
         start_url: basePath,
         scope: basePath,
         display: 'standalone',
-        background_color: '#f1f5f9',
-        theme_color: '#047857',
+        background_color: '#F9FAF9',
+        theme_color: '#155B43',
         lang: 'ur',
         icons: [
           { src: 'icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
           { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
-          { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          { src: 'icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
       workbox: {

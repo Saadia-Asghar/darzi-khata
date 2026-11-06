@@ -1,3 +1,4 @@
+import { tl } from '../lib/i18n';
 import { useState, useEffect, useCallback } from 'react';
 import { UserAccount } from '../context/auth-context';
 import { notifyStorage } from '../lib/local-store';
@@ -94,9 +95,9 @@ export function useAuth() {
     await ensureDemoAccounts();
     const accounts = getAccounts();
     const account = accounts.find((a) => a.email.toLowerCase() === email.toLowerCase().trim());
-    if (!account) return { success: false, error: 'Yeh email registered nahi hai.' };
+    if (!account) return { success: false, error: tl('auth_err_not_registered') };
     const hash = await hashPassword(password);
-    if (hash !== account.passwordHash) return { success: false, error: 'Password galat hai.' };
+    if (hash !== account.passwordHash) return { success: false, error: tl('auth_err_wrong_password') };
     sessionStorage.setItem(SESSION_KEY, account.id);
     setCurrentUser(account);
     return { success: true };
@@ -106,21 +107,21 @@ export function useAuth() {
     name: string, email: string, password: string, shopName: string,
     role: 'owner' | 'karigar' = 'owner', ownerEmail?: string
   ): Promise<{ success: boolean; error?: string }> => {
-    if (!name.trim()) return { success: false, error: 'Naam zaroor daakhil karein.' };
-    if (!email.trim()) return { success: false, error: 'Email zaroor daakhil karein.' };
-    if (password.length < 6) return { success: false, error: 'Password kam az kam 6 huroof ka hona chahiye.' };
+    if (!name.trim()) return { success: false, error: tl('auth_err_name_required') };
+    if (!email.trim()) return { success: false, error: tl('auth_err_email_required') };
+    if (password.length < 6) return { success: false, error: tl('auth_err_pw_short') };
 
     const accounts = getAccounts();
     if (accounts.find((a) => a.email.toLowerCase() === email.toLowerCase().trim())) {
-      return { success: false, error: 'Yeh email pehle se registered hai. Login karein.' };
+      return { success: false, error: tl('auth_err_email_taken') };
     }
 
     let ownerId: string | undefined;
     let ownerShopName: string | undefined;
     if (role === 'karigar') {
-      if (!ownerEmail?.trim()) return { success: false, error: 'Malik/Owner ki email daakhil karein.' };
+      if (!ownerEmail?.trim()) return { success: false, error: tl('auth_err_owner_email_required') };
       const owner = accounts.find((a) => a.email.toLowerCase() === ownerEmail.toLowerCase().trim() && a.role === 'owner');
-      if (!owner) return { success: false, error: 'Is email par koi shop owner registered nahi mila.' };
+      if (!owner) return { success: false, error: tl('auth_err_owner_not_found') };
       ownerId = owner.id;
       ownerShopName = owner.shopName;
     }

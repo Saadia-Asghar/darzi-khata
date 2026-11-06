@@ -1,3 +1,4 @@
+import { bi } from '../lib/i18n';
 import { useMemo, useEffect, useCallback } from 'react';
 import { Order, OrderStatus, OrderComment, PaymentMethod, Customer } from '../types/order';
 import { useAuthContext } from '../context/auth-context';
@@ -198,7 +199,7 @@ export function useOrders() {
     const claimed = localStorage.getItem('darzi-khata-legacy-claimed');
     if (legacy && !claimed && dataOwnerId !== 'demo-account') {
       const parsed = JSON.parse(legacy);
-      if (!Array.isArray(parsed)) throw new Error('Invalid legacy khata; original data preserved.');
+      if (!Array.isArray(parsed)) throw new Error(bi('err_legacy_invalid'));
       writeStorage(STORAGE_KEY, parsed.map(migrateOrder));
       writeStorage('darzi-khata-legacy-claimed', dataOwnerId);
     } else {
@@ -237,7 +238,7 @@ export function useOrders() {
     saveOrders(readOrders().map(o => {
       if (o.id !== id) return o;
       if (updates.advanceAmount !== undefined && updates.advanceAmount < o.advanceAmount)
-        throw new Error('Recorded payments cannot be reduced / وصول شدہ رقم کم نہیں ہو سکتی');
+        throw new Error(bi('m_recorded_payments_cannot_be_reduced'));
       let updated = { ...o, ...updates };
       if (updates.advanceAmount !== undefined && updates.advanceAmount > o.advanceAmount) {
         updated = { ...updated, payments: appendPayment(o, updates.advanceAmount - o.advanceAmount, 'cash', new Date().toISOString()).payments };
@@ -252,7 +253,7 @@ export function useOrders() {
   }, [saveOrders, readOrders]);
 
   const recordPayment = useCallback((id: string, amount: number, method: PaymentMethod, date: string, demo = false) => {
-    if (demo && !demoMode) throw new Error('Simulated payments are limited to demo data.');
+    if (demo && !demoMode) throw new Error(bi('err_sim_demo_only'));
     saveOrders(readOrders().map(o => o.id === id ? appendPayment(o, amount, method, date, demo) : o));
   }, [readOrders, saveOrders, demoMode]);
 

@@ -17,6 +17,7 @@ export interface ShopSettings {
   shopType?: 'shop' | 'home-based' | 'women-home-tailor';
   language?: 'en' | 'ur';
   fontSize?: 'normal' | 'large';
+  paperSize?: 'a4' | '80' | '58';
 }
 
 const getDefaultSettings = (shopName?: string): ShopSettings => ({

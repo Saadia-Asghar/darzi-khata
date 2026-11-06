@@ -1,3 +1,4 @@
+import { bi } from './i18n';
 import type { Order, Payment, PaymentMethod } from '../types/order';
 
 export interface PaymentDetails {
@@ -22,10 +23,10 @@ export function migrateOrder(order: Order): Order {
 }
 export function appendPayment(order: Order, amount: number, method: PaymentMethod, date: string, demo = false): Order {
   if (!Number.isFinite(amount) || amount <= 0 || amount > balance(order))
-    throw new Error('Amount must be positive and no greater than balance / درست رقم درج کریں');
+    throw new Error(bi('m_amount_must_be_positive_and_no_greater_t'));
   const endOfToday = new Date(); endOfToday.setHours(23, 59, 59, 999);
   if (!PAYMENT_METHODS.includes(method) || !Number.isFinite(Date.parse(date)) || Date.parse(date) > endOfToday.getTime())
-    throw new Error('Invalid payment method or date / غلط تاریخ یا طریقہ');
+    throw new Error(bi('m_invalid_payment_method_or_date'));
   const payment: Payment = { id: crypto.randomUUID(), amount, method, date, ...(demo ? { demo: true } : {}) };
   return { ...order, payments: [...paymentHistory(order), payment], advanceAmount: order.advanceAmount + amount };
 }
@@ -41,9 +42,9 @@ export function buildPaymentPayload(order: Order, details: PaymentDetails): stri
 }
 export function paymentDetailsText(details: PaymentDetails): string {
   return [
-    details.accountTitle && `Account title / اکاؤنٹ: ${details.accountTitle}`,
-    details.zindigiWallet && `Zindigi / زندگی: ${details.zindigiWallet}`,
-    details.raastId && `Raast / راست: ${details.raastId}`,
+    details.accountTitle && bi('m_account_title', { accountTitle: details.accountTitle }),
+    details.zindigiWallet && bi('m_zindigi', { zindigiWallet: details.zindigiWallet }),
+    details.raastId && bi('m_raast', { raastId: details.raastId }),
   ].filter(Boolean).join('\n');
 }
 export function paymentShare(orders: Order[], month?: Date) {

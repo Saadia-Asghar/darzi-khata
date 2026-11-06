@@ -1,3 +1,4 @@
+import { bi } from '../lib/i18n';
 import { useMemo, useCallback } from 'react';
 import type { Customer } from '../types/order';
 import { useAuthContext } from '../context/auth-context';
@@ -15,10 +16,10 @@ export function useCustomers() {
   const fallback = useMemo<Customer[]>(() => [], []);
   const customers = useStoredValue<Customer[]>(key, fallback);
   const saveCustomer = useCallback((input: Customer) => {
-    if (!input.name.trim() || input.phone.replace(/\D/g, '').length < 10) throw new Error('Name and valid phone required / نام اور درست فون ضروری ہے');
+    if (!input.name.trim() || input.phone.replace(/\D/g, '').length < 10) throw new Error(bi('m_name_and_valid_phone_required'));
     const all = readJSON<Customer[]>(key, []);
     if (all.some(c => c.id !== input.id && customerKey(c.phone,c.id) === customerKey(input.phone,input.id)))
-      throw new Error('This phone already belongs to a customer / یہ فون پہلے سے موجود ہے');
+      throw new Error(bi('m_this_phone_already_belongs_to_a_customer'));
     const next = { ...input, name: input.name.trim(), updatedAt: new Date().toISOString() };
     writeStorage(key, all.some(c => c.id === next.id) ? all.map(c => c.id === next.id ? next : c) : [...all, next]);
     return next;

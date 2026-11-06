@@ -1,3 +1,4 @@
+import { bi } from './i18n';
 import type { Customer, Order, OrderItem } from '../types/order';
 import { normalizePakistaniPhone } from './reminders';
 import { migrateOrder } from './payments';
@@ -5,7 +6,7 @@ export const SCHEMA_VERSION = 2;
 export const customerKey = (phone: string, fallback: string) =>
   `customer-${normalizePakistaniPhone(phone) || phone.replace(/\D/g, '') || fallback}`;
 export function migrateRegister(input: Order[], existing: Customer[] = []): { orders: Order[]; customers: Customer[] } {
-  if (!Array.isArray(input) || !Array.isArray(existing)) throw new Error('Invalid khata backup / بیک اپ درست نہیں');
+  if (!Array.isArray(input) || !Array.isArray(existing)) throw new Error(bi('m_invalid_khata_backup'));
   const customers = new Map(existing.map(c => [c.id, { ...c, profiles: [...(c.profiles || [])] }]));
   const orders = input.map(raw => {
     const o = migrateOrder(raw);
@@ -26,7 +27,7 @@ export function migrateRegister(input: Order[], existing: Customer[] = []): { or
     }
     for (const item of items) {
       if (!customer.profiles.some(p => p.garmentType === item.garmentType)) {
-        customer.profiles.push({ id: `profile-${id}-${item.garmentType}`, name: 'Saved measurements / محفوظ ناپ', garmentType: item.garmentType, measurements: { ...item.measurements } });
+        customer.profiles.push({ id: `profile-${id}-${item.garmentType}`, name: bi('m_saved_measurements'), garmentType: item.garmentType, measurements: { ...item.measurements } });
       }
     }
     return { ...o, customerId: id, items };

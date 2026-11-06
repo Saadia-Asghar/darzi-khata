@@ -1,3 +1,4 @@
+import { money } from '../lib/i18n';
 export const formatPhone = (p: string) => {
   const d = p.replace(/\D/g, '');
   if (d.length === 11 && d.startsWith('0')) return `${d.slice(0, 4)} ${d.slice(4)}`;
@@ -5,7 +6,8 @@ export const formatPhone = (p: string) => {
   return p;
 };
 export const digits = (p: string) => p.replace(/\D/g, '');
-export const rs = (n: number) => `Rs ${Math.round(n).toLocaleString('en-PK')}`;
+/** "Rs 12,500" via Intl.NumberFormat('en-PK'). */
+export const rs = (n: number) => money(n);
 /** Match name, phone, or last four digits of phone. */
 export function matchesCustomer(q: string, name: string, phone: string) {
   const t = q.trim().toLowerCase();

@@ -1,3 +1,4 @@
+import { bi } from './i18n';
 import type { Order } from '../types/order';
 import { balance, paymentDetailsText, type PaymentDetails } from './payments';
 export type ReminderKind = 'ready' | 'payment' | 'tomorrow';
@@ -8,10 +9,10 @@ export function normalizePakistaniPhone(value: string): string {
   return number;
 }
 export function reminderText(order: Order, kind: ReminderKind, details: PaymentDetails): string {
-  const heading = kind === 'ready' ? 'Your suit is ready / آپ کا سوٹ تیار ہے'
-    : kind === 'tomorrow' ? 'Delivery tomorrow / آپ کے آرڈر کی ترسیل کل ہے'
-    : `Payment reminder / ادائیگی کی یاد دہانی: Rs ${balance(order).toLocaleString()} باقی`;
-  return `Assalam o Alaikum ${order.customerName}\n${heading}\n${order.serialNumber || ''} · ${details.shopName}\nBalance / بقایا: Rs ${balance(order).toLocaleString()}\n${paymentDetailsText(details)}`;
+  const heading = kind === 'ready' ? bi('m_your_suit_is_ready')
+    : kind === 'tomorrow' ? bi('m_delivery_tomorrow')
+    : bi('m_payment_reminder', { balance: balance(order).toLocaleString() });
+  return bi('m_assalam_o_alaikum_customername_heading_s', { customerName: order.customerName, heading, serialNumber: order.serialNumber || '', shopName: details.shopName, balance: balance(order).toLocaleString(), details: paymentDetailsText(details) });
 }
 export function whatsappReminder(order: Order, kind: ReminderKind, details: PaymentDetails): string {
   return `https://wa.me/${normalizePakistaniPhone(order.phone)}?text=${encodeURIComponent(reminderText(order, kind, details))}`;

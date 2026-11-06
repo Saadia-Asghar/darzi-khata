@@ -1,11 +1,10 @@
-import { type ReactNode, useEffect } from 'react';
+import { type ReactNode, useEffect, lazy, Suspense } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
-import Dashboard from './pages/dashboard';
-import { KarigarDashboard } from './components/karigar-dashboard';
+import { bi } from './lib/i18n';
 import { AuthScreen } from './components/auth-screen';
 import { useAuth } from './hooks/use-auth';
 import { AuthContext } from './context/auth-context';
@@ -20,12 +19,31 @@ import {
 } from 'wouter';
 
 const queryClient = new QueryClient();
+// Keep the sign-in shell small. Charts, receipts and order tools load after sign-in.
+const Dashboard = lazy(() => import('./pages/dashboard'));
+const KarigarDashboard = lazy(() => import('./components/karigar-dashboard').then(m => ({ default: m.KarigarDashboard })));
+function ScreenLoading() {
+  return <main className="min-h-[100dvh] p-6 bg-background text-foreground" role="status">{bi('loading')}</main>;
+}
 
 function Router() {
   return (
     <RoutedErrorBoundary>
       <Switch>
-        <Route path="/" component={Dashboard} />
+        <Route path="/">{() => <Dashboard section="orders" />}</Route>
+        <Route path="/customers">{() => <Dashboard section="customers" />}</Route>
+        <Route path="/customers/:phone">{(p) => <Dashboard section="customer" phone={decodeURIComponent(p.phone)} />}</Route>
+        <Route path="/hisaab">{() => <Dashboard section="hisaab" />}</Route>
+        <Route path="/more">{() => <Dashboard section="more" />}</Route>
+        <Route path="/settings">{() => <Dashboard section="settings" />}</Route>
+        <Route path="/earnings">{() => <Dashboard section="earnings" />}</Route>
+        <Route path="/credit">{() => <Dashboard section="credit" />}</Route>
+        <Route path="/worksheet">{() => <Dashboard section="worksheet" />}</Route>
+        <Route path="/work-sheet">{() => <Dashboard section="worksheet" />}</Route>
+        <Route path="/team">{() => <Dashboard section="team" />}</Route>
+        <Route path="/impact">{() => <Dashboard section="impact" />}</Route>
+        <Route path="/reminders">{() => <Dashboard section="reminders" />}</Route>
+        <Route path="/due">{() => <Dashboard section="due" />}</Route>
         <Route component={NotFound} />
       </Switch>
     </RoutedErrorBoundary>
@@ -72,7 +90,7 @@ function AppShell() {
     >
       <AppPreferences><AppLockGate key={currentUser.id}>
       <FirstRunIntro />
-      {currentUser.role === 'karigar' ? (
+      <Suspense fallback={<ScreenLoading />}>{currentUser.role === 'karigar' ? (
         // Karigar sees a simplified task view
         <KarigarDashboard />
       ) : (
@@ -80,7 +98,7 @@ function AppShell() {
         <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
           <Router />
         </WouterRouter>
-      )}
+      )}</Suspense>
       </AppLockGate></AppPreferences>
     </AuthContext.Provider>
   );

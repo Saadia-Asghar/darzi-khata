@@ -1,0 +1,1 @@
+- [Prize presentation constraints](prize-presentation.md) — phone-first, bilingual financial-product presentation while preserving all offline features and existing data.

@@ -1,3 +1,4 @@
+import { DICT } from '../lib/i18n';
 import {
   Component,
   type ComponentType,
@@ -36,29 +37,22 @@ function toError(value: unknown): Error {
 }
 
 function DefaultFallback({ error, resetError }: ErrorFallbackProps) {
+  // Rendered outside providers, so copy comes straight from the dictionary in both languages.
+  const d = (k: 'error_title' | 'error_body' | 'reload' | 'try_again') => `${DICT[k].en} / ${DICT[k].ur}`;
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gray-50 p-6">
-      <div className="max-w-lg w-full text-center">
-        <h1 className="text-xl font-semibold text-gray-900">
-          Something went wrong
-        </h1>
-        <p className="mt-2 text-sm text-gray-600">
-          This part of the app hit an error. The rest of the app is still
-          running.
-        </p>
-        {/* Dev only: messages can carry API responses and other internals. */}
+    <div className="min-h-[100dvh] w-full flex items-center justify-center bg-background p-6" role="alert">
+      <div className="max-w-md w-full rounded-lg border border-border bg-card p-6 text-center">
+        <h1 className="text-lg font-semibold text-foreground">{DICT.error_title.en}</h1>
+        <p className="font-urdu text-lg text-foreground" lang="ur" dir="rtl">{DICT.error_title.ur}</p>
+        <p className="mt-2 text-base text-muted-foreground">{DICT.error_body.en}</p>
+        <p className="font-urdu text-base text-muted-foreground" lang="ur" dir="rtl">{DICT.error_body.ur}</p>
         {import.meta.env.DEV ? (
-          <pre className="mt-4 overflow-x-auto rounded bg-gray-100 p-3 text-left text-xs text-gray-800">
-            {error.message || String(error)}
-          </pre>
+          <pre className="mt-4 overflow-x-auto rounded-md bg-muted p-3 text-start text-sm text-foreground">{error.message || String(error)}</pre>
         ) : null}
-        <button
-          type="button"
-          onClick={resetError}
-          className="mt-4 rounded bg-gray-900 px-4 py-2 text-sm text-white hover:bg-gray-700"
-        >
-          Try again
-        </button>
+        <div className="mt-5 grid gap-2">
+          <button type="button" onClick={() => window.location.reload()} className="min-h-[48px] rounded-md bg-primary px-4 text-base font-semibold text-primary-foreground" data-testid="btn-error-reload">{d('reload')}</button>
+          <button type="button" onClick={resetError} className="min-h-[44px] rounded-md border border-border px-4 text-base font-medium text-foreground">{d('try_again')}</button>
+        </div>
       </div>
     </div>
   );
