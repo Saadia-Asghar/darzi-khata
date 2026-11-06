@@ -42,3 +42,45 @@ mtime_ms = 1793963506727
 storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:00e5e9e4-bf06-459e-935c-fb2d11805f64/bc7ea2d5-dcd5-4e26-81be-309b79e8fa01/75bf0fce-9baa-4a64-9107-e29117918480"
 storage_version_token = "1793963653498182"
 content_type = "text/html"
+
+[[outputs]]
+id = "_o3oQgK_OhKSh576YQPWB"
+uri = "file://generated-artifacts/bugs/verification-report.html"
+type = "html"
+title = "Bug-fix verification: tests and QA table"
+description = "Self-contained report with original failing logs, passing checks, targeted reruns, QA coverage and English/Urdu print screenshots."
+logical_id = "9083a924-b270-4a0d-aee8-dd9356123ca5"
+content_hash = "sha256:98be1894a67fdda6d56023f7076339b753e9f0d374b09dd36b2f5f463a13aa49"
+size = 452834
+mtime_ms = 1793973569551
+storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:00e5e9e4-bf06-459e-935c-fb2d11805f64/9083a924-b270-4a0d-aee8-dd9356123ca5/06735139-0daa-47b6-863c-55031e9544f5"
+storage_version_token = "1793973614042433"
+content_type = "text/html"
+
+[[outputs]]
+id = "FBWMxwi3gBArlmoWs8kC3"
+uri = "file://generated-artifacts/bugs/parchi-print.png"
+type = "image"
+title = "Parchi print-preview screenshot"
+description = "Only the complete receipt is printed: DK-001, measurements, totals and QR. No dashboard or clipped dialog."
+logical_id = "d827feb2-6bd0-44bc-a5b5-2fc470cd1339"
+content_hash = "sha256:8c4cf658203eccad84cbeb600581091733181e3d0f963787d785235a8897e138"
+size = 77433
+mtime_ms = 1793972936411
+storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:00e5e9e4-bf06-459e-935c-fb2d11805f64/d827feb2-6bd0-44bc-a5b5-2fc470cd1339/162a9794-77c0-4111-8340-b6c0c1344e77"
+storage_version_token = "1793973615372253"
+content_type = "image/png"
+
+[[outputs]]
+id = "LvL4yI--wXqrKQC8_etlF"
+uri = "file://generated-artifacts/bugs/parchi.pdf"
+type = "pdf"
+title = "One-page A4 parchi PDF"
+description = "Chromium print export; automated test confirms exactly one A4 page."
+logical_id = "9dbb8f7c-9a43-4336-a2fd-0477e295dc8d"
+content_hash = "sha256:261517ddb14b25808cbaabb67b41f0cf9e3f5cce796d2bd39f47d0c540041e28"
+size = 39115
+mtime_ms = 1793972936448
+storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:00e5e9e4-bf06-459e-935c-fb2d11805f64/9dbb8f7c-9a43-4336-a2fd-0477e295dc8d/58bca194-3f2e-4609-9923-a200a1ba1e86"
+storage_version_token = "1793973616698793"
+content_type = "application/pdf"
