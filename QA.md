@@ -1,5 +1,21 @@
 # Darzi Khata verification
 
+## Landing login entry follow-up, 7 November 2026
+
+App source `a75bd2d`: Open app and Start free, in both header/hero and footer,
+open `/app/login` with the Login tab selected. A retained demo/account session
+must not bypass that explicit login page. Only Try demo shop auto-opens demo.
+Direct `/app` launches may still resume an existing session for installed use.
+No accounts, orders or demo data are cleared.
+
+The old Open app link targeted `/app` when a session existed, and AppShell
+redirected authenticated visits away from login. Both entry paths are fixed.
+Typecheck, 29 core checks, 118 Vitest tests and five targeted browser cases
+passed: all four CTA copies in English/Urdu before/after a demo visit, reload,
+wrong-password gate, successful login, preserved stored data, explicit demo,
+owner/karigar sign-in and signup/password/account-isolation regressions.
+These results are for the production build in preview, not a new publication.
+
 ## Individual delivery status follow-up, 7 November 2026
 
 App source `23afdb4`: keep cards in their current positions when changing an
