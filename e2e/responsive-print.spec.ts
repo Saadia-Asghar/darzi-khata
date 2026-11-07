@@ -1,6 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
+import sharp from 'sharp';
 
 const evidence = 'generated-artifacts/responsive-print';
 const screenshots = 'qa-screens/responsive';
@@ -137,6 +138,10 @@ for(const lang of ['en','ur'] as const) for(const width of [375,1366]) {
     await expect(frame.locator('body')).toContainText('Customer A');
     await expect(frame.locator('body')).toContainText('1,500');
     await expect(frame.locator('img[src^="data:image/png"]')).toBeVisible();
+    const qrBox = await frame.locator('img[src^="data:image/png"]').evaluate(el => {
+      const img=el.getBoundingClientRect(), body=document.body.getBoundingClientRect();
+      return {left:img.left-body.left,top:img.top-body.top,width:img.width,height:img.height,bodyWidth:body.width};
+    });
     await expect(frame.locator('[role=dialog], nav, aside, button, [data-app-header]')).toHaveCount(0);
     await expect(frame.locator('body')).not.toContainText(/Settings|Log out|New order|ترتیبات/);
     const html=await frame.locator('html').evaluate(el=>el.outerHTML);
@@ -153,7 +158,9 @@ for(const lang of ['en','ur'] as const) for(const width of [375,1366]) {
     const text=execFileSync('pdftotext',[`${prefix}.pdf`,'-'],{encoding:'utf8'});
     expect(text).toContain('DK-001');
     expect(text).toContain('Customer A');
+    expect(text).toContain('1,500');
     expect(text).not.toMatch(/Settings|Log out|New order/);
+    expect(execFileSync('pdfimages',['-list',`${prefix}.pdf`],{encoding:'utf8'})).toMatch(/\n\s+1\s+\d+\s+image/);
     execFileSync('pdftoppm',['-singlefile','-scale-to','1200','-png',`${prefix}.pdf`,`${prefix}-pdf`]);
     await capture.close();
     const [download]=await Promise.all([page.waitForEvent('download'),page.getByTestId('btn-download-receipt').click()]);
@@ -161,5 +168,17 @@ for(const lang of ['en','ur'] as const) for(const width of [375,1366]) {
     await download.saveAs(`${prefix}-download.pdf`);
     expect(execFileSync('pdfinfo',[`${prefix}-download.pdf`],{encoding:'utf8'})).toMatch(/Pages:\s+1/);
     execFileSync('pdftoppm',['-singlefile','-scale-to','1200','-png',`${prefix}-download.pdf`,`${prefix}-download-pdf`]);
+    const image=sharp(`${prefix}-download-pdf.png`);
+    const meta=await image.metadata();
+    const scale=meta.width! / 210;
+    const contentScale=186 * scale / qrBox.bodyWidth;
+    const {data,info:crop}=await image.extract({
+      left:Math.round(12*scale+qrBox.left*contentScale),
+      top:Math.round(12*scale+qrBox.top*contentScale),
+      width:Math.floor(qrBox.width*contentScale),height:Math.floor(qrBox.height*contentScale),
+    }).removeAlpha().raw().toBuffer({resolveWithObject:true});
+    let ink=0;
+    for(let i=0;i<data.length;i+=crop.channels) if(data[i]<160 && data[i+1]<180 && data[i+2]<180) ink++;
+    expect(ink/(crop.width*crop.height)).toBeGreaterThan(0.12);
   });
 }

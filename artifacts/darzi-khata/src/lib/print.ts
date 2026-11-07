@@ -100,10 +100,10 @@ export async function printElement(node: HTMLElement | null, { paper = 'a4', dow
       @font-face{font-family:PrintUrdu;src:url("${new URL(urduRegular, location.href).href}") format("woff2");font-weight:400}
       @font-face{font-family:PrintUrdu;src:url("${new URL(urduBold, location.href).href}") format("woff2");font-weight:700}
       @page{size:${paper === 'a4' ? 'A4' : `${paper === '58mm' ? 58 : 80}mm 297mm`};margin:${paper === 'a4' ? 12 : 2}mm}
-      *{box-sizing:border-box;color:#000!important;border-color:#999!important;background:#fff!important;
+      *{box-sizing:border-box;color:#000!important;border-color:#999!important;background:transparent!important;
         position:static!important;transform:none!important;max-height:none!important;overflow:visible!important;
         box-shadow:none!important;text-shadow:none!important;animation:none!important}
-      html,body{margin:0;padding:0;width:${width}mm;font-family:Arial,sans-serif;font-size:12px;line-height:1.45}
+      html,body{margin:0;padding:0;width:${width}mm;background:#fff!important;font-family:Arial,sans-serif;font-size:12px;line-height:1.45}
       html[lang=ur] *{font-family:PrintUrdu,serif!important;line-height:1.65!important}
       main{width:100%}main>div{width:100%!important;max-width:none!important}
       table{width:100%!important;min-width:0!important;table-layout:fixed}
@@ -126,16 +126,18 @@ export async function printElement(node: HTMLElement | null, { paper = 'a4', dow
     await doc.fonts.ready;
     await Promise.all([...doc.images].map(image => image.decode()));
     if (paper !== 'a4') {
-      const rollHeight = Math.max(100, Math.ceil(doc.body.scrollHeight * 25.4 / 96 + 5));
+      // Leave room for print-engine rounding and Nastaliq descenders. A roll
+      // has no fixed page length; do not split its closing text onto page two.
+      const rollHeight = Math.max(100, Math.ceil(doc.body.scrollHeight * 25.4 / 96 + 20));
       style.textContent += `@page{size:${paper === '58mm' ? 58 : 80}mm ${rollHeight}mm;margin:2mm}`;
     }
     // Explicit readiness lets browser tests capture the exact document printed.
     iframe.dataset.ready = 'true';
     if (download) {
-      const [{ default: html2canvas }, { jsPDF }] = await Promise.all([import('html2canvas'), import('jspdf')]);
-      const canvas = await html2canvas(doc.body, {
-        scale: 2, backgroundColor: 'white', windowWidth: Math.ceil(width * 96 / 25.4),
-        height: doc.body.scrollHeight, logging: false,
+      const [{ toCanvas }, { jsPDF }] = await Promise.all([import('html-to-image'), import('jspdf')]);
+      const canvas = await toCanvas(doc.body, {
+        pixelRatio: 2, backgroundColor: 'white', width: doc.body.getBoundingClientRect().width,
+        height: doc.body.scrollHeight,
       });
       const margin = paper === 'a4' ? 12 : 2;
       const pageWidth = width + margin * 2;
