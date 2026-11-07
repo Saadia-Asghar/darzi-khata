@@ -119,8 +119,8 @@ export async function printElement(node: HTMLElement | null, { paper = 'a4', dow
     void doc.body.offsetHeight;
     if (doc.documentElement.lang === 'ur') {
       await Promise.all([
-        doc.fonts.load('400 16px PrintUrdu', 'درزی کھاتہ'),
-        doc.fonts.load('700 16px PrintUrdu', 'درزی کھاتہ'),
+        doc.fonts.load('400 16px PrintUrdu', '\u0627'),
+        doc.fonts.load('700 16px PrintUrdu', '\u0627'),
       ]);
     }
     await doc.fonts.ready;
