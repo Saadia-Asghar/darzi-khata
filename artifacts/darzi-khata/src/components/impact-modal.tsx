@@ -45,7 +45,7 @@ export function ImpactModal({ open, onOpenChange, orders }: Props) {
           <DialogTitle className="text-lg font-bold">{label('financial_inclusion_impact')}</DialogTitle>
           <DialogDescription className="text-primary text-sm">{shopTypeLabel(settings.shopType)}{demoMode && ` · ${label('demo_data')}`}</DialogDescription>
         </div>
-        <div className="overflow-y-auto p-5 space-y-5">
+        <div className="dk-wide-grid overflow-y-auto p-5 space-y-5">
           <div className="grid grid-cols-2 gap-2">
             {metrics.map((m, i) => (
               <div key={m.en} className="rounded-lg border border-border bg-card p-3 dk-rise" style={{ animationDelay: `${i * 50}ms` }} data-testid={`metric-${i}`}>

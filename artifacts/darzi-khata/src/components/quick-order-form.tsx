@@ -95,7 +95,7 @@ export function QuickOrderForm({ open, onOpenChange, initialCustomer, orders, on
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[calc(100%-1rem)] max-w-md max-h-[92dvh] overflow-y-auto rounded-lg p-4">
+      <DialogContent className="w-[calc(100%-1rem)] max-w-md lg:max-w-[560px] max-h-[92dvh] overflow-y-auto rounded-lg p-4">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2"><Zap size={18} className="text-warning" aria-hidden /> {label('quick_order_x')}</DialogTitle>
           <DialogDescription>{label('one_garment_saved_measurements_done_in_s')}</DialogDescription>

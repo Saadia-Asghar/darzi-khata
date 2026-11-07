@@ -51,7 +51,7 @@ export default function PublicPages({ kind, token }: { kind: 'lender' | 'track';
             <p className="text-sm text-muted-foreground">{t('feature_expires')}: {shortDate(new Date(snapshot.expiresAt), lang)}</p>
           </div>
             <p className="text-sm text-muted-foreground">{t('feature_snapshot')}</p>
-            <button className="min-h-[48px] rounded-lg bg-primary text-primary-foreground px-5 font-semibold" data-testid="public-download" onClick={() => { void printElement(sheet.current, { paper: 'a4' }); }}>{t('feature_download_pdf')}</button>
+            <button className="min-h-[48px] rounded-lg bg-primary text-primary-foreground px-5 font-semibold" data-testid="public-download" onClick={() => { void printElement(sheet.current, { paper: 'a4', download: true }); }}>{t('feature_download_pdf')}</button>
             <p className="text-sm text-muted-foreground">{t('feature_print_hint')}</p>
           </>}
     </div>

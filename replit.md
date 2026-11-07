@@ -80,4 +80,17 @@ Production PWA precaches the app shell. Speech and WhatsApp require browser/netw
 services and must fail with a useful manual fallback. Static artifact production
 configuration already exists; publishing remains a user action.
 
+## Print and responsive constraints
+
+- Receipt, work sheet and lender/credit profile must share the isolated iframe
+  print path. Never print the live app page or a Radix dialog: the team observed
+  overlays, settings and cut-off receipts in desktop Chrome print preview.
+- PDF download uses the same isolated content and must work without a phone's
+  print service. Wait for Urdu fonts and QR images before print/download.
+- Preserve the phone layout below 768px. Settings tiles use 1/2/3 columns at
+  phone/tablet/desktop widths. Desktop begins at 1024px, with sidebar on the
+  logical start side (right in Urdu), desktop top bar and centred content.
+- Desktop dialogs stay at most 560px wide; use three measurement fields per row
+  where space permits. Do not hide overflowing content to disguise a broken layout.
+
 README has demo credentials, full capabilities, storage details and limitations.

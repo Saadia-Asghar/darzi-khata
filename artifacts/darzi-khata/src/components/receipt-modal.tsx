@@ -8,7 +8,7 @@ import { FabricThumb } from './fabric-photo';
 import { garment } from '../lib/garments';
 import * as Dialog from '@radix-ui/react-dialog';
 import { useEffect, useMemo, useState } from 'react';
-import { X, Printer, Copy, MessageCircle, Scissors, FlaskConical } from 'lucide-react';
+import { X, Printer, Download, Copy, MessageCircle, Scissors, FlaskConical } from 'lucide-react';
 import QRCode from 'qrcode';
 import { Order } from '../types/order';
 import { useSettings } from '../hooks/use-settings';
@@ -223,12 +223,20 @@ export function ReceiptModal({ open, onOpenChange, order }: ReceiptModalProps) {
           {/* Action Buttons - Hidden in Print */}
           <div className="bg-card p-4 border-t rounded-b-lg flex gap-2 print:hidden sticky bottom-0">
             <button 
-              onClick={() => void printElement(document.getElementById('receipt-print-area'), { paper: paperSize === 'a4' ? 'a4' : `${paperSize}mm` })}
+              onClick={() => void printElement(document.getElementById('receipt-print-area'), { paper: paperSize === 'a4' ? 'a4' : `${paperSize}mm` }).catch(() => toast({ title: label('print_failed'), variant: 'destructive' }))}
               className="flex-1 flex flex-col items-center justify-center min-h-[48px] py-2 bg-muted hover:bg-muted text-foreground rounded-lg transition-colors"
               data-testid="btn-print-receipt"
             >
               <Printer size={18} className="mb-1" />
               <span className="text-sm font-bold">{label('print')}</span>
+            </button>
+            <button
+              onClick={() => void printElement(document.getElementById('receipt-print-area'), { paper: paperSize === 'a4' ? 'a4' : `${paperSize}mm`, download: true }).catch(() => toast({ title: label('print_failed'), variant: 'destructive' }))}
+              className="flex-1 flex flex-col items-center justify-center min-h-[48px] py-2 bg-muted text-foreground rounded-lg"
+              data-testid="btn-download-receipt"
+            >
+              <Download size={18} className="mb-1" />
+              <span className="text-xs font-bold">{label('feature_download_pdf')}</span>
             </button>
             <button 
               onClick={copyToClipboard}

@@ -381,6 +381,28 @@ input[type='number'], input[type='tel'], table { font-variant-numeric: tabular-n
 /* Ledger rule used under page titles. */
 .dk-rule { height: 1px; background: hsl(var(--border)); }
 [data-page-mode] { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
+[data-page-mode='panel'] { padding-bottom: 24px; }
+
+/* Responsive shell. Phone (< 768px) is unchanged; tablet 768-1023; desktop >= 1024. */
+html, body { max-width: 100%; }
+@media (min-width: 1024px) {
+  [data-page-mode] { padding-bottom: 32px; }
+  /* Settings page: sections flow into two columns. */
+  [data-page-wide] .dk-settings-grid {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; align-items: start;
+  }
+  /* Finance and impact pages: numbers and charts side by side. */
+  [data-page-wide] .dk-wide-grid,
+  [data-page-wide='credit'] [role='region'] > .overflow-y-auto > .space-y-5 {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; align-items: start;
+  }
+  [data-page-wide] .dk-settings-grid > *,
+  [data-page-wide] .dk-wide-grid > *,
+  [data-page-wide='credit'] [role='region'] > .overflow-y-auto > .space-y-5 > * { margin: 0 !important; min-width: 0; }
+}
+@media (min-width: 1280px) {
+  [data-page-wide='impact'] .dk-wide-grid, [data-page-wide='earnings'] .dk-wide-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
 input:not([type='checkbox']):not([type='radio']), textarea, select { font-size: 16px; }
 
 /* Print: receipt / work sheet / profile. */

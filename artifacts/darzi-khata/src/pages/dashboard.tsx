@@ -32,6 +32,8 @@ import {
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Search, FlaskConical, Zap, ListChecks, LockKeyhole, BarChart2, ChevronRight } from 'lucide-react';
+import { DesktopSidebar, DesktopTopBar, type SideTab } from '../components/desktop-shell';
+import { OrderDetailPane } from '../components/order-detail-pane';
 import { BackupReminder } from '../components/backup-reminder';
 import { ExpenseTools, ProfitSummary } from '../components/expense-tools';
 import { RushTools } from '../components/rush-tools';
@@ -77,6 +79,7 @@ export default function Dashboard({ section = 'orders', phone }: { section?: Sec
   const [prefilledData, setPrefilledData] = useState<Partial<Order> | undefined>();
   const [pendingDelete, setPendingDelete] = useState<Order | null>(null);
   const [logoutOpen, setLogoutOpen] = useState(false);
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
 
   const [receiptOpen, setReceiptOpen] = useState(false);
   const [chatOrderId, setChatOrderId] = useState<string | null>(null);
@@ -193,14 +196,20 @@ export default function Dashboard({ section = 'orders', phone }: { section?: Sec
   ];
   const navTab: NavTab | null = section === 'orders' || section === 'customers' || section === 'hisaab' || section === 'more' ? section : section === 'customer' ? 'customers' : section === 'earnings' ? 'hisaab' : 'more';
   const isToolPage = !['orders', 'customers', 'hisaab', 'more'].includes(section);
-  const page = (node: ReactNode, fallback = '/more') => <PageMode onBack={() => back(fallback)}>{node}</PageMode>;
+  const page = (node: ReactNode, fallback = '/more', wide?: string) => <PageMode onBack={() => back(fallback)} wide={wide}>{node}</PageMode>;
+  const sideTab: SideTab = section === 'credit' ? 'credit' : navTab;
+  const selectedOrder = visible.find((o) => o.id === selectedOrderId) ?? visible[0] ?? null;
+  const wrap = 'p-4 max-w-2xl md:max-w-4xl lg:max-w-[1200px] lg:px-6 mx-auto';
   const pageOpen = { open: true, onOpenChange: (v: boolean) => { if (!v) back('/more'); } };
   const chip = (on: boolean) => `whitespace-nowrap min-h-[44px] px-3 rounded-md text-sm font-medium border shrink-0 inline-flex items-center gap-1.5 ${on ? 'bg-primary text-primary-foreground border-primary' : 'bg-card text-foreground border-border hover:bg-muted'}`;
 
   return (
-    <div className="min-h-[100dvh] bg-background pb-28 text-foreground">
+    <div className="min-h-[100dvh] bg-background pb-28 lg:pb-8 text-foreground lg:ps-64">
+      <DesktopSidebar tab={sideTab} onNew={() => setChooserOpen(true)} onLogout={() => setLogoutOpen(true)} onSetupPin={() => navigate('/settings#pin')} pendingCount={pendingCount} />
+      <DesktopTopBar shopLabel={shopLabel} ownerName={currentUser?.name} demo={demoMode} search={searchTerm}
+        onSearch={(q) => { setSearchTerm(q); if (section !== 'orders') navigate('/'); }} />
       {!isToolPage && (
-        <header data-app-header className="bg-card border-b border-border px-4 sticky top-0 z-20 print:hidden">
+        <header data-app-header className="lg:hidden bg-card border-b border-border px-4 sticky top-0 z-20 print:hidden">
           <div className="max-w-2xl mx-auto py-2">
             <div className="flex items-center gap-2">
               <h1 className="flex-1 min-w-0 truncate text-lg font-semibold" data-testid="text-shop-name" title={shopLabel}>{shopLabel}</h1>
@@ -216,7 +225,7 @@ export default function Dashboard({ section = 'orders', phone }: { section?: Sec
       )}
 
       {section === 'orders' && (
-        <main className="p-4 max-w-2xl mx-auto dk-rise">
+        <main className={`${wrap} dk-rise`}>
           {homeBased && <section className="rounded-lg border border-border bg-card p-4 mb-3">
             <h2 className="font-semibold">{label('feature_home_based')}</h2><p className="text-sm text-muted-foreground">{label('feature_home_intro')}</p>
             <button className="mt-3 min-h-[48px] rounded-lg px-4 bg-primary text-primary-foreground font-semibold" onClick={() => { setQuickCustomer(undefined); setQuickOpen(true); }}>{label('new_order')}</button>
@@ -225,7 +234,9 @@ export default function Dashboard({ section = 'orders', phone }: { section?: Sec
           {!homeBased && <><DailySummary orders={orders} onOpenDue={() => navigate('/due')} />
           <StatsBar orders={orders} onDueTodayClick={() => navigate('/due')} /></>}
 
-          <div className="relative mb-3">
+          <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_420px] lg:gap-6 lg:items-start">
+          <div className="min-w-0">
+          <div className="relative mb-3 lg:hidden">
             <Search className="absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" size={20} aria-hidden />
             <input type="search" aria-label={label('search_orders')}
               className="block w-full min-h-[48px] ps-10 pe-3 border border-input rounded-lg bg-card text-foreground text-base placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
@@ -250,7 +261,7 @@ export default function Dashboard({ section = 'orders', phone }: { section?: Sec
             </div>
           )}
 
-          <div className="space-y-3">
+          <div className="space-y-3" data-testid="orders-list">
             {orders.length === 0 ? (
               <div className="py-8 px-5 bg-card rounded-lg border border-border text-center" data-testid="empty-orders">
                 <p className="text-base font-medium">{label('empty_orders')}</p>
@@ -266,43 +277,59 @@ export default function Dashboard({ section = 'orders', phone }: { section?: Sec
                 <button onClick={() => { setSearchTerm(''); setActiveFilter('all'); setKarigarFilter(''); }} className="mt-3 min-h-[44px] px-4 rounded-md border border-border text-base font-medium">{label('clear_filters')}</button>
               </div>
             ) : (
-              visible.slice(0, visibleLimit).map((o) => <OrderCard key={o.id} order={o} {...cardProps} />)
+              visible.slice(0, visibleLimit).map((o) => (
+                <div key={o.id} onClickCapture={() => setSelectedOrderId(o.id)} onFocusCapture={() => setSelectedOrderId(o.id)}
+                  className={`rounded-lg ${selectedOrder?.id === o.id ? 'lg:ring-2 lg:ring-primary lg:ring-offset-2 lg:ring-offset-background' : ''}`} data-testid={`order-select-${o.id}`}>
+                  <OrderCard order={o} {...cardProps} />
+                </div>
+              ))
             )}
             {visible.length > visibleLimit && <button type="button" className="w-full min-h-[48px] border border-border rounded-lg bg-card text-primary font-semibold" onClick={() => setVisibleLimit(n => n + 20)} data-testid="orders-show-more">{label('feature_more_orders', { shown: Math.min(visibleLimit, visible.length), total: visible.length })}</button>}
+          </div>
+          </div>
+          <aside className="hidden lg:block sticky top-[88px] max-h-[calc(100dvh-104px)] overflow-y-auto" data-testid="order-detail-aside">
+            <OrderDetailPane order={orders.length ? selectedOrder : null} shopFallback={shopLabel} onPrint={openReceipt} onEdit={cardProps.onEdit}
+              onChat={cardProps.onChat} onCustomer={(k) => navigate(`/customers/${encodeURIComponent(k)}`)} />
+          </aside>
           </div>
         </main>
       )}
 
       {section === 'customers' && (
-        <main className="p-4 max-w-2xl mx-auto">
+        <main className={wrap}>
           <CustomersPanel orders={orders} onHistory={(p) => navigate(`/customers/${encodeURIComponent(p)}`)} onQuickOrder={(c) => { setQuickCustomer(c); setQuickOpen(true); }} />
         </main>
       )}
       {section === 'hisaab' && (
-        <main className="p-4 max-w-2xl mx-auto space-y-4">
+        <main className={`${wrap} space-y-4`}>
           <h1 className="text-xl font-semibold">{label('hisaab_title')}</h1>
+          <div className="space-y-4 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-6 lg:items-start" data-testid="hisaab-grid">
+          <div className="space-y-4 min-w-0">
           <ProfitSummary orders={orders} />
           <button onClick={() => navigate('/earnings')} className="w-full min-h-[56px] rounded-lg border border-border bg-card px-4 flex items-center gap-3 text-start hover:bg-muted" data-testid="btn-open-earnings">
             <BarChart2 size={20} aria-hidden className="text-primary" />
             <span className="flex-1 text-base font-medium">{label('open_earnings')}</span>
             <ChevronRight size={20} aria-hidden className="text-muted-foreground rtl:rotate-180" />
           </button>
-          <PaymentsPanel orders={orders} onViewReceipt={openReceipt} />
+          </div>
+          <div className="min-w-0"><PaymentsPanel orders={orders} onViewReceipt={openReceipt} /></div>
+          </div>
         </main>
       )}
       {section === 'more' && (
-        <main className="p-4 max-w-2xl mx-auto">
-          <MorePanel onLogout={() => setLogoutOpen(true)} pendingCount={pendingCount} />
+        <main className={wrap}>
+          <MorePanel onLogout={() => setLogoutOpen(true)} pendingCount={pendingCount}
+            renderSettings={(close) => <PageMode onBack={close} bare><SettingsModal open onOpenChange={(v) => { if (!v) close(); }} orders={allOrders} setAllOrders={setAllOrders} /></PageMode>} />
         </main>
       )}
 
-      {section === 'settings' && page(<SettingsModal {...pageOpen} orders={allOrders} setAllOrders={setAllOrders} />)}
-      {section === 'earnings' && page(<EarningsModal {...pageOpen} orders={orders} />, '/hisaab')}
+      {section === 'settings' && page(<SettingsModal {...pageOpen} orders={allOrders} setAllOrders={setAllOrders} />, '/more', 'settings')}
+      {section === 'earnings' && page(<EarningsModal {...pageOpen} orders={orders} />, '/hisaab', 'earnings')}
       {section === 'due' && page(<DueTodayModal {...pageOpen} orders={orders} onViewReceipt={openReceipt} />, '/')}
       {section === 'worksheet' && page(<WorkSheetModal {...pageOpen} orders={orders} />)}
       {section === 'team' && page(<TeamModal {...pageOpen} />)}
-      {section === 'credit' && page(<CreditModal {...pageOpen} orders={orders} />)}
-      {section === 'impact' && page(<ImpactModal {...pageOpen} orders={orders} />)}
+      {section === 'credit' && page(<CreditModal {...pageOpen} orders={orders} />, '/more', 'credit')}
+      {section === 'impact' && page(<ImpactModal {...pageOpen} orders={orders} />, '/more', 'impact')}
       {section === 'reminders' && page(<PendingRemindersModal {...pageOpen} orders={orders} />)}
       {section === 'pitch' && <PitchDemo />}
       {section === 'share-profile' && <ShareProfileTools orders={orders} />}
@@ -320,7 +347,7 @@ export default function Dashboard({ section = 'orders', phone }: { section?: Sec
           }}
         />, '/customers')}
 
-      <BottomNav tab={navTab} onNew={() => setChooserOpen(true)} badge={pendingCount} />
+      <div className="lg:hidden"><BottomNav tab={navTab} onNew={() => setChooserOpen(true)} badge={pendingCount} /></div>
 
       <AlertDialog open={chooserOpen} onOpenChange={setChooserOpen}>
         <AlertDialogContent className="w-[calc(100%-1.5rem)] max-w-sm rounded-lg">

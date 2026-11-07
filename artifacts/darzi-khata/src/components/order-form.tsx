@@ -264,7 +264,7 @@ export function OrderForm({ open, onOpenChange, order, prefill, onSave }: OrderF
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-foreground/60 z-50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-        <Dialog.Content className="fixed inset-x-0 bottom-0 z-50 h-[94dvh] flex flex-col rounded-t-lg bg-background border-t overflow-hidden data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom motion-reduce:animate-none  outline-none max-w-lg mx-auto sm:h-[88vh] sm:bottom-auto sm:top-[50%] sm:-translate-y-1/2 sm:rounded-lg">
+        <Dialog.Content className="fixed inset-x-0 bottom-0 z-50 h-[94dvh] flex flex-col rounded-t-lg bg-background border-t overflow-hidden data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom motion-reduce:animate-none  outline-none max-w-lg lg:max-w-[560px] mx-auto sm:h-[88vh] sm:bottom-auto sm:top-[50%] sm:-translate-y-1/2 sm:rounded-lg">
           <div className="px-4 py-3 border-b flex justify-between items-center bg-card text-foreground border-border shrink-0">
             <div>
               <Dialog.Title className={"text-lg font-bold"}>{order ? label('edit_order') : label('new_order_2')}</Dialog.Title>
@@ -397,7 +397,7 @@ export function OrderForm({ open, onOpenChange, order, prefill, onSave }: OrderF
                     </>
                   )}
 
-                  <div>
+                  <div className="sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:gap-x-6" data-testid="measurement-grid">
                     {g.fields.map((f) => (
                       <MeasureField key={`${current.id}-${f.key}`} fieldKey={f.key} tk={f.tk} value={current.measurements[f.key]}
                         active={activeField === f.key} onFocus={() => setActiveField(f.key)} onChange={(v) => setMeasure(activeItem, f.key, v)} />

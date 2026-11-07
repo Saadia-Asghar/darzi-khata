@@ -32,7 +32,7 @@ export async function seedRegression(page: Page, language = 'en', dark = false) 
       cuffType: 'Simple', specialNotes: '', totalAmount: 1500, advanceAmount: 0, status: 'pending',
     }))));
   }, { language, dark });
-  await page.reload();
+  await page.goto('/');
   await expect(page.getByTestId('card-order-A')).toBeVisible();
 }
 
@@ -40,20 +40,22 @@ test('BUG 1: print isolates the complete receipt and exports one A4 page', async
   await seedRegression(page);
   await page.getByTestId('btn-receipt-A').click();
   await expect(page.locator('#receipt-print-area img')).toBeVisible();
-  await page.evaluate(() => { window.print = () => {}; });
   await page.getByTestId('btn-print-receipt').click();
-  await page.emulateMedia({ media: 'print' });
-  await expect(page.getByTestId('card-order-A')).not.toBeVisible();
-  const root = page.locator('#dk-print-root');
+  await expect(page.getByTestId('print-frame')).toHaveAttribute('data-ready', 'true');
+  const root = page.frameLocator('[data-testid="print-frame"]').locator('body');
   await expect(root).toContainText('DK-001');
   await expect(root).toContainText('Rs 1,500');
   await expect(root.locator('img')).toBeVisible();
   await mkdir('generated-artifacts/bugs', { recursive: true });
-  await page.screenshot({ path: 'generated-artifacts/bugs/parchi-print.png', fullPage: true });
-  const pdf = await page.pdf({ path: 'generated-artifacts/bugs/parchi.pdf', preferCSSPageSize: true });
+  const capture = await page.context().newPage();
+  await capture.setContent(await page.frameLocator('[data-testid="print-frame"]').locator('html').evaluate(el => el.outerHTML));
+  await capture.evaluate(() => document.fonts.ready);
+  await capture.screenshot({ path: 'generated-artifacts/bugs/parchi-print.png', fullPage: true });
+  const pdf = await capture.pdf({ path: 'generated-artifacts/bugs/parchi.pdf', preferCSSPageSize: true });
   const pages = pdf.toString('latin1').match(/\/Type\s*\/Page\b/g) || [];
   expect(pages).toHaveLength(1);
-  await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
+  await capture.close();
+  await root.evaluate(() => window.dispatchEvent(new Event('afterprint')));
   await expect(page.locator('body')).not.toHaveClass(/dk-printing/);
 });
 
@@ -209,45 +211,50 @@ for (const lang of ['en', 'ur']) for (const paper of ['58', '80']) {
     await page.getByTestId('btn-receipt-A').click();
     await expect(page.locator('#receipt-print-area img')).toBeVisible();
     await page.getByTestId(`paper-${paper}`).click();
-    await page.evaluate(() => { window.print = () => {}; });
     await page.getByTestId('btn-print-receipt').click();
-    await expect(page.locator('body')).toHaveClass(/dk-printing/);
-    await page.emulateMedia({ media: 'print' });
-    await expect(page.locator('#dk-print-root')).toHaveAttribute('dir', lang === 'ur' ? 'rtl' : 'ltr');
-    const pdf = await page.pdf({ preferCSSPageSize: true });
+    await expect(page.getByTestId('print-frame')).toHaveAttribute('data-ready', 'true');
+    const frame = page.frameLocator('[data-testid="print-frame"]');
+    await expect(frame.locator('html')).toHaveAttribute('dir', lang === 'ur' ? 'rtl' : 'ltr');
+    const capture = await page.context().newPage();
+    await capture.setContent(await frame.locator('html').evaluate(el => el.outerHTML));
+    await capture.evaluate(() => document.fonts.ready);
+    const pdf = await capture.pdf({ preferCSSPageSize: true });
     expect(pdf.toString('latin1').match(/\/Type\s*\/Page\b/g)).toHaveLength(1);
     const media = pdf.toString('latin1').match(/\/MediaBox\s*\[0 0 ([\d.]+) ([\d.]+)\]/);
     expect(media).toBeTruthy();
     expect(Math.abs(Number(media![1]) - Number(paper) * 72 / 25.4)).toBeLessThan(1);
     await mkdir('generated-artifacts/bugs', { recursive: true });
-    await page.screenshot({ path: `generated-artifacts/bugs/parchi-${lang}-${paper}mm.png`, fullPage: true });
-    await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
+    await capture.screenshot({ path: `generated-artifacts/bugs/parchi-${lang}-${paper}mm.png`, fullPage: true });
+    await capture.close();
+    await frame.locator('body').evaluate(() => window.dispatchEvent(new Event('afterprint')));
   });
 }
 
-test('worksheet and consented credit profile use the same isolated print root', async ({ page }) => {
+test('worksheet and consented credit profile use the same isolated print iframe', async ({ page }) => {
   await seedRegression(page);
-  await page.evaluate(() => { window.print = () => {}; });
   await page.goto('/worksheet');
-  await page.evaluate(() => { window.print = () => {}; });
   await page.getByRole('button', { name: 'Print', exact: true }).click();
-  await expect(page.locator('body')).toHaveClass(/dk-printing/);
-  await page.emulateMedia({ media: 'print' });
-  await expect(page.locator('#dk-print-root')).toContainText('Customer A');
-  await expect(page.getByTestId('nav-more')).not.toBeVisible();
-  await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
-  await page.emulateMedia({ media: 'screen' });
+  await expect(page.getByTestId('print-frame')).toHaveAttribute('data-ready', 'true');
+  await expect(page.frameLocator('[data-testid="print-frame"]').locator('body')).toContainText('Customer A');
+  await expect(page.frameLocator('[data-testid="print-frame"]').locator('nav, button, [role=dialog]')).toHaveCount(0);
+  await page.frameLocator('[data-testid="print-frame"]').locator('body').evaluate(() => window.dispatchEvent(new Event('afterprint')));
+  const [worksheetDownload] = await Promise.all([
+    page.waitForEvent('download'), page.getByTestId('btn-download-worksheet').click(),
+  ]);
+  expect(worksheetDownload.suggestedFilename()).toMatch(/\.pdf$/);
   await page.goto('/settings');
   await page.getByTestId('switch-demo-mode').click();
   await page.goto('/credit');
   await page.getByTestId('btn-apply-zindigi').click();
   await page.getByTestId('checkbox-consent').check();
   await page.getByTestId('btn-create-profile').click();
-  await page.evaluate(() => { window.print = () => {}; });
   await page.getByTestId('btn-print-profile').click();
-  await expect(page.locator('body')).toHaveClass(/dk-printing/);
-  await page.emulateMedia({ media: 'print' });
-  await expect(page.locator('#dk-print-root')).toContainText('Test Tailors');
-  await expect(page.getByTestId('nav-more')).not.toBeVisible();
-  await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
+  await expect(page.getByTestId('print-frame')).toHaveAttribute('data-ready', 'true');
+  await expect(page.frameLocator('[data-testid="print-frame"]').locator('body')).toContainText('Test Tailors');
+  await expect(page.frameLocator('[data-testid="print-frame"]').locator('nav, button, [role=dialog]')).toHaveCount(0);
+  await page.frameLocator('[data-testid="print-frame"]').locator('body').evaluate(() => window.dispatchEvent(new Event('afterprint')));
+  const [profileDownload] = await Promise.all([
+    page.waitForEvent('download'), page.getByTestId('btn-download-profile').click(),
+  ]);
+  expect(profileDownload.suggestedFilename()).toMatch(/\.pdf$/);
 });

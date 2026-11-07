@@ -78,8 +78,8 @@ export function SettingsModal({ open, onOpenChange, orders }: SettingsModalProps
     if (open) setFormData(settingsRef.current);
   }, [open, demoMode]);
   useEffect(() => {
-    if (open && window.location.hash === '#backup')
-      document.getElementById('backup-settings')?.scrollIntoView({ block: 'start' });
+    if (open && window.location.hash)
+      document.getElementById(window.location.hash === '#backup' ? 'backup-settings' : `settings-${window.location.hash.slice(1)}`)?.scrollIntoView({ block: 'start' });
   }, [open]);
 
   const handleChange = (field: keyof ShopSettings, value: string | boolean) => {
@@ -200,10 +200,10 @@ export function SettingsModal({ open, onOpenChange, orders }: SettingsModalProps
             </Dialog.Close>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-5 space-y-5">
+          <div className="dk-settings-grid flex-1 overflow-y-auto p-5 space-y-5" data-testid="settings-sections">
 
             {/* Language & font */}
-            <section className="bg-card p-4 rounded-lg border border-card-border space-y-3">
+            <section id="settings-language" className="bg-card p-4 rounded-lg border border-card-border space-y-3">
               <div>
                 <div className="flex items-center gap-2 text-sm font-bold mb-2"><Languages size={16} aria-hidden /> {label('language')}</div>
                 <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label={label('language')}>
@@ -229,10 +229,10 @@ export function SettingsModal({ open, onOpenChange, orders }: SettingsModalProps
               </div>
             </section>
 
-            <PinSettings />
+            <div id="settings-pin"><PinSettings /></div>
 
             {/* Dark Mode */}
-            <section className="bg-card p-4 rounded-lg border border-card-border">
+            <section id="settings-dark" className="bg-card p-4 rounded-lg border border-card-border">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Moon size={18} className={formData.darkMode ? 'text-warning' : 'text-muted-foreground'} />
@@ -253,7 +253,7 @@ export function SettingsModal({ open, onOpenChange, orders }: SettingsModalProps
             </section>
 
             {/* Shop Details */}
-            <section className="bg-card p-4 rounded-lg border border-card-border space-y-3">
+            <section id="settings-shop" className="bg-card p-4 rounded-lg border border-card-border space-y-3">
               <h3 className="font-bold text-foreground border-b border-border pb-2 text-sm  ">{label('shop_details')}</h3>
               <div>
                 <label className="block text-sm font-semibold text-muted-foreground mb-1">{label('shop_name_english')}</label>
@@ -286,7 +286,7 @@ export function SettingsModal({ open, onOpenChange, orders }: SettingsModalProps
             </section>
 
             {/* Payment details */}
-            <section className="bg-card p-4 rounded-lg border border-card-border space-y-3">
+            <section id="settings-payment" className="bg-card p-4 rounded-lg border border-card-border space-y-3">
               <h3 className="font-bold text-foreground border-b border-border pb-2 text-sm flex items-center gap-2"><Wallet size={16} aria-hidden /> {label('payment_details')}</h3>
               <p className="text-xs text-muted-foreground">{label('shown_on_receipts_and_whatsapp_messages_')}</p>
               <div>
@@ -322,7 +322,7 @@ export function SettingsModal({ open, onOpenChange, orders }: SettingsModalProps
             </section>
 
             {/* Demo mode */}
-            <section className={`p-4 rounded-lg border space-y-3 ${demoMode ? 'bg-warning-soft  border-border ' : 'bg-card border-card-border'}`}>
+            <section id="settings-demo" className={`p-4 rounded-lg border space-y-3 ${demoMode ? 'bg-warning-soft  border-border ' : 'bg-card border-card-border'}`}>
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-start gap-2">
                   <FlaskConical size={18} className="text-warning mt-0.5 shrink-0" />
@@ -341,7 +341,7 @@ export function SettingsModal({ open, onOpenChange, orders }: SettingsModalProps
             </section>
 
             {/* Karigars */}
-            <section className="bg-card p-4 rounded-lg border border-card-border">
+            <section id="settings-team" className="bg-card p-4 rounded-lg border border-card-border">
               <h3 className="font-bold text-foreground border-b border-border pb-2 text-sm   mb-3">{label('karigar_list')}</h3>
               <div className="flex gap-2 mb-3">
                 <input
@@ -373,7 +373,7 @@ export function SettingsModal({ open, onOpenChange, orders }: SettingsModalProps
             </section>
 
             {/* Templates */}
-            <section className="bg-card p-4 rounded-lg border border-card-border">
+            <section id="settings-templates" className="bg-card p-4 rounded-lg border border-card-border">
               <h3 className="font-bold text-foreground border-b border-border pb-2 text-sm   mb-3">{label('measurement_templates')}</h3>
               {templates.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-2">{label('no_templates_yet')}</p>

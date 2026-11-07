@@ -3,7 +3,7 @@ import { StatusBadge } from './status-meta';
 import { usePreferences } from '../hooks/use-preferences';
 import { shortDate } from '../lib/i18n';
 import * as Dialog from './page-dialog';
-import { X, Printer, ClipboardList, AlertTriangle } from 'lucide-react';
+import { X, Printer, Download, ClipboardList, AlertTriangle } from 'lucide-react';
 import { Order } from '../types/order';
 import { useSettings } from '../hooks/use-settings';
 import { printElement } from '../lib/print';
@@ -108,10 +108,13 @@ export function WorkSheetModal({ open, onOpenChange, orders }: WorkSheetModalPro
             </div>
             <div className="flex items-center gap-2 print:hidden">
               <button
-                onClick={(event) => void printElement(event.currentTarget.closest('[role="dialog"], [role="region"]') as HTMLElement, { paper: 'a4' })}
+                onClick={() => void printElement(document.getElementById('worksheet-print-area'), { paper: 'a4' })}
                 className="flex items-center gap-2 px-4 min-h-[44px] bg-card/10 hover:bg-card/20 rounded-lg text-sm font-bold transition-colors"
               >
                 <Printer size={16} aria-hidden /> {label('print')}
+              </button>
+              <button onClick={() => void printElement(document.getElementById('worksheet-print-area'), { download: true })} className="flex items-center gap-2 px-3 min-h-[44px] rounded-lg text-sm font-bold" data-testid="btn-download-worksheet">
+                <Download size={16} aria-hidden /> {label('feature_download_pdf')}
               </button>
               <Dialog.Close asChild>
                 <button className="h-11 w-11 flex items-center justify-center rounded-full hover:bg-primary text-primary-foreground" aria-label={label('close')}>
@@ -122,7 +125,8 @@ export function WorkSheetModal({ open, onOpenChange, orders }: WorkSheetModalPro
           </div>
 
           {/* Scrollable table */}
-          <div className="flex-1 overflow-auto p-4 print:overflow-visible print:p-6">
+          <div id="worksheet-print-area" className="flex-1 overflow-auto p-4 print:overflow-visible print:p-6">
+            <h2 className="hidden print:block font-bold text-lg">{settings.shopName} · {label('production_work_sheet')}</h2>
             {activeOrders.length === 0 ? (
               <div className="text-center py-16 text-muted-foreground">
                 <ClipboardList size={48} className="mx-auto mb-3" />
