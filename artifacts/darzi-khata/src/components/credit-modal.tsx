@@ -2,6 +2,7 @@ import { tl } from '../lib/i18n';
 import { usePreferences } from '../hooks/use-preferences';
 import { useMemo, useState } from 'react';
 import { printElement } from '../lib/print';
+import { useToast } from '@/hooks/use-toast';
 import { ShieldCheck, Info, Printer, Download, ArrowLeft, Lock, FileText } from 'lucide-react';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from './page-dialog';
@@ -17,6 +18,7 @@ type View = 'score' | 'consent' | 'profile';
 
 export function CreditModal({ open, onOpenChange, orders }: Props) {
   const { label, lang } = usePreferences();
+  const { toast } = useToast();
   const { settings } = useSettings();
   const p = useMemo(() => computeCreditScore(orders, new Date(), settings.expenses), [orders, lang, settings.expenses]);
   const { demoMode } = useDemoMode();
@@ -25,8 +27,9 @@ export function CreditModal({ open, onOpenChange, orders }: Props) {
   const generatedAt = useMemo(() => new Date(), [view]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const close = (o: boolean) => { onOpenChange(o); if (!o) { setView('score'); setAgree(false); } };
-  const print = () => {
-    void printElement(document.getElementById('credit-profile-sheet'), { paper: 'a4' });
+  const print = (download = false) => {
+    void printElement(document.getElementById('credit-profile-sheet'), { paper: 'a4', download })
+      .catch(() => toast({ title: label('print_failed'), variant: 'destructive' }));
   };
 
   return (
@@ -71,8 +74,8 @@ export function CreditModal({ open, onOpenChange, orders }: Props) {
             <div className="space-y-4 dk-rise">
               <div id="credit-profile-sheet" className="rounded-lg border border-border bg-card dark:bg-card p-4"><ProfileSheet p={p} shopName={settings.shopName} shopType={settings.shopType} at={generatedAt} demo={demoMode} /></div>
               <p className="text-sm text-muted-foreground">{label('not_submitted_to_zindigi_or_any_lender_f')}</p>
-              <button onClick={print} className="w-full min-h-[48px] rounded-lg bg-accent hover:bg-warning text-accent-foreground font-bold flex items-center justify-center gap-2" data-testid="btn-print-profile"><Printer size={16} aria-hidden /> {label('print_save_pdf')}</button>
-              <button onClick={() => void printElement(document.getElementById('credit-profile-sheet'), { download: true })} className="w-full min-h-[48px] rounded-lg border border-border font-bold flex items-center justify-center gap-2" data-testid="btn-download-profile"><Download size={16} aria-hidden /> {label('feature_download_pdf')}</button>
+              <button onClick={() => print()} className="w-full min-h-[48px] rounded-lg bg-accent hover:bg-warning text-accent-foreground font-bold flex items-center justify-center gap-2" data-testid="btn-print-profile"><Printer size={16} aria-hidden /> {label('print')}</button>
+              <button onClick={() => print(true)} className="w-full min-h-[48px] rounded-lg border border-border font-bold flex items-center justify-center gap-2" data-testid="btn-download-profile"><Download size={16} aria-hidden /> {label('feature_download_pdf')}</button>
             </div>
           )}
         </div>

@@ -7,6 +7,7 @@ import { X, Printer, Download, ClipboardList, AlertTriangle } from 'lucide-react
 import { Order } from '../types/order';
 import { useSettings } from '../hooks/use-settings';
 import { printElement } from '../lib/print';
+import { useToast } from '@/hooks/use-toast';
 
 interface WorkSheetModalProps {
   open: boolean;
@@ -17,6 +18,11 @@ interface WorkSheetModalProps {
 export function WorkSheetModal({ open, onOpenChange, orders }: WorkSheetModalProps) {
   const { settings } = useSettings();
   const { label, lang } = usePreferences();
+  const { toast } = useToast();
+  const printSheet = (download = false) => {
+    void printElement(document.getElementById('worksheet-print-area'), { paper: 'a4', download })
+      .catch(() => toast({ title: label('print_failed'), variant: 'destructive' }));
+  };
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -108,12 +114,12 @@ export function WorkSheetModal({ open, onOpenChange, orders }: WorkSheetModalPro
             </div>
             <div className="flex items-center gap-2 print:hidden">
               <button
-                onClick={() => void printElement(document.getElementById('worksheet-print-area'), { paper: 'a4' })}
+                onClick={() => printSheet()}
                 className="flex items-center gap-2 px-4 min-h-[44px] bg-card/10 hover:bg-card/20 rounded-lg text-sm font-bold transition-colors"
               >
                 <Printer size={16} aria-hidden /> {label('print')}
               </button>
-              <button onClick={() => void printElement(document.getElementById('worksheet-print-area'), { download: true })} className="flex items-center gap-2 px-3 min-h-[44px] rounded-lg text-sm font-bold" data-testid="btn-download-worksheet">
+              <button onClick={() => printSheet(true)} className="flex items-center gap-2 px-3 min-h-[44px] rounded-lg text-sm font-bold" data-testid="btn-download-worksheet">
                 <Download size={16} aria-hidden /> {label('feature_download_pdf')}
               </button>
               <Dialog.Close asChild>

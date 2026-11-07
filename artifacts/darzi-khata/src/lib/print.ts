@@ -114,6 +114,15 @@ export async function printElement(node: HTMLElement | null, { paper = 'a4', dow
     `;
     doc.head.append(style);
     doc.querySelector('main')!.append(doc.adoptNode(clone));
+    // Register face usage before reading fonts.ready; a freshly written iframe
+    // can otherwise report an already-resolved ready promise before layout.
+    void doc.body.offsetHeight;
+    if (doc.documentElement.lang === 'ur') {
+      await Promise.all([
+        doc.fonts.load('400 16px PrintUrdu', 'درزی کھاتہ'),
+        doc.fonts.load('700 16px PrintUrdu', 'درزی کھاتہ'),
+      ]);
+    }
     await doc.fonts.ready;
     await Promise.all([...doc.images].map(image => image.decode()));
     if (paper !== 'a4') {

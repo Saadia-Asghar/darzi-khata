@@ -55,7 +55,7 @@ test('BUG 1: print isolates the complete receipt and exports one A4 page', async
   const pages = pdf.toString('latin1').match(/\/Type\s*\/Page\b/g) || [];
   expect(pages).toHaveLength(1);
   await capture.close();
-  await root.evaluate(() => window.dispatchEvent(new Event('afterprint')));
+  await page.evaluate(() => (document.querySelector('[data-testid="print-frame"]') as HTMLIFrameElement)?.contentWindow?.dispatchEvent(new Event('afterprint')));
   await expect(page.locator('body')).not.toHaveClass(/dk-printing/);
 });
 
@@ -217,7 +217,13 @@ for (const lang of ['en', 'ur']) for (const paper of ['58', '80']) {
     await expect(frame.locator('html')).toHaveAttribute('dir', lang === 'ur' ? 'rtl' : 'ltr');
     const capture = await page.context().newPage();
     await capture.setContent(await frame.locator('html').evaluate(el => el.outerHTML));
-    await capture.evaluate(() => document.fonts.ready);
+    await capture.evaluate(async () => {
+      void document.body.offsetHeight;
+      await document.fonts.ready;
+      await Promise.all([...document.images].map(image => image.decode()));
+    });
+    await mkdir('generated-artifacts/bugs', { recursive: true });
+    await writeFile(`generated-artifacts/bugs/thermal-${lang}-${paper}.html`, await capture.content());
     const pdf = await capture.pdf({ preferCSSPageSize: true });
     expect(pdf.toString('latin1').match(/\/Type\s*\/Page\b/g)).toHaveLength(1);
     const media = pdf.toString('latin1').match(/\/MediaBox\s*\[0 0 ([\d.]+) ([\d.]+)\]/);
@@ -226,7 +232,7 @@ for (const lang of ['en', 'ur']) for (const paper of ['58', '80']) {
     await mkdir('generated-artifacts/bugs', { recursive: true });
     await capture.screenshot({ path: `generated-artifacts/bugs/parchi-${lang}-${paper}mm.png`, fullPage: true });
     await capture.close();
-    await frame.locator('body').evaluate(() => window.dispatchEvent(new Event('afterprint')));
+    await page.evaluate(() => (document.querySelector('[data-testid="print-frame"]') as HTMLIFrameElement)?.contentWindow?.dispatchEvent(new Event('afterprint')));
   });
 }
 
@@ -237,7 +243,7 @@ test('worksheet and consented credit profile use the same isolated print iframe'
   await expect(page.getByTestId('print-frame')).toHaveAttribute('data-ready', 'true');
   await expect(page.frameLocator('[data-testid="print-frame"]').locator('body')).toContainText('Customer A');
   await expect(page.frameLocator('[data-testid="print-frame"]').locator('nav, button, [role=dialog]')).toHaveCount(0);
-  await page.frameLocator('[data-testid="print-frame"]').locator('body').evaluate(() => window.dispatchEvent(new Event('afterprint')));
+  await page.evaluate(() => (document.querySelector('[data-testid="print-frame"]') as HTMLIFrameElement)?.contentWindow?.dispatchEvent(new Event('afterprint')));
   const [worksheetDownload] = await Promise.all([
     page.waitForEvent('download'), page.getByTestId('btn-download-worksheet').click(),
   ]);
@@ -252,7 +258,7 @@ test('worksheet and consented credit profile use the same isolated print iframe'
   await expect(page.getByTestId('print-frame')).toHaveAttribute('data-ready', 'true');
   await expect(page.frameLocator('[data-testid="print-frame"]').locator('body')).toContainText('Test Tailors');
   await expect(page.frameLocator('[data-testid="print-frame"]').locator('nav, button, [role=dialog]')).toHaveCount(0);
-  await page.frameLocator('[data-testid="print-frame"]').locator('body').evaluate(() => window.dispatchEvent(new Event('afterprint')));
+  await page.evaluate(() => (document.querySelector('[data-testid="print-frame"]') as HTMLIFrameElement)?.contentWindow?.dispatchEvent(new Event('afterprint')));
   const [profileDownload] = await Promise.all([
     page.waitForEvent('download'), page.getByTestId('btn-download-profile').click(),
   ]);

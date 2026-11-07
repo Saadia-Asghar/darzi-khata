@@ -37,7 +37,7 @@ async function noOverflow(page: Page) {
   const overflow = await page.evaluate(() => {
     const viewport = innerWidth;
     // Check boxes too: overflow-x:clip must not conceal a broken layout.
-    const bad = [...document.querySelectorAll<HTMLElement>('main *, [data-testid="desktop-sidebar"]')]
+    const bad = [...document.querySelectorAll<HTMLElement>('main *, [role="dialog"] *, [data-testid="desktop-sidebar"]')]
       .filter(el => {
         const rect = el.getBoundingClientRect();
         const style = getComputedStyle(el);
@@ -160,5 +160,6 @@ for(const lang of ['en','ur'] as const) for(const width of [375,1366]) {
     expect(download.suggestedFilename()).toBe('DK-001.pdf');
     await download.saveAs(`${prefix}-download.pdf`);
     expect(execFileSync('pdfinfo',[`${prefix}-download.pdf`],{encoding:'utf8'})).toMatch(/Pages:\s+1/);
+    execFileSync('pdftoppm',['-singlefile','-scale-to','1200','-png',`${prefix}-download.pdf`,`${prefix}-download-pdf`]);
   });
 }

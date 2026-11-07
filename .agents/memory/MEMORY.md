@@ -3,3 +3,4 @@
 - [Backup compatibility](backup-compatibility.md) — downloaded encrypted backups need long-lived readers; crypto upgrades must not strand older files.
 - [Mobile performance evidence](performance-audits.md) — remeasure current source first; use repeated isolated runs and conservative evidence, not historical-score attribution.
 - [Dependency release timing](dependency-release-timing.md) — pnpm's maturity cutoff is fixed at install start; an almost-mature patch needs a later run, not a guard bypass.
+- [Portable PDF downloads](print-portability.md) — local image-based downloads preserve Urdu shaping; browser print-to-PDF remains the text-preserving path.
