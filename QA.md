@@ -1,3 +1,71 @@
+# Compact phone and desktop layout — 7 November 2026
+
+**Verified preview:** `Version 1.5.0+7015e9ad.20261107105447Z`.
+This section supersedes the older 1/2/3 settings-grid and 560px full-form rules.
+Publication is a user action; these results do **not** claim the new layout is live.
+
+## Checks on the final production build
+
+- `pnpm typecheck`: PASS across the workspace.
+- `pnpm test`: PASS — 29 core tests and 118 Vitest tests in 10 files,
+  including i18n and design lint.
+- `cd artifacts/darzi-khata && npx impeccable detect src/`: 173 files,
+  **zero findings**. This is regex/source scanning only, not a browser contrast
+  or accessibility certification. Removed the flagged explicit print font
+  in favour of the platform system font; Urdu keeps the embedded Nastaliq font.
+- Production Vite/PWA build: PASS.
+- `E2E_PRODUCTION=1 pnpm exec playwright test e2e/compact-layout.spec.ts`:
+  **12 passed** in 4.2 minutes, using the actual demo in isolated browser contexts.
+  English and Urdu at 360, 375, 768, 1024, 1366, 1920px:
+  Orders, More, Customers, Hisaab, Credit, Impact/Payments, Settings, full-order
+  measurements and Login. All checked for document horizontal overflow.
+- At 375×812, **4 complete 126px cards** fit above the bottom navigation in both
+  languages; at 1366×800, **10 complete rows** fit with sidebar, hidden bottom
+  navigation and the Today/detail pane visible.
+- More tiles have **2/3/4 columns**; checks found no vertical gaps greater than
+  96px between visible, vertically stacked content siblings.
+- Full-order form measurement buttons/inputs stay within their grid at all
+  twelve size/language combinations. Phone touch controls remain large.
+- Retained demo sessions still show the landing page at `/` and require login
+  after Open app; only Try demo signs in automatically.
+- Two final receipt print/download regression journeys passed: English phone
+  and Urdu desktop, verifying isolated printing, A4 page count, QR rendering
+  and actual PDF download.
+- Independent browser journey passed: card tap → details → parchi, full-order
+  creation with distinctive measurements, reload/persistence, separate existing
+  order unchanged, Urdu sidebar on the right. The tester found tight desktop
+  measurement controls; these were corrected, then the final twelve Playwright
+  cases verified no control clipping. No app error was observed.
+
+## What changed
+
+56px phone header; 52px summary; combined horizontally scrolling filters;
+three-row phone cards with secondary actions in overflow; tablet two-column
+orders; desktop dense order list and Today/selected details with measurements,
+payment history and parchi preview; 220px desktop sidebar, icon-only at
+1024–1279px; 56px top bar; up to 1440px content width; two/three/four-column
+More tools; page navigation rather than a settings side modal; real-data
+financial KPI grids; desktop two-column auth; full forms up to 720px with
+customer/garment sections side by side; reduced app and landing spacing.
+Existing local accounts, saved orders and offline storage formats are unchanged.
+
+## Evidence and publishing boundary
+
+- Screenshots: `qa-screens/layout/` — 108 PNGs plus twelve metrics JSON files.
+- Downloadable report and evidence ZIP:
+  `generated-artifacts/compact-layout/`.
+- Before changes, the new 375px density test failed with **zero complete cards**
+  above navigation. Initial desktop test attempts selected the deliberately
+  hidden phone rendering; fixed the test to select the visible row. Final
+  twelve-case run has no failures.
+- A fresh browser check of the published site before this change confirmed
+  `/` was already the landing page, with desktop sidebar and
+  `Version 1.5.0+33b89fb0.20261107093925Z`. The reported old phone-only desktop
+  view was not reproduced in that fresh context.
+- New preview evidence is **not** published-site evidence. Publish must be
+  clicked by the user; after that, compare live More's source revision
+  `7015e9ad` (timestamp will change) and live 375/1366px views.
+
 # Darzi Khata verification
 
 ## Isolated printing and desktop workspace, 7 November 2026

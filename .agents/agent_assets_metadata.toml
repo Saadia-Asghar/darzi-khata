@@ -196,3 +196,87 @@ mtime_ms = 1794036258849
 storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:00e5e9e4-bf06-459e-935c-fb2d11805f64/e0f2df31-bc92-4f36-ad24-aee99c4a3984/858564fe-2370-4d14-83a3-b4e81cfdc1e2"
 storage_version_token = "1794036278279371"
 content_type = "application/octet-stream"
+
+[[outputs]]
+id = "4zk2_MxGGVBVpkDW4s4AV"
+uri = "file://qa-screens/layout/en-375-orders.png"
+type = "image"
+title = "Phone Orders — 375px"
+description = "Verified workspace preview. Publishing is still required to update the public site."
+logical_id = "2b8fccf5-eff0-42d0-b3e3-59d5b5bad489"
+content_hash = "sha256:103aa4043a623170907e244e2396da1079f1fca96bf4bcb80f92c0933c204aa9"
+size = 73702
+mtime_ms = 1794048946361
+storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:00e5e9e4-bf06-459e-935c-fb2d11805f64/2b8fccf5-eff0-42d0-b3e3-59d5b5bad489/7aac747c-e1f6-4f3a-a868-6d804b0b53b0"
+storage_version_token = "1794049278834886"
+content_type = "image/png"
+
+[[outputs]]
+id = "MBQx2z5rlTpq4tldDmKhl"
+uri = "file://qa-screens/layout/en-375-more.png"
+type = "image"
+title = "Phone More — 375px"
+description = "Verified workspace preview. Publishing is still required to update the public site."
+logical_id = "3a6d5ee0-5c69-4ec0-9ba2-466867f195eb"
+content_hash = "sha256:347156d2b1d8e5645ea20a011e75c537a6bae939d243859c29c083a13e39e767"
+size = 71033
+mtime_ms = 1794048947561
+storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:00e5e9e4-bf06-459e-935c-fb2d11805f64/3a6d5ee0-5c69-4ec0-9ba2-466867f195eb/89e9374c-c3b0-4529-bbe0-235cb6076f6f"
+storage_version_token = "1794049280173989"
+content_type = "image/png"
+
+[[outputs]]
+id = "JExB7P89cXTv-Zl46ohp5"
+uri = "file://qa-screens/layout/en-1366-orders.png"
+type = "image"
+title = "Laptop Orders — 1366px"
+description = "Verified workspace preview. Publishing is still required to update the public site."
+logical_id = "81c84524-0516-4686-91d3-c11e0315f6ca"
+content_hash = "sha256:1e5aab507ef2b23d6b7275a269e7888d80f09c80ecd0a21bd5a7ec50d1cb8808"
+size = 168829
+mtime_ms = 1794049012952
+storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:00e5e9e4-bf06-459e-935c-fb2d11805f64/81c84524-0516-4686-91d3-c11e0315f6ca/a8c69a0a-7e75-4918-b2c8-10f5a780833d"
+storage_version_token = "1794049281563643"
+content_type = "image/png"
+
+[[outputs]]
+id = "QR7UMJ6oWR9UI-IvoPBRh"
+uri = "file://qa-screens/layout/en-1366-more.png"
+type = "image"
+title = "Laptop More — 1366px"
+description = "Verified workspace preview. Publishing is still required to update the public site."
+logical_id = "11b0298e-2d28-43ae-9db3-1ebd780b8397"
+content_hash = "sha256:bf95e9c66198223c3585f3e89b5eaf942172f78448975a99ff0aa70c92c3ddd9"
+size = 139095
+mtime_ms = 1794049014184
+storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:00e5e9e4-bf06-459e-935c-fb2d11805f64/11b0298e-2d28-43ae-9db3-1ebd780b8397/906bdecf-2e39-4703-b269-86f9d805c302"
+storage_version_token = "1794049282849464"
+content_type = "image/png"
+
+[[outputs]]
+id = "azbao98MDjdDrOrhCq6A5"
+uri = "file://generated-artifacts/compact-layout/proof.html"
+type = "html"
+title = "Layout proof — English and Urdu"
+description = "Verified workspace preview. Publishing is still required to update the public site."
+logical_id = "b87dcbee-3747-4e63-9f8d-9721a1f74035"
+content_hash = "sha256:3a7efd70ef8e0c8ccf71e1cd8f1c09eec58973153a2f53c5f0f50ae0e56f37e6"
+size = 1239045
+mtime_ms = 1794049254756
+storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:00e5e9e4-bf06-459e-935c-fb2d11805f64/b87dcbee-3747-4e63-9f8d-9721a1f74035/25f3ed03-63cf-4b93-952e-5f3afb06e1d4"
+storage_version_token = "1794049284189796"
+content_type = "text/html"
+
+[[outputs]]
+id = "lVpzLXudK43zMBJxatvkl"
+uri = "file://generated-artifacts/compact-layout/evidence.zip"
+type = "unspecified"
+title = "All screenshots and test output"
+description = "Verified workspace preview. Publishing is still required to update the public site."
+logical_id = "f427e7d2-a428-41f7-9388-8f98bd301339"
+content_hash = "sha256:bb2bf2d9c3d28c62b15989d33b508ef66cc3f8dc05faa2c6d6631c71a29b89d1"
+size = 10107120
+mtime_ms = 1794049255616
+storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:00e5e9e4-bf06-459e-935c-fb2d11805f64/f427e7d2-a428-41f7-9388-8f98bd301339/01d11b8c-60f5-49d8-b0c8-1f6b35411d58"
+storage_version_token = "1794049285570173"
+content_type = "application/octet-stream"

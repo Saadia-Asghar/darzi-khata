@@ -13,4 +13,4 @@ The user wants an obvious English/Urdu switch and less text clutter. Show only t
 
 **Why:** The user said the app had too much cluttered text and asked for a language-switching option.
 
-**How to apply:** Keep language selection visible on main screens and tool pages. Persist it per shop, preserve features, and put secondary guidance behind expandable Help rather than repeating bilingual paragraphs.
+**How to apply:** Persist the selected language per shop and show only that language. Follow the current phone Settings/desktop top-bar placement in replit.md; put secondary guidance behind Help rather than repeating bilingual paragraphs.
