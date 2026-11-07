@@ -28,6 +28,9 @@ sync, external database or bank integration in the approved offline-only upgrade
 - Demo mode isolates financial sample data from original records. Never clear
   real storage while refreshing a demo. Team/accounts remain local browser data.
 - The public landing page is `/`; application routes live under `/app`.
+  Open app and Start free (including footer copies) must open the Login tab,
+  even after a demo/session visit. Only Try demo shop may auto-open the demo.
+  Do not erase saved accounts, orders or demo data to enforce this routing.
   Installed PWAs bypass the landing page. Demo counters must stay labelled
   as demo until genuine pilot aggregates exist.
 - Shared lender/status links are seven-day self-signed snapshots, not

@@ -1,14 +1,13 @@
 import { useEffect, useState, type MouseEvent, type ReactNode } from 'react';
 import { ArrowRight, Check, Github, MessageCircle, Play, ShieldCheck } from 'lucide-react';
 import { DICT, fill, money, type DictKey, type Lang } from '../lib/i18n';
-import { APP_PATH, BASE, LOGIN_PATH, go } from '../lib/app-paths';
+import { BASE, LOGIN_PATH, go } from '../lib/app-paths';
 import { BrandMark } from '../components/brand-mark';
 import type { LandingStats } from './landing-stats';
 
 declare const __DARZI_BUILD__: string;
 
 const LANG_KEY = 'darzi-khata-auth-lang';
-const SESSION_KEY = 'darzi-khata-session';
 // Real contact details are configured at build time. Nothing is invented here.
 const WHATSAPP = (import.meta.env.VITE_CONTACT_WHATSAPP as string | undefined)?.replace(/\D/g, '');
 const GITHUB = 'https://github.com/Saadia-Asghar/darzi-khata';
@@ -19,9 +18,6 @@ const SHOT_W = 375, SHOT_H = 812;
 
 function readLang(): Lang {
   try { return localStorage.getItem(LANG_KEY) === 'ur' ? 'ur' : 'en'; } catch { return 'en'; }
-}
-function signedIn() {
-  try { return !!sessionStorage.getItem(SESSION_KEY); } catch { return false; }
 }
 
 function Folio({ n, children, id }: { n: string; children: ReactNode; id?: string }) {
@@ -49,7 +45,6 @@ export default function Landing() {
   const [stats, setStats] = useState<LandingStats | null>(null);
   const t = (k: DictKey, vars?: Record<string, string | number>) => fill(DICT[k][lang], vars, lang);
   const ur = lang === 'ur';
-  const loggedIn = signedIn();
 
   useEffect(() => {
     const el = document.documentElement;
@@ -72,8 +67,8 @@ export default function Landing() {
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
     e.preventDefault(); go(to);
   };
-  const openHref = loggedIn ? APP_PATH : LOGIN_PATH;
-  const signupHref = `${LOGIN_PATH}?mode=signup`;
+  const openHref = LOGIN_PATH;
+  const signupHref = LOGIN_PATH;
   const demoHref = `${LOGIN_PATH}?demo=1`;
   const version = typeof __DARZI_BUILD__ === 'string' ? __DARZI_BUILD__ : 'dev';
 

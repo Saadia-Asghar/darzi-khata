@@ -26,8 +26,8 @@ for (const lang of ['en', 'ur'] as const) {
     expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
     await page.screenshot({ path: `generated-artifacts/launch/landing-${lang}.png`, fullPage: true });
     await page.getByTestId('link-start-free').click();
-    await expect(page).toHaveURL(/\/app\/login\?mode=signup$/);
-    await expect(page.getByTestId('input-signup-name')).toBeVisible();
+    await expect(page).toHaveURL(/\/app\/login$/);
+    await expect(page.getByTestId('input-login-email')).toBeVisible();
     await demo(page, lang);
     await page.evaluate(() => document.fonts.ready);
     await page.screenshot({ path: `artifacts/darzi-khata/public/screens/orders-${lang}.png` });
@@ -63,6 +63,54 @@ test('installed PWA skips landing and uses app start URL', async ({ page }) => {
   const manifest = await page.request.get('/manifest.webmanifest');
   expect((await manifest.json()).start_url).toBe('/app');
 });
+
+for (const language of ['en', 'ur'] as const) {
+  test(`landing login buttons never resume the demo ${language}`, async ({ page }) => {
+    const buttons = ['link-open-app', 'link-start-free', 'link-start-free-bottom', 'link-open-app-bottom'];
+    await page.goto('/');
+    await page.getByTestId(`landing-lang-${language}`).click();
+    for (const button of buttons) {
+      await page.goto('/');
+      await expect(page.getByTestId(button)).toHaveAttribute('href', '/app/login');
+      await page.getByTestId(button).click();
+      await expect(page).toHaveURL(/\/app\/login$/);
+      await expect(page.getByTestId('input-login-email')).toBeVisible();
+      await expect(page.getByTestId('input-signup-name')).toHaveCount(0);
+    }
+    // Reproduce the reported case: a previous demo session is still present.
+    await demo(page, language);
+    const storedDemo = () => page.evaluate(() => ({
+      orders: localStorage.getItem('darzi-khata-orders-financial-demo-demo-account'),
+      accounts: localStorage.getItem('darzi-khata-accounts'),
+    }));
+    const before = await storedDemo();
+    for (const button of buttons) {
+      await page.goto('/');
+      await page.getByTestId(button).click();
+      await expect(page).toHaveURL(/\/app\/login$/);
+      await expect(page.getByTestId('input-login-email')).toBeVisible();
+      await expect(page.getByTestId('nav-more')).toHaveCount(0);
+      await page.reload();
+      await expect(page.getByTestId('input-login-email')).toBeVisible();
+      expect(await storedDemo()).toEqual(before);
+    }
+    // Wrong credentials must not reveal the old authenticated demo session.
+    await page.getByTestId('input-login-email').fill('demo@darzikhata.com');
+    await page.getByTestId('input-login-password').fill('incorrect-password');
+    await page.getByTestId('btn-login').click();
+    await expect(page.getByTestId('btn-login')).toBeEnabled();
+    await expect(page.getByTestId('input-login-email')).toBeVisible();
+    await expect(page.getByTestId('nav-more')).toHaveCount(0);
+    await page.getByTestId('input-login-password').fill('demo1234');
+    await page.getByTestId('btn-login').click();
+    await expect(page.getByTestId('nav-more')).toBeVisible();
+    expect(await storedDemo()).toEqual(before);
+    // The separate, explicit demo action remains available.
+    await page.goto('/');
+    await page.getByTestId('link-try-demo').click();
+    await expect(page.getByTestId('nav-more')).toBeVisible();
+  });
+}
 test('order batches keep every record searchable and load more without losing data', async ({ page }) => {
   await demo(page);
   await expect(page.locator('[data-testid^="card-order-"]')).toHaveCount(20);

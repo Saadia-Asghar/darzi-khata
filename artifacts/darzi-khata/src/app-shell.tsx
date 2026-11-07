@@ -21,6 +21,10 @@ export default function AppShell() {
   const [query] = useState(() => new URLSearchParams(window.location.search));
   const initialTab = query.get('mode') === 'signup' ? 'signup' : 'login';
   const wantsDemo = query.get('demo') === '1';
+  // An explicit visit to Login must not silently resume a previous demo/account.
+  // Keep its data/session intact, but require a successful form submission here.
+  const [loginRequested, setLoginRequested] = useState(() =>
+    window.location.pathname.replace(/\/$/, '') === LOGIN_PATH && !wantsDemo);
   const [demoPending, setDemoPending] = useState(wantsDemo && currentUser?.id !== 'demo-account');
   const demoStarted = useRef(false);
 
@@ -39,19 +43,30 @@ export default function AppShell() {
 
   // Keep the address bar honest before the routed shell reads it.
   const path = window.location.pathname.replace(/\/$/, '');
-  if ((!isAuthenticated || !currentUser) && path !== LOGIN_PATH) {
+  const showLogin = loginRequested || !isAuthenticated || !currentUser;
+  if (showLogin && path !== LOGIN_PATH) {
     window.history.replaceState(null, '', `${LOGIN_PATH}${initialTab === 'signup' ? '?mode=signup' : ''}`);
-  } else if (isAuthenticated && path === LOGIN_PATH) {
+  } else if (!showLogin && path === LOGIN_PATH) {
     window.history.replaceState(null, '', APP_PATH);
   }
 
   if (demoPending) return <ScreenLoading />;
-  if (!isAuthenticated || !currentUser) {
-    return <AuthScreen key={initialTab} initialTab={initialTab} onLogin={login} onSignup={signup} />;
+  if (showLogin) {
+    return <AuthScreen key={initialTab} initialTab={initialTab}
+      onLogin={async (...args) => {
+        const result = await login(...args);
+        if (result.success) setLoginRequested(false);
+        return result;
+      }}
+      onSignup={async (...args) => {
+        const result = await signup(...args);
+        if (result.success) setLoginRequested(false);
+        return result;
+      }} />;
   }
   return (
     <Suspense fallback={<ScreenLoading />}>
-      <SignedInApp currentUser={currentUser} logout={logout} updateCurrentUser={updateCurrentUser} />
+      <SignedInApp currentUser={currentUser!} logout={logout} updateCurrentUser={updateCurrentUser} />
     </Suspense>
   );
 }
