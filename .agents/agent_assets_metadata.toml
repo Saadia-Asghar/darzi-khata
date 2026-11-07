@@ -126,3 +126,73 @@ mtime_ms = 1794000158852
 storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:00e5e9e4-bf06-459e-935c-fb2d11805f64/cee5a307-6a07-44a2-8541-de19957fc85e/e88d9892-8e94-4f89-b3c9-c3e8d3edd9b8"
 storage_version_token = "1794000171140080"
 content_type = "application/octet-stream"
+
+[[outputs]]
+id = "0xSyJEMdPAFIyV896LPga"
+uri = "file://generated-artifacts/responsive-print/desktop-settings-en.png"
+type = "image"
+title = "Desktop Settings — English"
+description = "1366px desktop: three-column settings tiles, sidebar and search/language top bar."
+logical_id = "1d1dd554-a24c-4b8f-885b-f37d53cfdeea"
+content_hash = "sha256:1e5c09afd5ecbdc50b5ca1d60b12b1ca2ebb5cc7525bc1344417345191d5ba9f"
+size = 166756
+mtime_ms = 1794036159973
+storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:00e5e9e4-bf06-459e-935c-fb2d11805f64/1d1dd554-a24c-4b8f-885b-f37d53cfdeea/ef09fb77-f43f-4488-bf9e-0cbf9935f680"
+storage_version_token = "1794036272915063"
+content_type = "image/png"
+
+[[outputs]]
+id = "gDXNTrTMEQp5BG0dbRDap"
+uri = "file://generated-artifacts/responsive-print/parchi-en-1366-pdf.png"
+type = "image"
+title = "English receipt — PDF screenshot"
+description = "Rendered from the one-page A4 print PDF, with DK number, customer, total and QR; no app or dialog."
+logical_id = "9ed092a0-3a8d-43c3-bc47-0d7fbcf4554f"
+content_hash = "sha256:1f1de594028ebcbf7530f6af3d7a0f4b5eed80289ee35dab6e930e1e8f80a12e"
+size = 65529
+mtime_ms = 1794036103677
+storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:00e5e9e4-bf06-459e-935c-fb2d11805f64/9ed092a0-3a8d-43c3-bc47-0d7fbcf4554f/02da28a7-d8bf-4c90-989e-8a523115f6a8"
+storage_version_token = "1794036274239438"
+content_type = "image/png"
+
+[[outputs]]
+id = "7J9F27YSVRtCoe9wSJ6hu"
+uri = "file://generated-artifacts/responsive-print/parchi-ur-1366-pdf.png"
+type = "image"
+title = "Urdu receipt — PDF screenshot"
+description = "Rendered from the one-page A4 print PDF with Urdu shaping, RTL, and QR."
+logical_id = "f6732486-025c-4f8d-b19f-7474230528f1"
+content_hash = "sha256:04c66a660c7c209a590bea769ba7012a20d85c77b5b1c78d3638b973c32141b1"
+size = 63255
+mtime_ms = 1794036119913
+storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:00e5e9e4-bf06-459e-935c-fb2d11805f64/f6732486-025c-4f8d-b19f-7474230528f1/454cef40-ab91-4e99-8f3e-25f39d2ab8c4"
+storage_version_token = "1794036275569063"
+content_type = "image/png"
+
+[[outputs]]
+id = "CRG1MIuCYjHgUv17MPfvz"
+uri = "file://generated-artifacts/responsive-print/proof.html"
+type = "html"
+title = "Print and responsive verification report"
+description = "English/Urdu desktop screenshots, native and downloaded PDF screenshots, version and full command output."
+logical_id = "2beca189-0ac0-48f9-b6b6-00e43fa21b83"
+content_hash = "sha256:5e1f5dcb12f748d21ae0c043a469fe363e89887849a14d6ac3b2987c434b9c36"
+size = 912685
+mtime_ms = 1794036258009
+storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:00e5e9e4-bf06-459e-935c-fb2d11805f64/2beca189-0ac0-48f9-b6b6-00e43fa21b83/a354d6a2-d14d-42cc-a75d-d26586914726"
+storage_version_token = "1794036276850118"
+content_type = "text/html"
+
+[[outputs]]
+id = "GoKoZZZ8En44oAexo5_YB"
+uri = "file://generated-artifacts/responsive-print/evidence.zip"
+type = "unspecified"
+title = "Complete QA evidence"
+description = "All 76 responsive screenshots, native/download PDFs, PDF screenshots, printable HTML, QA.md and full test output."
+logical_id = "e0f2df31-bc92-4f36-ad24-aee99c4a3984"
+content_hash = "sha256:32071e7251bc3b2bbba9aaa3e79b112e4cda02e3284eede97da79982e7310024"
+size = 10999000
+mtime_ms = 1794036258849
+storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:00e5e9e4-bf06-459e-935c-fb2d11805f64/e0f2df31-bc92-4f36-ad24-aee99c4a3984/858564fe-2370-4d14-83a3-b4e81cfdc1e2"
+storage_version_token = "1794036278279371"
+content_type = "application/octet-stream"

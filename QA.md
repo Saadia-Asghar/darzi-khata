@@ -1,5 +1,125 @@
 # Darzi Khata verification
 
+## Isolated printing and desktop workspace, 7 November 2026
+
+**Verified app source:** `33b89fb0`.
+**Actual More-page text in production preview:**
+`Version 1.5.0+33b89fb0.20261107071748Z`.
+This is the built preview version, not a claim that this build has been
+republished. Publishing remains a user action; its build timestamp will differ.
+
+### Changes and failures fixed
+
+- Removed the old live-page print root, React portal and global print rules.
+  Receipt, worksheet, consented credit profile and public-profile downloads
+  share one isolated, same-origin iframe renderer.
+- Print calls **iframe.contentWindow.print()**, never the parent window.
+  Only the selected content enters the document. Controls, dialog semantics,
+  overlays, navigation, fixed positioning, transforms, max-height and clipped
+  overflow are excluded/reset. Paper is white with black text.
+- A4 uses 12mm margins. 58/80mm thermal widths use variable roll length with
+  a font/print-rounding allowance. QR images remain PNG data URLs.
+  Urdu faces are explicitly loaded, followed by the iframe's fonts.ready
+  and image decode promises, before marking the document ready.
+- Download PDF is a separate local download beside Print on the receipt,
+  worksheet and lender profile, generated from that same isolated content.
+  No print service, server or customer-data upload is required. Downloads
+  use rendered page images to preserve Urdu shaping, so they are not
+  searchable/accessibility-tagged text PDFs. Browser print-to-PDF preserves
+  the browser's text output.
+- Review of the actual generated PDF images found a missing QR in the first
+  download renderer. Replaced it with browser SVG/foreignObject rendering,
+  embedding the fonts and images; added a raster QR-region ink assertion.
+  Urdu A4 overflow and premature thermal page-length measurement were also
+  fixed. The final examples are all one page.
+- Desktop at >=1024px has logical-start sidebar (right in Urdu), top bar
+  with shop/search/language controls and centred, max-1200px content.
+  Phone bottom navigation remains below desktop. Tablet begins at 768px.
+- More's settings hub has all 12 requested equal-height tiles: 1/2/3 columns
+  at phone/tablet/desktop widths, small inline icons and descriptions.
+  Settings open in a 560px desktop side panel. The full settings editor also
+  uses two columns on desktop; phone section links retain their existing editor.
+- Orders have summary/list/selected-detail panes and a functional parchi
+  preview. Customers have a desktop searchable table and selected customer
+  pane. Hisaab, Credit, Earnings and Impact have multi-column desktop layouts.
+  Desktop dialogs are at most 560px; measurement fields use three columns.
+- Horizontal clipping is not used to mask layout problems. Tests check both
+  document width and visible boxes (excluding intentional internal chip scrollers).
+
+### Reproduction / browser evidence
+
+The new desktop-sidebar and iframe assertions were run against the previous
+built app first: **2 failed**, with the sidebar and print iframe absent.
+The later QR pixel assertion also failed against the first download renderer
+before that renderer was replaced. These are genuine pre-fix failures, not
+intentionally broken fixtures.
+
+Final command (production build, Chromium):
+
+```sh
+E2E_PRODUCTION=1 pnpm exec playwright test \
+  e2e/responsive-print.spec.ts e2e/bug-regressions.spec.ts \
+  --grep 'responsive pages|isolated receipt|thermal receipt|worksheet and consented|BUG 1: print'
+```
+
+```text
+Running 18 tests using 1 worker
+18 passed (3.8m)
+```
+
+- Eight responsive matrix cases: EN/Urdu x 375, 768, 1366, 1920px.
+  Screenshots for Orders, Customers, More, full Settings, Hisaab, Credit,
+  Impact, New order and measurements; desktop settings panel also captured.
+  **76 screenshots** in `qa-screens/responsive/`.
+- Every page also checked at boundary widths 320, 360, 767, 1023 and 1024px.
+  Sidebar visibility/side, hidden desktop bottom nav, tile count/columns,
+  customer details, parchi preview and form layout asserted.
+- Four receipt cases: EN/Urdu x **375x812 and 1366x768**.
+  Tests intercept only the iframe print call; the parent print function throws.
+  They serialize the exact isolated document into a capture page for Chromium
+  page.pdf (Playwright cannot directly PDF a child frame).
+  PDF text contains DK-001, Customer A and 1,500; embedded image asserted
+  with pdfimages; menu/settings/nav absent; pdfinfo and PDF page objects
+  confirm **one A4 page**. Downloaded PDFs are also one page, and rasterized
+  QR regions contain ink rather than the previous blank image.
+- Four EN/Urdu thermal width/page cases; one additional A4 isolation case;
+  one worksheet + consented lender-profile Print/Download journey.
+- Independent signed-in browser check passed: demo -> desktop More ->
+  editable Payment side panel -> close without changes -> top-bar search ->
+  DK-138 parchi with adjacent Print/Download -> Urdu right sidebar/settings ->
+  375px phone bottom nav. No app errors observed.
+- Preview workflow healthy; no new browser console errors.
+  No physical printer, Android print service or iOS print sheet was tested.
+
+### Typecheck / unit tests / build
+
+```text
+$ pnpm typecheck
+scripts typecheck: Done
+artifacts/api-server typecheck: Done
+artifacts/mockup-sandbox typecheck: Done
+artifacts/darzi-khata typecheck: Done
+
+$ pnpm test
+ℹ tests 29
+ℹ pass 29
+ℹ fail 0
+Test Files  10 passed (10)
+     Tests  118 passed (118)
+```
+
+The Vitest set includes i18n and design-lint regressions. Production Vite
+build and PWA generation passed. Full unabridged command output, final
+Playwright summary, native/download PDFs, PDF-rendered PNGs and all responsive
+screenshots are included in the downloadable evidence ZIP.
+
+Evidence working files: `generated-artifacts/responsive-print/`.
+English and Urdu PDF screenshots: `parchi-en-1366-pdf.png`,
+`parchi-ur-1366-pdf.png`; native PDFs and download counterparts also included.
+Desktop More/settings captures: `desktop-settings-en.png`,
+`desktop-settings-ur.png`. Evidence is generated output, excluded from Git and
+deployment to avoid repository bloat; source/tests and this report are committed.
+
 ## Landing login entry follow-up, 7 November 2026
 
 App source `a75bd2d`: Open app and Start free, in both header/hero and footer,
