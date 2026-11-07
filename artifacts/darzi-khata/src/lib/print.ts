@@ -103,7 +103,7 @@ export async function printElement(node: HTMLElement | null, { paper = 'a4', dow
       *{box-sizing:border-box;color:#000!important;border-color:#999!important;background:transparent!important;
         position:static!important;transform:none!important;max-height:none!important;overflow:visible!important;
         box-shadow:none!important;text-shadow:none!important;animation:none!important}
-      html,body{margin:0;padding:0;width:${width}mm;background:#fff!important;font-family:Arial,sans-serif;font-size:12px;line-height:1.45}
+      html,body{margin:0;padding:0;width:${width}mm;background:#fff!important;font-family:system-ui,sans-serif;font-size:12px;line-height:1.45}
       html[lang=ur] *{font-family:PrintUrdu,serif!important;line-height:1.65!important}
       main{width:100%}main>div{width:100%!important;max-width:none!important}
       table{width:100%!important;min-width:0!important;table-layout:fixed}

@@ -131,10 +131,10 @@ export function WorkSheetModal({ open, onOpenChange, orders }: WorkSheetModalPro
           </div>
 
           {/* Scrollable table */}
-          <div id="worksheet-print-area" className="flex-1 overflow-auto p-4 print:overflow-visible print:p-6">
+          <div id="worksheet-print-area" className="flex-1 overflow-auto p-4 print:overflow-visible print:p-4">
             <h2 className="hidden print:block font-bold text-lg">{settings.shopName} · {label('production_work_sheet')}</h2>
             {activeOrders.length === 0 ? (
-              <div className="text-center py-16 text-muted-foreground">
+              <div className="text-center py-4 text-muted-foreground">
                 <ClipboardList size={48} className="mx-auto mb-3" />
                 <p className="font-semibold">{label('no_active_orders')}</p>
               </div>

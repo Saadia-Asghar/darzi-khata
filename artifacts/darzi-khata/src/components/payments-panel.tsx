@@ -75,5 +75,5 @@ export function PaymentsPanel({ orders, onViewReceipt }: { orders: Order[]; onVi
 }
 
 function Empty({ text }: { text: string }) {
-  return <div className="text-center py-10 bg-card rounded-lg border border-dashed border-border"><Wallet className="mx-auto text-muted-foreground mb-2" size={30} aria-hidden /><p className="text-sm text-muted-foreground">{text}</p></div>;
+  return <div className="text-center py-4 bg-card rounded-lg border border-dashed border-border"><Wallet className="mx-auto text-muted-foreground mb-2" size={30} aria-hidden /><p className="text-sm text-muted-foreground">{text}</p></div>;
 }

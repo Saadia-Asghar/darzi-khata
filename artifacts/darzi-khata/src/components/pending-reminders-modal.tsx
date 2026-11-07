@@ -20,7 +20,7 @@ export function PendingRemindersModal({ open, onOpenChange, orders }: Props) {
         </div>
         <div className="overflow-y-auto p-4 space-y-3 bg-background">
           {list.length === 0 ? (
-            <div className="text-center py-12 px-4 rounded-lg border border-dashed border-border">
+            <div className="text-center py-4 px-4 rounded-lg border border-dashed border-border">
               <BellRing className="mx-auto text-primary mb-3" size={32} />
               <p className="font-bold">{tl('rem_all_clear')}</p>
             </div>

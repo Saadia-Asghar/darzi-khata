@@ -400,9 +400,8 @@ html, body { max-width: 100%; }
   [data-page-wide] .dk-wide-grid > *,
   [data-page-wide='credit'] [role='region'] > .overflow-y-auto > .space-y-5 > * { margin: 0 !important; min-width: 0; }
 }
-@media (min-width: 1280px) {
-  [data-page-wide='impact'] .dk-wide-grid, [data-page-wide='earnings'] .dk-wide-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-}
+/* Dashboard pages: four number tiles span the row, sections follow two per row. */
+@media (min-width: 1024px) { .dk-span-all { grid-column: 1 / -1; } }
 input:not([type='checkbox']):not([type='radio']), textarea, select { font-size: 16px; }
 
 /* Print: all document styling lives in the isolated iframe in lib/print.ts.

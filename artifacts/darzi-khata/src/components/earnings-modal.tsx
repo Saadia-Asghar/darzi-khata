@@ -80,7 +80,7 @@ export function EarningsModal({ open, onOpenChange, orders }: EarningsModalProps
             </Dialog.Close>
           </div>
 
-          <div className="dk-wide-grid flex-1 overflow-y-auto p-4 space-y-6">
+          <div className="dk-wide-grid flex-1 overflow-y-auto p-4 space-y-4">
             
             {/* Section 1: This Month */}
             <section className="bg-primary text-primary-foreground rounded-lg p-5  relative overflow-hidden">

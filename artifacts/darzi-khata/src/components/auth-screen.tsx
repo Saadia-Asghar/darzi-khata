@@ -81,14 +81,28 @@ export function AuthScreen({ onLogin, onSignup, initialTab = 'login' }: AuthScre
   const lab = 'block text-sm font-medium text-foreground mb-1';
   const tabCls = (on: boolean) => `flex-1 min-h-[48px] text-base font-medium flex items-center justify-center gap-2 border-b-2 ${on ? 'border-primary text-primary' : 'border-transparent text-muted-foreground'}`;
   return (
-    <main className="min-h-[100dvh] bg-background flex flex-col items-center justify-center px-4 py-8" lang={urduFirst ? 'ur' : 'en'} dir={urduFirst ? 'rtl' : 'ltr'}>
+    <main className="min-h-[100dvh] bg-background lg:grid lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]" lang={urduFirst ? 'ur' : 'en'} dir={urduFirst ? 'rtl' : 'ltr'}>
+      <aside className="hidden lg:flex flex-col justify-center gap-4 px-4 py-4 bg-primary-soft border-e border-border" data-testid="auth-intro">
+        <div className="max-w-[560px] w-full mx-auto space-y-4">
+          <div className="flex items-center gap-3"><BrandMark size={40} /><span className="text-lg font-semibold">{L('app_name')}</span></div>
+          <h2 className="text-2xl font-semibold text-foreground">{L('dk_auth_intro_title')}</h2>
+          <ul className="space-y-2">
+            {(['dk_auth_intro_1', 'dk_auth_intro_2', 'dk_auth_intro_3'] as const).map((k) => (
+              <li key={k} className="flex items-start gap-2 text-base"><span className="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" aria-hidden />{L(k)}</li>
+            ))}
+          </ul>
+          <img src={`${import.meta.env.BASE_URL}screens/orders-${urduFirst ? 'ur' : 'en'}.webp`} alt={L('dk_auth_shot_alt')} loading="lazy"
+            className="w-full max-h-[52vh] object-contain object-top rounded-lg border border-border bg-card shadow-lg" data-testid="img-auth-screenshot" />
+        </div>
+      </aside>
+      <div className="min-h-[100dvh] flex flex-col items-center justify-center px-4 py-4">
       <div className="w-full max-w-sm flex justify-end mb-2">
         <LanguageSwitch value={urduFirst ? 'ur' : 'en'} onChange={language => {
           setUrduFirst(language === 'ur');
           try { localStorage.setItem('darzi-khata-auth-lang', language); } catch { /* private mode */ }
         }} />
       </div>
-      <div className="w-full max-w-sm mb-6 flex items-center gap-3">
+      <div className="w-full max-w-sm mb-4 flex items-center gap-3">
         <BrandMark size={48} />
         <div className="min-w-0">
           <h1 className={`text-xl font-semibold text-foreground ${urduFirst ? 'font-urdu' : ''}`} lang={urduFirst ? 'ur' : 'en'}>{L('app_name')}</h1>
@@ -196,7 +210,8 @@ export function AuthScreen({ onLogin, onSignup, initialTab = 'login' }: AuthScre
           )}
         </div>
       </div>
-      <p className="w-full max-w-sm text-sm text-muted-foreground mt-6 text-center">{L('data_note')}</p>
+      <p className="w-full max-w-sm text-sm text-muted-foreground mt-4 text-center">{L('data_note')}</p>
+      </div>
     </main>
   );
 }

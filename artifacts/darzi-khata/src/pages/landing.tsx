@@ -75,7 +75,7 @@ export default function Landing() {
   const btnPrimary = 'inline-flex items-center justify-center gap-2 min-h-[48px] px-5 rounded-md bg-primary text-primary-foreground text-base font-semibold hover:opacity-95 transition-opacity';
   const btnSecondary = 'inline-flex items-center justify-center gap-2 min-h-[48px] px-5 rounded-md border border-border bg-card text-foreground text-base font-semibold hover:bg-muted transition-colors';
   const wrap = 'mx-auto w-full max-w-[1040px] px-4 sm:px-6';
-  const section = `${wrap} py-12 sm:py-16`;
+  const section = `${wrap} py-10 sm:py-16`;
 
   const steps: [DictKey, DictKey][] = [['land_step_1', 'land_step_1_body'], ['land_step_2', 'land_step_2_body'], ['land_step_3', 'land_step_3_body']];
   const screens: [string, DictKey][] = [['parchi', 'land_cap_parchi'], ['payments', 'land_cap_payments'], ['credit', 'land_cap_credit']];
@@ -118,7 +118,7 @@ export default function Landing() {
 
       <main id="main">
         {/* Hero */}
-        <section className={`${wrap} pt-10 pb-12 sm:pt-16 sm:pb-16 grid gap-10 md:grid-cols-[1.15fr_0.85fr] md:items-center`}>
+        <section className={`${wrap} pt-10 pb-10 sm:pt-16 sm:pb-16 grid gap-10 md:grid-cols-[1.15fr_0.85fr] md:items-center`}>
           <div className="dk-rise">
             <p className="text-sm font-medium text-primary">{t('land_kicker')}</p>
             <h1 className="mt-3 text-2xl sm:text-[36px] sm:leading-[1.2] font-semibold text-foreground max-w-[18ch]" data-testid="text-hero">{t('land_hero')}</h1>

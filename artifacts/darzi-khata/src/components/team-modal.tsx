@@ -155,7 +155,7 @@ export function TeamModal({ open, onOpenChange }: TeamModalProps) {
             {activeTab === 'activity' && (
               <>
                 {teamMembers.length === 0 ? (
-                  <div className="text-center py-12 bg-muted rounded-lg border border-dashed border-border">
+                  <div className="text-center py-4 bg-muted rounded-lg border border-dashed border-border">
                     <Users size={28} className="mx-auto text-muted-foreground mb-2 opacity-40" />
                     <p className="text-sm text-muted-foreground font-medium">{label('no_team_members')}</p>
                     <p className="text-sm text-muted-foreground mt-1">{label('start_from_add_karigar_or_invite')}</p>

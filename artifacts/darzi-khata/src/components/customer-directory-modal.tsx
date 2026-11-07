@@ -115,7 +115,7 @@ export function CustomerDirectoryModal({ open, onOpenChange, orders, onSelectCus
           {/* Customer List */}
           <div className="flex-1 overflow-y-auto">
             {filtered.length === 0 ? (
-              <div className="py-12 text-center text-muted-foreground">
+              <div className="py-4 text-center text-muted-foreground">
                 <Users size={36} className="mx-auto mb-3 opacity-30" />
                 <p className="text-sm">{tl('cd_none_found')}</p>
               </div>

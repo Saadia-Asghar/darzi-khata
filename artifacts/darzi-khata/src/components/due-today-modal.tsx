@@ -121,7 +121,7 @@ export function DueTodayModal({ open, onOpenChange, orders, onViewReceipt }: Due
             </Dialog.Close>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-4 space-y-6">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
             
             {overdueOrders.length > 0 && (
               <section>
@@ -139,7 +139,7 @@ export function DueTodayModal({ open, onOpenChange, orders, onViewReceipt }: Due
                 {label('today')} ({todayOrders.length})
               </h3>
               {todayOrders.length === 0 ? (
-                <div className="text-center py-6 bg-card border border-dashed border-border rounded-lg">
+                <div className="text-center py-4 bg-card border border-dashed border-border rounded-lg">
                   <p className="text-sm font-bold text-muted-foreground">{label('no_deliveries_today')}</p>
                 </div>
               ) : (

@@ -74,7 +74,7 @@ export function OrderChatModal({ order, onClose, onAddComment }: OrderChatModalP
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0">
             {comments.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full py-12 text-center">
+              <div className="flex flex-col items-center justify-center h-full py-4 text-center">
                 <MessageCircle size={36} className="text-muted-foreground mb-3 opacity-40" />
                 <p className="text-muted-foreground text-sm">{label('no_messages_yet')}</p>
                 <p className="text-muted-foreground text-sm mt-1">{label('owner_and_karigar_can_talk_here')}</p>

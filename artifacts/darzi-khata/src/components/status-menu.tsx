@@ -7,7 +7,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 /** Tappable status chip that opens a proper menu: icon + colour + bilingual label per state. */
-export function StatusMenu({ order, onChange }: { order: Order; onChange: (id: string, s: OrderStatus) => void }) {
+export function StatusMenu({ order, onChange, compact = false }: { order: Order; onChange: (id: string, s: OrderStatus) => void; compact?: boolean }) {
   const { label } = usePreferences();
   const shown = visualStatus(order);
   const m = STATUS_META[shown];
@@ -15,11 +15,11 @@ export function StatusMenu({ order, onChange }: { order: Order; onChange: (id: s
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button type="button" className={`inline-flex items-center gap-1.5 min-h-[44px] px-3 rounded-md border text-sm font-medium ${m.cls}`}
+        <button type="button" className={`inline-flex items-center rounded-md border font-medium whitespace-nowrap ${compact ? 'gap-1 min-h-[28px] h-7 px-2 text-xs' : 'gap-1.5 min-h-[44px] px-3 text-sm'} ${m.cls}`}
           aria-label={`${label('change_status')}: ${label(m.key)}`} data-testid={`status-${order.id}`}>
-          <Icon size={16} aria-hidden />
+          <Icon size={compact ? 14 : 16} aria-hidden />
           <span>{label(m.key)}</span>
-          <ChevronDown size={16} aria-hidden />
+          <ChevronDown size={compact ? 14 : 16} aria-hidden />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="min-w-[240px] rounded-lg p-1">

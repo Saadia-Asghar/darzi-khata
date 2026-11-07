@@ -27,7 +27,7 @@ export function BackBar({ onBack, title }: { onBack: () => void; title?: ReactNo
   const { label } = usePreferences();
   return (
     <div className="sticky top-0 z-20 bg-background border-b border-border print:hidden">
-      <div className="max-w-2xl md:max-w-4xl lg:max-w-[1200px] mx-auto flex items-center gap-2 px-2 min-h-[56px]">
+      <div className="max-w-2xl md:max-w-4xl lg:max-w-[1440px] mx-auto flex items-center gap-2 px-2 min-h-[56px]">
         <button type="button" onClick={onBack} className="min-h-[44px] px-3 rounded-md inline-flex items-center gap-2 text-base font-medium hover:bg-muted" data-testid="btn-page-back">
           <ArrowLeft size={20} aria-hidden className="rtl:rotate-180" /> {label('back')}
         </button>
@@ -58,7 +58,7 @@ function Content({ className, children, ...rest }: ComponentPropsWithoutRef<type
     return (
       <div className={page.bare ? 'bg-background' : 'min-h-[100dvh] bg-background'} data-page-mode={page.bare ? 'panel' : ''} data-page-wide={page.wide}>
         {!page.bare && <BackBar onBack={page.onBack} />}
-        <div className={`${page.bare ? '' : `max-w-2xl mx-auto ${page.wide ? 'md:max-w-4xl lg:max-w-[1200px]' : 'md:max-w-3xl'}`} relative flex flex-col`} role="region">{children}</div>
+        <div className={`${page.bare ? '' : `max-w-2xl mx-auto ${page.wide ? 'md:max-w-4xl lg:max-w-[1440px]' : 'md:max-w-3xl'}`} relative flex flex-col`} role="region">{children}</div>
       </div>
     );
   }

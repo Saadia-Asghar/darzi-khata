@@ -98,16 +98,16 @@ function MeasureField({ fieldKey, tk, value, active, onFocus, onChange }: {
   const { en, ur } = DICT[tk];
   const step = (d: number) => { onFocus(); onChange(Math.max(0, Math.round(((Number(value) || 0) + d) * 10) / 10)); };
   return (
-    <div className={`flex items-center justify-between gap-2 py-1.5 px-2 -mx-2 rounded-lg transition-colors ${active ? 'bg-warning-soft ' : ''}`}>
+    <div className={`flex items-center justify-between gap-2 py-1.5 px-2 -mx-2 lg:mx-0 lg:px-0 lg:flex-col lg:items-stretch rounded-lg transition-colors ${active ? 'bg-warning-soft ' : ''}`}>
       <label htmlFor={`m-${fieldKey}`} className="flex flex-col min-w-0">
         <span className={`text-sm font-semibold ${urduFirst ? 'font-urdu' : ''}`} lang={urduFirst ? 'ur' : 'en'}>{urduFirst ? ur : en}</span>
       </label>
-      <div className="flex items-center gap-1 bg-muted rounded-lg border border-border p-0.5 shrink-0" dir="ltr">
-        <button type="button" onClick={() => step(-0.5)} className="w-11 h-11 flex items-center justify-center bg-card rounded-md border border-border active:bg-muted" aria-label={label('t_decrease_n', { fieldEn: en, fieldUr: ur })}><Minus size={16} /></button>
+      <div className="flex items-center justify-center gap-1 lg:gap-0 bg-muted rounded-lg border border-border p-0.5 shrink-0" dir="ltr">
+        <button type="button" onClick={() => step(-0.5)} className="w-11 h-11 lg:w-6 lg:h-9 shrink-0 flex items-center justify-center bg-card rounded-md border border-border active:bg-muted" aria-label={label('t_decrease_n', { fieldEn: en, fieldUr: ur })}><Minus size={16} /></button>
         <input id={`m-${fieldKey}`} type="number" step="0.5" inputMode="decimal" value={Number.isFinite(value) ? value : ''} onFocus={onFocus}
           onChange={(e) => onChange(e.target.value === '' ? NaN : Number(e.target.value))}
-          className="w-14 h-11 text-center bg-transparent font-bold outline-none no-spinners" data-testid={`input-m-${fieldKey}`} />
-        <button type="button" onClick={() => step(0.5)} className="w-11 h-11 flex items-center justify-center bg-card rounded-md border border-border active:bg-muted" aria-label={label('t_increase_n', { fieldEn: en, fieldUr: ur })}><Plus size={16} /></button>
+          className="w-14 h-11 lg:w-8 lg:h-9 min-w-0 text-center bg-transparent font-bold outline-none no-spinners" data-testid={`input-m-${fieldKey}`} />
+        <button type="button" onClick={() => step(0.5)} className="w-11 h-11 lg:w-6 lg:h-9 shrink-0 flex items-center justify-center bg-card rounded-md border border-border active:bg-muted" aria-label={label('t_increase_n', { fieldEn: en, fieldUr: ur })}><Plus size={16} /></button>
       </div>
     </div>
   );
@@ -201,11 +201,12 @@ export function OrderForm({ open, onOpenChange, order, prefill, onSave }: OrderF
       if (!ok) return;
       if (deliveryInPast(getValues('deliveryDate'))) { setError('deliveryDate', { message: label('k_delivery_past') }); return; }
     }
-    if (step === 1) {
+    const desktopSplit = step === 0 && window.matchMedia('(min-width: 1024px)').matches;
+    if (step === 1 || desktopSplit) {
       try { validateItems(items.map((i) => ({ ...i, quantity: Math.round(Number(i.quantity)), unitPrice: Number(i.unitPrice) }))); setItemsError(undefined); }
       catch (e) { setItemsError(e instanceof Error ? e.message : label('k_check_garments')); return; }
     }
-    setStep((s) => Math.min(3, s + 1));
+    setStep((s) => Math.min(3, s + (desktopSplit ? 2 : 1)));
   };
   const onInvalid = (errs: Partial<Record<keyof FormValues, unknown>>) => {
     if (errs.customerName || errs.phone || errs.orderDate || errs.deliveryDate || errs.fabric) setStep(0);
@@ -264,7 +265,7 @@ export function OrderForm({ open, onOpenChange, order, prefill, onSave }: OrderF
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-foreground/60 z-50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-        <Dialog.Content className="fixed inset-x-0 bottom-0 z-50 h-[94dvh] flex flex-col rounded-t-lg bg-background border-t overflow-hidden data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom motion-reduce:animate-none  outline-none max-w-lg lg:max-w-[560px] mx-auto sm:h-[88vh] sm:bottom-auto sm:top-[50%] sm:-translate-y-1/2 sm:rounded-lg">
+        <Dialog.Content className="fixed inset-x-0 bottom-0 z-50 h-[94dvh] flex flex-col rounded-t-lg bg-background border-t overflow-hidden data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom motion-reduce:animate-none  outline-none max-w-lg lg:max-w-[720px] mx-auto sm:h-[88vh] sm:bottom-auto sm:top-[50%] sm:-translate-y-1/2 sm:rounded-lg">
           <div className="px-4 py-3 border-b flex justify-between items-center bg-card text-foreground border-border shrink-0">
             <div>
               <Dialog.Title className={"text-lg font-bold"}>{order ? label('edit_order') : label('new_order_2')}</Dialog.Title>
@@ -287,9 +288,9 @@ export function OrderForm({ open, onOpenChange, order, prefill, onSave }: OrderF
             ))}
           </ol>
           <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="flex-1 overflow-y-auto bg-background pb-24">
-            <div className="p-4 space-y-5">
+            <div className={`p-3 space-y-4 ${step === 0 ? 'lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-3 lg:space-y-0 lg:items-start' : ''}`} data-testid="order-form-body">
               {/* Step 1 */}
-              <section hidden={step !== 0} className="bg-card p-4 rounded-lg border border-card-border space-y-4">
+              <section hidden={step !== 0} className="bg-card p-3 rounded-lg border border-card-border space-y-3">
                 <StepHeader n={1} tk="step_customer_details" />
                 <div>
                   <label htmlFor="of-name" className="block text-sm font-semibold mb-1">{label('customer_name')}</label>
@@ -340,7 +341,8 @@ export function OrderForm({ open, onOpenChange, order, prefill, onSave }: OrderF
               </section>
 
               {/* Step 2: garments */}
-              <section hidden={step !== 1} className="bg-card p-4 rounded-lg border border-card-border">
+              {/* Desktop: garments and measurements sit beside the customer step. */}
+              <section className={`bg-card p-3 rounded-lg border border-card-border ${step === 1 ? '' : step === 0 ? 'hidden lg:block' : 'hidden'}`}>
                 <StepHeader n={2} tk="step_garments_measurements" />
                 <div className="flex gap-2 overflow-x-auto pb-2 mb-3 no-scrollbar" role="tablist" aria-label={label('garments')}>
                   {items.map((it, i) => {
@@ -397,7 +399,7 @@ export function OrderForm({ open, onOpenChange, order, prefill, onSave }: OrderF
                     </>
                   )}
 
-                  <div className="sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:gap-x-6" data-testid="measurement-grid">
+                  <div className={`sm:grid sm:grid-cols-2 sm:gap-x-4 ${step === 0 ? 'lg:grid-cols-3' : 'lg:grid-cols-4'}`} data-testid="measurement-grid">
                     {g.fields.map((f) => (
                       <MeasureField key={`${current.id}-${f.key}`} fieldKey={f.key} tk={f.tk} value={current.measurements[f.key]}
                         active={activeField === f.key} onFocus={() => setActiveField(f.key)} onChange={(v) => setMeasure(activeItem, f.key, v)} />

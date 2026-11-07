@@ -81,7 +81,7 @@ export function KarigarDashboard() {
   }
 
   return (
-    <div className="min-h-[100dvh] bg-background pb-20 font-sans text-foreground">
+    <div className="min-h-[100dvh] bg-background pb-4 font-sans text-foreground">
 
       {/* Header */}
       <header className="bg-accent text-accent-foreground px-4 py-3 sticky top-0 z-20 ">
@@ -136,7 +136,7 @@ export function KarigarDashboard() {
 
         {/* Orders */}
         {myOrders.length === 0 ? (
-          <div className="text-center py-16 bg-card rounded-lg border border-dashed border-border">
+          <div className="text-center py-4 bg-card rounded-lg border border-dashed border-border">
             <Package size={36} className="mx-auto text-muted-foreground mb-3 opacity-40" />
             <p className="text-muted-foreground font-medium">
               {search ? label('no_order_found') : label('no_orders_assigned_to_you')}

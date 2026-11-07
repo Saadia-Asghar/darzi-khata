@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, lazy, type ReactNode } from 'react';
 import { useLocation } from 'wouter';
 import { useOrders } from '../hooks/use-orders';
 import { useAuthContext } from '../context/auth-context';
-import { OrderCard } from '../components/order-card';
+import { OrderCard, OrderRow, ORDER_ROW_GRID } from '../components/order-card';
 import { StatsBar } from '../components/stats-bar';
 import { SettingsModal } from '../components/settings-modal';
 import { EarningsModal } from '../components/earnings-modal';
@@ -13,7 +13,6 @@ import { TeamModal } from '../components/team-modal';
 import { OrderChatModal } from '../components/order-chat-modal';
 import { PendingRemindersModal } from '../components/pending-reminders-modal';
 import { BottomNav, type NavTab } from '../components/bottom-nav';
-import { DailySummary } from '../components/daily-summary';
 import { CustomersPanel } from '../components/customers-panel';
 import { MorePanel, type MoreTool } from '../components/more-panel';
 import { PageMode } from '../components/page-dialog';
@@ -31,9 +30,10 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Search, FlaskConical, Zap, ListChecks, LockKeyhole, BarChart2, ChevronRight } from 'lucide-react';
+import { Search, FlaskConical, Zap, ListChecks, LockKeyhole, BarChart2, ChevronRight, X } from 'lucide-react';
 import { DesktopSidebar, DesktopTopBar, type SideTab } from '../components/desktop-shell';
-import { OrderDetailPane } from '../components/order-detail-pane';
+import { OrderDetailPane, TodayPanel } from '../components/order-detail-pane';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { BackupReminder } from '../components/backup-reminder';
 import { ExpenseTools, ProfitSummary } from '../components/expense-tools';
 import { RushTools } from '../components/rush-tools';
@@ -42,6 +42,7 @@ import { RecoveryTools } from '../components/recovery-tools';
 import { ShareProfileTools } from '../components/share-tools';
 import { PitchDemo } from '../components/pitch-demo';
 import { useSettings } from '../hooks/use-settings';
+import { KpiTiles } from '../components/kpi-tiles';
 
 const CreditModal = lazy(() => import('../components/credit-modal').then(m => ({ default: m.CreditModal })));
 const ImpactModal = lazy(() => import('../components/impact-modal').then(m => ({ default: m.ImpactModal })));
@@ -80,6 +81,7 @@ export default function Dashboard({ section = 'orders', phone }: { section?: Sec
   const [pendingDelete, setPendingDelete] = useState<Order | null>(null);
   const [logoutOpen, setLogoutOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
 
   const [receiptOpen, setReceiptOpen] = useState(false);
   const [chatOrderId, setChatOrderId] = useState<string | null>(null);
@@ -197,104 +199,128 @@ export default function Dashboard({ section = 'orders', phone }: { section?: Sec
   const navTab: NavTab | null = section === 'orders' || section === 'customers' || section === 'hisaab' || section === 'more' ? section : section === 'customer' ? 'customers' : section === 'earnings' ? 'hisaab' : 'more';
   const isToolPage = !['orders', 'customers', 'hisaab', 'more'].includes(section);
   const page = (node: ReactNode, fallback = '/more', wide?: string) => <PageMode onBack={() => back(fallback)} wide={wide}>{node}</PageMode>;
-  const sideTab: SideTab = section === 'credit' ? 'credit' : navTab;
-  const selectedOrder = visible.find((o) => o.id === selectedOrderId) ?? visible[0] ?? null;
-  const wrap = 'p-4 max-w-2xl md:max-w-4xl lg:max-w-[1200px] lg:px-6 mx-auto';
+  const sideTab: SideTab = section === 'credit' ? 'credit' : section === 'impact' ? 'payments' : section === 'reminders' ? 'reminders' : navTab;
+  const selectedOrder = orders.find((o) => o.id === selectedOrderId) ?? null;
+  const openDetails = (o: Order) => { setSelectedOrderId(o.id); setDetailOpen(true); };
+  const wrap = 'px-4 pt-2 pb-4 md:pt-3 max-w-2xl md:max-w-none lg:max-w-[1440px] lg:px-4 lg:pt-4 mx-auto';
   const pageOpen = { open: true, onOpenChange: (v: boolean) => { if (!v) back('/more'); } };
-  const chip = (on: boolean) => `whitespace-nowrap min-h-[44px] px-3 rounded-md text-sm font-medium border shrink-0 inline-flex items-center gap-1.5 ${on ? 'bg-primary text-primary-foreground border-primary' : 'bg-card text-foreground border-border hover:bg-muted'}`;
+  const chip = (on: boolean) => `whitespace-nowrap min-h-[36px] h-9 px-2.5 rounded-md text-sm font-medium border shrink-0 inline-flex items-center gap-1.5 ${on ? 'bg-primary text-primary-foreground border-primary' : 'bg-card text-foreground border-border hover:bg-muted'}`;
 
   return (
-    <div className="min-h-[100dvh] bg-background pb-28 lg:pb-8 text-foreground lg:ps-64">
+    <div className="min-h-[100dvh] bg-background pb-24 lg:pb-4 text-foreground lg:ps-16 xl:ps-[220px]">
       <DesktopSidebar tab={sideTab} onNew={() => setChooserOpen(true)} onLogout={() => setLogoutOpen(true)} onSetupPin={() => navigate('/settings#pin')} pendingCount={pendingCount} />
       <DesktopTopBar shopLabel={shopLabel} ownerName={currentUser?.name} demo={demoMode} search={searchTerm}
         onSearch={(q) => { setSearchTerm(q); if (section !== 'orders') navigate('/'); }} />
       {!isToolPage && (
         <header data-app-header className="lg:hidden bg-card border-b border-border px-4 sticky top-0 z-20 print:hidden">
-          <div className="max-w-2xl mx-auto py-2">
-            <div className="flex items-center gap-2">
-              <h1 className="flex-1 min-w-0 truncate text-lg font-semibold" data-testid="text-shop-name" title={shopLabel}>{shopLabel}</h1>
-              <span className="shrink-0 inline-flex h-11 w-11 items-center justify-center rounded-md text-primary" role="img" aria-label={label('data_note')} title={label('data_note')}><LockKeyhole size={20} aria-hidden /></span>
+          <div className="max-w-2xl md:max-w-none mx-auto h-14 flex items-center gap-2 min-w-0">
+            <div className="flex-1 min-w-0">
+              <h1 className="truncate text-base font-semibold leading-tight" data-testid="text-shop-name" title={shopLabel}>{shopLabel}</h1>
+              <p className="truncate text-xs text-muted-foreground leading-tight" title={currentUser?.name}>{shortDate(new Date(), lang)}{currentUser?.name ? ` · ${currentUser.name}` : ''}</p>
             </div>
-            <div className="flex items-center gap-1.5 min-w-0 pb-1">
-              <span className="text-sm text-muted-foreground shrink-0">{shortDate(new Date(), lang)}</span>
-              {demoMode && <span className="shrink-0 rounded-md bg-warning-soft text-warning border border-warning/30 text-xs font-medium px-1.5 py-0.5" data-testid="badge-demo">{one('demo_badge')}</span>}
-              <span className="min-w-0 truncate text-sm text-muted-foreground" title={currentUser?.name}>· {currentUser?.name}</span>
-            </div>
+            {demoMode && <span className="shrink-0 rounded-md bg-warning-soft text-warning border border-warning/30 text-xs font-medium px-1.5 py-0.5" data-testid="badge-demo">{one('demo_badge')}</span>}
+            <span className="shrink-0 inline-flex h-10 w-10 items-center justify-center rounded-md text-primary" role="img" aria-label={label('data_note')} title={label('data_note')}><LockKeyhole size={20} aria-hidden /></span>
           </div>
         </header>
       )}
 
       {section === 'orders' && (
         <main className={`${wrap} dk-rise`}>
-          {homeBased && <section className="rounded-lg border border-border bg-card p-4 mb-3">
-            <h2 className="font-semibold">{label('feature_home_based')}</h2><p className="text-sm text-muted-foreground">{label('feature_home_intro')}</p>
-            <button className="mt-3 min-h-[48px] rounded-lg px-4 bg-primary text-primary-foreground font-semibold" onClick={() => { setQuickCustomer(undefined); setQuickOpen(true); }}>{label('new_order')}</button>
+          {homeBased && <section className="rounded-lg border border-border bg-card p-3 mb-2 flex items-center gap-3">
+            <div className="flex-1 min-w-0"><h2 className="font-semibold truncate">{label('feature_home_based')}</h2><p className="text-sm text-muted-foreground truncate">{label('feature_home_intro')}</p></div>
+            <button className="min-h-[40px] rounded-md px-3 bg-primary text-primary-foreground text-sm font-semibold" onClick={() => { setQuickCustomer(undefined); setQuickOpen(true); }}>{label('new_order')}</button>
           </section>}
-          <div className="mb-3"><BackupReminder onBackup={() => navigate('/settings#backup')} /></div>
-          {!homeBased && <><DailySummary orders={orders} onOpenDue={() => navigate('/due')} />
-          <StatsBar orders={orders} onDueTodayClick={() => navigate('/due')} /></>}
+          <div className="hidden md:block mb-2 lg:mb-3"><BackupReminder onBackup={() => navigate('/settings#backup')} /></div>
 
-          <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_420px] lg:gap-6 lg:items-start">
+          <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_380px] xl:grid-cols-[minmax(0,1fr)_420px] lg:gap-4 lg:items-start">
           <div className="min-w-0">
-          <div className="relative mb-3 lg:hidden">
-            <Search className="absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" size={20} aria-hidden />
+          {!homeBased && <StatsBar orders={orders} onDueTodayClick={() => navigate('/due')} />}
+          <div className="relative mb-2 lg:hidden">
+            <Search className="absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" size={18} aria-hidden />
             <input type="search" aria-label={label('search_orders')}
-              className="block w-full min-h-[48px] ps-10 pe-3 border border-input rounded-lg bg-card text-foreground text-base placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              className="block w-full h-10 ps-9 pe-3 border border-input rounded-lg bg-card text-foreground text-base placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
               placeholder={label('search_placeholder')} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} data-testid="input-search" />
           </div>
 
-          <div className="flex gap-2 mb-3 overflow-x-auto pb-1 -mx-4 px-4 [scrollbar-width:none]" role="tablist" aria-label={label('filter_orders')}>
-            {filters.map(({ id, k }) => (
-              <button key={id} role="tab" aria-selected={activeFilter === id} onClick={() => setActiveFilter(id)} className={chip(activeFilter === id)} data-testid={`filter-${id}`}>
-                <span>{one(k)}</span>
-                <span className={`num text-sm ${activeFilter === id ? '' : id === 'overdue' && counts.overdue > 0 ? 'text-danger font-semibold' : 'text-muted-foreground'}`}>{counts[id]}</span>
-              </button>
-            ))}
-          </div>
-
-          {!homeBased && activeKarigars.length > 0 && (
-            <div className="flex gap-2 mb-4 overflow-x-auto pb-1 -mx-4 px-4 [scrollbar-width:none]" aria-label={label('all_karigars')}>
-              <button onClick={() => setKarigarFilter('')} aria-pressed={karigarFilter === ''} className={chip(karigarFilter === '')}>{label('all_karigars')}</button>
-              {activeKarigars.map((k) => (
-                <button key={k} aria-pressed={karigarFilter === k} onClick={() => setKarigarFilter(karigarFilter === k ? '' : k)} className={chip(karigarFilter === k)}>{k}</button>
+          <div className="flex items-center gap-1.5 mb-2 lg:mb-3 overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0 [scrollbar-width:none]" data-testid="filter-row">
+            <div className="flex gap-1.5 shrink-0" role="tablist" aria-label={label('filter_orders')}>
+              {filters.map(({ id, k }) => (
+                <button key={id} role="tab" aria-selected={activeFilter === id} onClick={() => setActiveFilter(id)} className={chip(activeFilter === id)} data-testid={`filter-${id}`}>
+                  <span>{one(k)}</span>
+                  <span className={`num text-xs ${activeFilter === id ? '' : id === 'overdue' && counts.overdue > 0 ? 'text-danger font-semibold' : 'text-muted-foreground'}`}>{counts[id]}</span>
+                </button>
               ))}
             </div>
-          )}
+            {!homeBased && activeKarigars.length > 0 && <>
+              <span className="shrink-0 w-px h-6 bg-border mx-1" aria-hidden />
+              <div className="flex gap-1.5 shrink-0" role="group" aria-label={label('all_karigars')}>
+                <button onClick={() => setKarigarFilter('')} aria-pressed={karigarFilter === ''} className={chip(karigarFilter === '')} data-testid="filter-karigar-all">{label('all_karigars')}</button>
+                {activeKarigars.map((k) => (
+                  <button key={k} aria-pressed={karigarFilter === k} onClick={() => setKarigarFilter(karigarFilter === k ? '' : k)} className={chip(karigarFilter === k)} data-testid={`filter-karigar-${k}`}>{k}</button>
+                ))}
+              </div>
+            </>}
+          </div>
 
-          <div className="space-y-3" data-testid="orders-list">
+          <div data-testid="orders-list">
             {orders.length === 0 ? (
-              <div className="py-8 px-5 bg-card rounded-lg border border-border text-center" data-testid="empty-orders">
+              <div className="py-4 px-4 bg-card rounded-lg border border-border text-center" data-testid="empty-orders">
                 <p className="text-base font-medium">{label('empty_orders')}</p>
-                <div className="grid gap-2 mt-4">
-                  <button onClick={() => setQuickOpen(true)} className="min-h-[48px] rounded-md bg-primary text-primary-foreground text-base font-semibold" data-testid="btn-empty-new">{label('add_first_order')}</button>
-                  {!demoMode && <button onClick={() => { setDemoMode(true); toast({ title: label('demo_loaded'), description: label('demo_loaded_hint') }); }} className="min-h-[48px] rounded-md border border-border text-base font-medium inline-flex items-center justify-center gap-2" data-testid="btn-load-demo"><FlaskConical size={20} aria-hidden /> {label('load_demo')}</button>}
+                <div className="grid gap-2 mt-3 max-w-sm mx-auto">
+                  <button onClick={() => setQuickOpen(true)} className="min-h-[44px] rounded-md bg-primary text-primary-foreground text-base font-semibold" data-testid="btn-empty-new">{label('add_first_order')}</button>
+                  {!demoMode && <button onClick={() => { setDemoMode(true); toast({ title: label('demo_loaded'), description: label('demo_loaded_hint') }); }} className="min-h-[44px] rounded-md border border-border text-base font-medium inline-flex items-center justify-center gap-2" data-testid="btn-load-demo"><FlaskConical size={20} aria-hidden /> {label('load_demo')}</button>}
                 </div>
-                <p className="text-sm text-muted-foreground mt-4">{label('data_note')}</p>
+                <p className="text-sm text-muted-foreground mt-3">{label('data_note')}</p>
               </div>
             ) : visible.length === 0 ? (
-              <div className="py-8 bg-card rounded-lg border border-border text-center">
+              <div className="py-4 bg-card rounded-lg border border-border text-center">
                 <p className="text-base text-muted-foreground">{label('no_match')}</p>
-                <button onClick={() => { setSearchTerm(''); setActiveFilter('all'); setKarigarFilter(''); }} className="mt-3 min-h-[44px] px-4 rounded-md border border-border text-base font-medium">{label('clear_filters')}</button>
+                <button onClick={() => { setSearchTerm(''); setActiveFilter('all'); setKarigarFilter(''); }} className="mt-2 min-h-[44px] px-4 rounded-md border border-border text-base font-medium">{label('clear_filters')}</button>
               </div>
-            ) : (
-              visible.slice(0, visibleLimit).map((o) => (
-                <div key={o.id} onClickCapture={() => setSelectedOrderId(o.id)} onFocusCapture={() => setSelectedOrderId(o.id)}
-                  className={`rounded-lg ${selectedOrder?.id === o.id ? 'lg:ring-2 lg:ring-primary lg:ring-offset-2 lg:ring-offset-background' : ''}`} data-testid={`order-select-${o.id}`}>
-                  <OrderCard order={o} {...cardProps} />
+            ) : (<>
+              <div className="lg:hidden grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3">
+                {visible.slice(0, visibleLimit).map((o) => (
+                  <div key={o.id} data-testid={`order-select-${o.id}`} className="min-w-0">
+                    <OrderCard order={o} {...cardProps} onOpen={openDetails} />
+                  </div>
+                ))}
+              </div>
+              <div className="hidden lg:block rounded-lg border border-border bg-card overflow-hidden" role="table" aria-label={label('nav_orders')} data-testid="orders-table">
+                <div role="row" className={`${ORDER_ROW_GRID} px-3 h-8 bg-muted text-xs font-medium text-muted-foreground border-b border-border`}>
+                  <span role="columnheader">DK</span><span role="columnheader">{label('dk_col_customer')}</span><span role="columnheader">{label('dk_col_garments')}</span>
+                  <span role="columnheader">{label('dk_col_delivery')}</span><span role="columnheader">{label('dk_col_status')}</span><span role="columnheader" className="text-end">{one('baqi')}</span><span role="columnheader" className="w-[140px]">{label('dk_col_actions')}</span>
                 </div>
-              ))
-            )}
-            {visible.length > visibleLimit && <button type="button" className="w-full min-h-[48px] border border-border rounded-lg bg-card text-primary font-semibold" onClick={() => setVisibleLimit(n => n + 20)} data-testid="orders-show-more">{label('feature_more_orders', { shown: Math.min(visibleLimit, visible.length), total: visible.length })}</button>}
+                <div className="divide-y divide-border">
+                  {visible.slice(0, visibleLimit).map((o) => (
+                    <div key={o.id} data-testid={`order-row-${o.id}`}>
+                      <OrderRow order={o} {...cardProps} onOpen={(x) => setSelectedOrderId(x.id)} selected={selectedOrder?.id === o.id} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>)}
+            {visible.length > visibleLimit && <button type="button" className="mt-2 w-full min-h-[44px] border border-border rounded-lg bg-card text-primary font-semibold" onClick={() => setVisibleLimit(n => n + 20)} data-testid="orders-show-more">{label('feature_more_orders', { shown: Math.min(visibleLimit, visible.length), total: visible.length })}</button>}
           </div>
+          <div className="md:hidden mt-3"><BackupReminder onBackup={() => navigate('/settings#backup')} /></div>
           </div>
-          <aside className="hidden lg:block sticky top-[88px] max-h-[calc(100dvh-104px)] overflow-y-auto" data-testid="order-detail-aside">
-            <OrderDetailPane order={orders.length ? selectedOrder : null} shopFallback={shopLabel} onPrint={openReceipt} onEdit={cardProps.onEdit}
-              onChat={cardProps.onChat} onCustomer={(k) => navigate(`/customers/${encodeURIComponent(k)}`)} />
+          <aside className="hidden lg:block sticky top-[72px] max-h-[calc(100dvh-88px)] overflow-y-auto" data-testid="order-detail-aside">
+            {selectedOrder ? <>
+              <button type="button" onClick={() => setSelectedOrderId(null)} className="mb-2 min-h-[32px] h-8 px-2 rounded-md text-sm text-muted-foreground hover:bg-muted inline-flex items-center gap-1" data-testid="btn-detail-today"><X size={16} aria-hidden /> {label('dk_close_details')}</button>
+              <OrderDetailPane order={selectedOrder} shopFallback={shopLabel} onPrint={openReceipt} onEdit={cardProps.onEdit}
+                onChat={cardProps.onChat} onCustomer={(k) => navigate(`/customers/${encodeURIComponent(k)}`)} />
+            </> : <TodayPanel orders={orders} onSelect={(o) => setSelectedOrderId(o.id)} />}
           </aside>
           </div>
+
+          <Dialog open={detailOpen && !!selectedOrder} onOpenChange={setDetailOpen}>
+            <DialogContent className="w-[calc(100%-1rem)] max-w-[560px] max-h-[92dvh] overflow-y-auto rounded-lg p-3 lg:hidden" data-testid="order-detail-dialog">
+              <DialogTitle className="text-base font-semibold pe-8">{label('dk_open_details')}</DialogTitle>
+              <OrderDetailPane order={selectedOrder} shopFallback={shopLabel} onPrint={(o) => { setDetailOpen(false); openReceipt(o); }} onEdit={(o) => { setDetailOpen(false); cardProps.onEdit(o); }}
+                onChat={(o) => { setDetailOpen(false); cardProps.onChat(o); }} onCustomer={(k) => { setDetailOpen(false); navigate(`/customers/${encodeURIComponent(k)}`); }} />
+            </DialogContent>
+          </Dialog>
         </main>
       )}
-
       {section === 'customers' && (
         <main className={wrap}>
           <CustomersPanel orders={orders} onHistory={(p) => navigate(`/customers/${encodeURIComponent(p)}`)} onQuickOrder={(c) => { setQuickCustomer(c); setQuickOpen(true); }} />
@@ -303,7 +329,8 @@ export default function Dashboard({ section = 'orders', phone }: { section?: Sec
       {section === 'hisaab' && (
         <main className={`${wrap} space-y-4`}>
           <h1 className="text-xl font-semibold">{label('hisaab_title')}</h1>
-          <div className="space-y-4 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-6 lg:items-start" data-testid="hisaab-grid">
+          <KpiTiles orders={orders} kind="hisaab" />
+          <div className="space-y-4 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-4 lg:items-start" data-testid="hisaab-grid">
           <div className="space-y-4 min-w-0">
           <ProfitSummary orders={orders} />
           <button onClick={() => navigate('/earnings')} className="w-full min-h-[56px] rounded-lg border border-border bg-card px-4 flex items-center gap-3 text-start hover:bg-muted" data-testid="btn-open-earnings">
@@ -312,7 +339,7 @@ export default function Dashboard({ section = 'orders', phone }: { section?: Sec
             <ChevronRight size={20} aria-hidden className="text-muted-foreground rtl:rotate-180" />
           </button>
           </div>
-          <div className="min-w-0"><PaymentsPanel orders={orders} onViewReceipt={openReceipt} /></div>
+          <div className="min-w-0 scroll-mt-20" id="payments"><PaymentsPanel orders={orders} onViewReceipt={openReceipt} /></div>
           </div>
         </main>
       )}

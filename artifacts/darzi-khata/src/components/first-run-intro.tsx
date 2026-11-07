@@ -36,13 +36,13 @@ export function FirstRunIntro(): ReactNode {
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) dismiss(); }}>
       <DialogContent data-testid="intro-dialog" className="max-w-sm w-[calc(100%-1.5rem)] p-0 overflow-hidden rounded-lg gap-0 [&>button]:hidden">
-        <div className="bg-primary text-primary-foreground px-6 pt-8 pb-6 relative">
+        <div className="bg-primary text-primary-foreground px-4 pt-4 pb-4 relative">
           <div className="dk-stitch absolute left-0 right-0 bottom-0 opacity-80" />
           <div key={i} className="dk-rise">
             <DialogTitle className={`text-2xl font-bold ${lang === 'ur' ? 'font-urdu' : 'leading-tight'}`} lang={lang} dir={lang === 'ur' ? 'rtl' : 'ltr'}>{DICT[s.tk][lang]}</DialogTitle>
           </div>
         </div>
-        <div className="px-6 py-5 space-y-4">
+        <div className="px-4 py-5 space-y-4">
           <div key={i} className="dk-rise">
             <DialogDescription className={`text-base text-foreground ${lang === 'ur' ? 'font-urdu' : ''}`} lang={lang} dir={lang === 'ur' ? 'rtl' : 'ltr'}>{DICT[s.body][lang]}</DialogDescription>
           </div>

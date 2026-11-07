@@ -1,3 +1,4 @@
+import { KpiTiles } from './kpi-tiles';
 import { tl } from '../lib/i18n';
 import { usePreferences } from '../hooks/use-preferences';
 import { useMemo, useState } from 'react';
@@ -45,7 +46,7 @@ export function CreditModal({ open, onOpenChange, orders }: Props) {
           </div>
         </div>
         <div className="overflow-y-auto p-5 space-y-5">
-          {view === 'score' && <ScoreView p={p} onApply={() => setView('consent')} />}
+          {view === 'score' && <ScoreView p={p} orders={orders} onApply={() => setView('consent')} />}
           {view === 'consent' && (
             <div className="space-y-4 dk-rise">
               <p className="text-sm">{label('only_this_summary_goes_into_the_profile')}</p>
@@ -97,10 +98,11 @@ function Gauge({ score }: { score: number }) {
   );
 }
 
-function ScoreView({ p, onApply }: { p: CreditProfile; onApply: () => void }) {
+function ScoreView({ p, orders, onApply }: { p: CreditProfile; orders: Order[]; onApply: () => void }) {
   const { label } = usePreferences();
   return (
     <div className="space-y-5">
+      <KpiTiles orders={orders} kind="credit" />
       <div className="text-center dk-rise">
         <Gauge score={p.score} />
         <div className="inline-block mt-1 px-3 py-1 rounded-full bg-warning-soft text-warning text-sm font-bold" data-testid="text-credit-band">{p.band}</div>

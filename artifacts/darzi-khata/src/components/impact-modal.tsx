@@ -1,3 +1,4 @@
+import { KpiTiles } from './kpi-tiles';
 import { entry } from '../lib/i18n';
 import { usePreferences } from '../hooks/use-preferences';
 import { useMemo } from 'react';
@@ -45,8 +46,9 @@ export function ImpactModal({ open, onOpenChange, orders }: Props) {
           <DialogTitle className="text-lg font-bold">{label('financial_inclusion_impact')}</DialogTitle>
           <DialogDescription className="text-primary text-sm">{shopTypeLabel(settings.shopType)}{demoMode && ` · ${label('demo_data')}`}</DialogDescription>
         </div>
-        <div className="dk-wide-grid overflow-y-auto p-5 space-y-5">
-          <div className="grid grid-cols-2 gap-2">
+        <div className="dk-wide-grid overflow-y-auto p-4 space-y-4">
+          <KpiTiles orders={orders} kind="payments" />
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
             {metrics.map((m, i) => (
               <div key={m.en} className="rounded-lg border border-border bg-card p-3 dk-rise" style={{ animationDelay: `${i * 50}ms` }} data-testid={`metric-${i}`}>
                 <div className="text-xs text-muted-foreground leading-tight">{label(m.tk)}</div>
@@ -61,7 +63,7 @@ export function ImpactModal({ open, onOpenChange, orders }: Props) {
             <h3 className="text-sm font-bold">{label('digital_vs_cash_collections')}</h3>
             <p className="text-xs text-muted-foreground mb-2">{label('by_payment_date')} · {range} · PKR</p>
             {all.total === 0 ? (
-              <div className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">{label('no_payments_recorded_yet')}</div>
+              <div className="rounded-lg border border-dashed border-border p-4 text-center text-sm text-muted-foreground">{label('no_payments_recorded_yet')}</div>
             ) : (
               <div className="h-52" role="img" aria-label={`Monthly collections ${range}: ${months.map((m) => `${m.label} cash ${pkr(m.cash)}, digital ${pkr(m.digital)}`).join('; ')}`}>
                 <ResponsiveContainer width="100%" height="100%">

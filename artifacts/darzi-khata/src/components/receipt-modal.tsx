@@ -49,7 +49,7 @@ export function ReceiptModal({ open, onOpenChange, order }: ReceiptModalProps) {
 
   const baqi = balance(order);
   const paperChooser = (
-    <div className="print:hidden print-hide px-6 pt-4" role="radiogroup" aria-label={label('paper_size')}>
+    <div className="print:hidden print-hide px-4 pt-4" role="radiogroup" aria-label={label('paper_size')}>
       <div className="text-sm font-medium text-muted-foreground mb-2">{label('paper_size')}</div>
       <div className="grid grid-cols-3 gap-2">
         {(['a4', '80', '58'] as const).map((p) => (
@@ -94,7 +94,7 @@ export function ReceiptModal({ open, onOpenChange, order }: ReceiptModalProps) {
           {paperChooser}
           <OrderTracking order={order} />
           {/* Printable Area */}
-          <div className="p-6 md:p-8" id="receipt-print-area">
+          <div className="p-4 md:p-4" id="receipt-print-area">
             <div className="print-paper border-2 border-dashed border-border p-5 relative bg-card mx-auto max-w-[400px]" data-paper={paperSize}>
               {/* Corner Ornaments */}
               <div className="absolute top-1 left-1 w-3 h-3 border-t-2 border-l-2 border-primary"></div>
@@ -155,7 +155,7 @@ export function ReceiptModal({ open, onOpenChange, order }: ReceiptModalProps) {
 
               {!order.items?.length && <div className="mt-4">
                 <h3 className="bg-muted text-center py-1 font-bold text-sm   mb-3 text-muted-foreground border border-border">{label('measurements_inches')}</h3>
-                <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm font-mono">
+                <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm font-mono">
                   <div className="flex justify-between border-b border-dotted border-border pb-1"><span>{tl('d_length')}</span><span className="font-bold">{order.measurements.kameezLambai}</span></div>
                   <div className="flex justify-between border-b border-dotted border-border pb-1"><span>{tl('d_shoulder')}</span><span className="font-bold">{order.measurements.teera}</span></div>
                   <div className="flex justify-between border-b border-dotted border-border pb-1"><span>{tl('d_sleeve')}</span><span className="font-bold">{order.measurements.bazu}</span></div>

@@ -31,7 +31,7 @@ async function seed(page: Page, lang: 'en' | 'ur') {
     }))));
   },lang);
   await page.goto('/app');
-  await expect(page.getByTestId('card-order-A')).toBeVisible();
+    await expect(page.locator('[data-testid="card-order-A"]:visible')).toBeVisible();
 }
 
 async function noOverflow(page: Page) {
@@ -68,7 +68,10 @@ for (const lang of ['en','ur'] as const) for (const width of [375,768,1366,1920]
         await expect(page.getByTestId('nav-more')).not.toBeVisible();
         const box=await page.getByTestId('desktop-sidebar').boundingBox();
         expect(lang==='ur'?box!.x>width/2:box!.x<width/2).toBe(true);
-        if(name==='orders') await expect(page.getByTestId('parchi-preview')).toBeVisible();
+        if(name==='orders') {
+          await page.locator('[data-testid="card-order-A"]:visible').click();
+          await expect(page.getByTestId('parchi-preview')).toBeVisible();
+        }
         if(name==='customers') {
           await page.getByTestId('table-row-customer-A').click();
           await expect(page.getByTestId('customer-detail-pane')).toContainText('Customer A');
@@ -78,7 +81,7 @@ for (const lang of ['en','ur'] as const) for (const width of [375,768,1366,1920]
         const grid=page.getByTestId('settings-tile-grid');
         await expect(grid).toBeVisible();
         expect(await grid.locator(':scope > *').count()).toBe(12);
-        expect(await grid.evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length)).toBe(width>=1024?3:width>=768?2:1);
+        expect(await grid.evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length)).toBe(width>=1024?4:width>=768?3:2);
       }
       await page.screenshot({path:`${screenshots}/${lang}-${width}-${name}.png`,fullPage:true});
       for (const boundary of [320,360,767,1023,1024]) {
@@ -88,7 +91,7 @@ for (const lang of ['en','ur'] as const) for (const width of [375,768,1366,1920]
       await page.setViewportSize({width,height:width===375?812:900});
       if(name==='more' && width>=1024){
         await page.getByTestId('tile-payment').click();
-        await expect(page.getByTestId('settings-side-panel')).toBeVisible();
+        await expect(page.getByTestId('settings-sections')).toBeVisible();
         await noOverflow(page);
         await page.screenshot({path:`${screenshots}/${lang}-${width}-settings-panel.png`});
       }
@@ -101,7 +104,7 @@ for (const lang of ['en','ur'] as const) for (const width of [375,768,1366,1920]
     await page.getByTestId('input-fabric').fill('Cotton');
     await noOverflow(page);
     await page.screenshot({path:`${screenshots}/${lang}-${width}-new-order.png`,fullPage:true});
-    await page.getByTestId('btn-step-next').click();
+    if(width<1024) await page.getByTestId('btn-step-next').click();
     await expect(page.getByTestId('measurement-grid').first()).toBeVisible();
     await page.getByTestId('measurement-grid').first().scrollIntoViewIfNeeded();
     await noOverflow(page);
@@ -119,7 +122,7 @@ for(const lang of ['en','ur'] as const) for(const width of [375,1366]) {
     await mkdir(evidence,{recursive:true});
     await page.setViewportSize({width,height:width===375?812:768});
     await seed(page,lang);
-    await page.getByTestId('btn-receipt-A').click();
+    await page.locator('[data-testid="btn-receipt-A"]:visible').click();
     await expect(page.locator('#receipt-print-area img')).toBeVisible();
     await page.evaluate(()=>{
       window.print=()=>{throw Error('The live page must never be printed');};

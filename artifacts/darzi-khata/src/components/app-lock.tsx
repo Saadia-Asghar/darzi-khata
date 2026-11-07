@@ -36,7 +36,7 @@ export function AppLockGate({ children }: { children: ReactNode }) {
     return ()=>clearInterval(timer);
   }, [lock?.lockedUntil]);
   if (!ready) return <div role="status" className="min-h-screen grid place-items-center">{label('opening_khata')}</div>;
-  if (initializationError) return <div className="min-h-screen grid place-items-center p-6"><div><p role="alert">{initializationError}</p><button className="min-h-11 underline" onClick={logout}>{label('sign_out')}</button></div></div>;
+  if (initializationError) return <div className="min-h-screen grid place-items-center p-4"><div><p role="alert">{initializationError}</p><button className="min-h-11 underline" onClick={logout}>{label('sign_out')}</button></div></div>;
   if (!lock?.enabled || unlocked) return children;
   const wait = Math.max(0,Math.ceil((lock.lockedUntil-clock)/1000));
   return <div className="min-h-[100dvh] bg-background text-foreground grid place-items-center p-5">

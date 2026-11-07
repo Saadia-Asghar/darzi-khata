@@ -14,7 +14,7 @@ sync, external database or bank integration in the approved offline-only upgrade
   English uses English day/instruction words, not Roman Urdu. Baqi is an
   intentional, consistently used domain term. Built-in fabric/demo text is
   translated for display; never rewrite users' custom descriptions or notes.
-- The phone header has two single-line rows; keep its shop/owner text truncated
+- The phone header is 56px with truncated shop/owner text; keep its text truncated
   at 320px. Overdue is a warning, never a replacement for the real order status.
 - Onboarding dismissal belongs to each account, including demo, on both Skip
   and completion. Offline upgrades must preserve saved data and open drafts.
@@ -87,10 +87,15 @@ configuration already exists; publishing remains a user action.
   overlays, settings and cut-off receipts in desktop Chrome print preview.
 - PDF download uses the same isolated content and must work without a phone's
   print service. Wait for Urdu fonts and QR images before print/download.
-- Preserve the phone layout below 768px. Settings tiles use 1/2/3 columns at
-  phone/tablet/desktop widths. Desktop begins at 1024px, with sidebar on the
-  logical start side (right in Urdu), desktop top bar and centred content.
-- Desktop dialogs stay at most 560px wide; use three measurement fields per row
-  where space permits. Do not hide overflowing content to disguise a broken layout.
+- Phone orders must show at least four compact cards at 375×812. Tablet orders
+  use two columns. More tiles use 2/3/4 columns at phone/tablet/desktop widths.
+- Desktop begins at 1024px: logical-start sidebar (right in Urdu), icon-only
+  through 1279px, otherwise 220px; 56px top bar; content up to 1440px.
+  Orders use a dense list with eight visible rows at 1366×800 and a detail/Today pane.
+- Use 4/8/12/16/24px spacing, card padding 12px phone/16px desktop and
+  8px/12px card gaps. Avoid large empty gaps inside the app shell.
+- Desktop dialogs stay at most 560px wide, full forms 720px; use three or four
+  measurement fields per row where space permits. Do not hide overflowing
+  content to disguise a broken layout. Settings tiles navigate to real pages.
 
 README has demo credentials, full capabilities, storage details and limitations.

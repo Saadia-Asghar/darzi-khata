@@ -40,8 +40,8 @@ function DefaultFallback({ error, resetError }: ErrorFallbackProps) {
   // Rendered outside providers; the selected language is available to helpers.
   const d = (k: 'error_title' | 'error_body' | 'reload' | 'try_again') => tl(k);
   return (
-    <div className="min-h-[100dvh] w-full flex items-center justify-center bg-background p-6" role="alert">
-      <div className="max-w-md w-full rounded-lg border border-border bg-card p-6 text-center">
+    <div className="min-h-[100dvh] w-full flex items-center justify-center bg-background p-4" role="alert">
+      <div className="max-w-md w-full rounded-lg border border-border bg-card p-4 text-center">
         <h1 className="text-lg font-semibold text-foreground">{d('error_title')}</h1>
         <p className="mt-2 text-base text-muted-foreground">{d('error_body')}</p>
         {import.meta.env.DEV ? (

@@ -46,9 +46,9 @@ export function CustomersPanel({ orders, onHistory, onQuickOrder }: { orders: Or
         <input type="search" value={q} onChange={(e) => setQ(e.target.value)} aria-label={label('search_customers')} placeholder={label('name_phone_or_last_4_digits')} className="w-full min-h-[48px] ps-10 pe-3 rounded-lg border border-border bg-card text-sm outline-none focus:ring-2 focus:ring-ring" data-testid="input-search-customers" />
       </div>
       {rows.length === 0 ? (
-        <div className="text-center py-10 bg-card rounded-lg border border-dashed border-border"><Users className="mx-auto text-muted-foreground mb-2" size={32} aria-hidden /><p className="text-sm text-muted-foreground">{label('no_customers_yet_add_one_or_create_an_or')}</p></div>
+        <div className="text-center py-4 bg-card rounded-lg border border-dashed border-border"><Users className="mx-auto text-muted-foreground mb-2" size={32} aria-hidden /><p className="text-sm text-muted-foreground">{label('no_customers_yet_add_one_or_create_an_or')}</p></div>
       ) : filtered.length === 0 ? (
-        <p className="text-center text-sm text-muted-foreground py-8">{label('no_match_for')} "{q}"</p>
+        <p className="text-center text-sm text-muted-foreground py-4">{label('no_match_for')} "{q}"</p>
       ) : (
         <ul className="space-y-2 lg:hidden">
           {filtered.map((r) => (
@@ -76,7 +76,7 @@ export function CustomersPanel({ orders, onHistory, onQuickOrder }: { orders: Or
         </ul>
       )}
       {filtered.length > 0 && (
-        <div className="hidden lg:grid lg:grid-cols-[minmax(0,1fr)_380px] gap-6 items-start">
+        <div className="hidden lg:grid lg:grid-cols-[minmax(0,1fr)_380px] gap-4 items-start">
           <div className="rounded-lg border border-border bg-card overflow-hidden">
             <table className="w-full text-sm" data-testid="customers-table">
               <thead className="bg-muted text-muted-foreground">
